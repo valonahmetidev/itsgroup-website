@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --ink: 23 25 30;
+  --paper: 243 239 230;
+  --card: 255 253 248;
+  --surface: 255 255 255;
+}
+
+.dark {
+  color-scheme: dark;
+  --ink: 244 241 234;
+  --paper: 16 18 22;
+  --card: 28 31 37;
+  --surface: 37 41 49;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: rgb(var(--paper));
+  color: rgb(var(--ink));
+  font-family: var(--font-sans), sans-serif;
+}
+
+::selection {
+  background: #143f36;
+  color: #f3efe6;
+}
+
+:focus-visible {
+  outline: 2px solid #0f6e56;
+  outline-offset: 3px;
+}
+
+.shell {
+  @apply mx-auto w-full max-w-6xl px-5;
+}
+
+.marquee {
+  width: max-content;
+  animation: ticker 80s linear infinite;
+}
+
+.marquee:hover {
+  animation-play-state: paused;
+}
+
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes hero-float {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-12px);
+  }
+}
+
+.hero-float {
+  animation: hero-float 5.5s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .marquee,
+  .rise,
+  .hero-float {
+    animation: none;
+  }
+}
