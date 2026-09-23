@@ -1,4 +1,4 @@
-import type { CatalogQuery } from "@/lib/types";
+import type { CatalogQuery, Source } from "@/lib/types";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import { fill } from "@/lib/i18n";
 
@@ -13,8 +13,8 @@ export function countProducts(count: number, dict?: Dictionary) {
     if (count === 1) return dict.products.one;
     return fill(dict.products.many, { count: formatCount(count) });
   }
-  if (count === 1) return "1 производ";
-  return `${formatCount(count)} производи`;
+  if (count === 1) return "1 product";
+  return `${formatCount(count)} products`;
 }
 
 function formatAmount(amount: number, locale: Locale) {
@@ -23,9 +23,15 @@ function formatAmount(amount: number, locale: Locale) {
   return value.replace(/\B(?=(\d{3})+(?!\d))/g, separator);
 }
 
+const onRequestFallback: Record<Locale, string> = {
+  mk: "По договор",
+  sq: "Sipas kërkesës",
+  en: "On request",
+};
+
 export function formatPrice(amount: number | null, locale: Locale = "mk", dict?: Dictionary) {
   if (amount == null || Number.isNaN(amount) || amount <= 0) {
-    return dict?.product.onRequest ?? "По договор";
+    return dict?.product.onRequest ?? onRequestFallback[locale];
   }
   const formatted = formatAmount(amount, locale);
   if (locale === "en") return `${formatted} MKD`;
@@ -43,12 +49,27 @@ export function salePercent(price: number | null, regularPrice: number | null) {
   return Math.round((1 - price / regularPrice) * 100);
 }
 
-export function catalogHref(query: CatalogQuery = {}) {
+export function catalogSearchParams(query: CatalogQuery = {}) {
   const params = new URLSearchParams();
   if (query.q) params.set("q", query.q);
   if (query.source && query.source !== "all") params.set("source", query.source);
   if (query.sort && query.sort !== "name") params.set("sort", query.sort);
   if (query.page && query.page > 1) params.set("page", String(query.page));
-  const value = params.toString();
+  if (query.min !== undefined) params.set("min", String(query.min));
+  if (query.max !== undefined) params.set("max", String(query.max));
+  if (query.stock && query.stock !== "all") params.set("stock", query.stock);
+  if (query.sale && query.sale !== "all") params.set("sale", query.sale);
+  if (query.priceType && query.priceType !== "all") params.set("priceType", query.priceType);
+  return params;
+}
+
+export function catalogHref(query: CatalogQuery = {}) {
+  const value = catalogSearchParams(query).toString();
   return value ? `/katalog?${value}` : "/katalog";
+}
+
+export function categoryCatalogHref(category: { source: Source; id: number }, query: CatalogQuery = {}) {
+  const value = catalogSearchParams(query).toString();
+  const base = `/kategorija/${category.source}/${category.id}`;
+  return value ? `${base}?${value}` : base;
 }

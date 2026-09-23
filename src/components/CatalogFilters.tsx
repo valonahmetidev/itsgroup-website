@@ -1,0 +1,262 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
+import { formatCount } from "@/lib/format";
+import { hasActiveFilters, type ParsedCatalogQuery } from "@/lib/catalog-filters";
+import { cn } from "@/lib/cn";
+
+type PillOption<T extends string> = { value: T; label: string };
+
+function FilterPills<T extends string>({
+  label,
+  value,
+  options,
+  hrefFor,
+}: {
+  label: string;
+  value: T;
+  options: PillOption<T>[];
+  hrefFor: (next: T) => string;
+}) {
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink/45">{label}</p>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => (
+          <Link
+            key={option.value}
+            href={hrefFor(option.value)}
+            className={cn(
+              "rounded-full px-4 py-2 text-sm font-medium transition",
+              value === option.value ? "bg-ink text-paper" : "bg-surface hover:bg-ink/5",
+            )}
+          >
+            {option.label}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CatalogFilterFields({
+  query,
+  hrefFor,
+  priceBounds,
+  showSource,
+  minValue,
+  maxValue,
+  setMinValue,
+  setMaxValue,
+  onApplyPriceRange,
+}: {
+  query: ParsedCatalogQuery;
+  hrefFor: (next: Partial<ParsedCatalogQuery>) => string;
+  priceBounds: { min: number; max: number } | null;
+  showSource: boolean;
+  minValue: string;
+  maxValue: string;
+  setMinValue: (value: string) => void;
+  setMaxValue: (value: string) => void;
+  onApplyPriceRange: (event: React.FormEvent<HTMLFormElement>) => void;
+}) {
+  const { dict } = useLocale();
+
+  return (
+    <div className="space-y-5">
+      {showSource && (
+        <FilterPills
+          label={dict.catalog.sourceLabel}
+          value={query.source}
+          options={[
+            { value: "all", label: dict.catalog.all },
+            { value: "treco", label: dict.nav.technology },
+            { value: "tremark", label: dict.nav.home },
+            { value: "its", label: dict.catalog.itsProducts },
+          ]}
+          hrefFor={(source) => hrefFor({ source, page: 1 })}
+        />
+      )}
+
+      <FilterPills
+        label={dict.catalog.stockLabel}
+        value={query.stock}
+        options={[
+          { value: "all", label: dict.catalog.stockAll },
+          { value: "in", label: dict.catalog.stockIn },
+          { value: "out", label: dict.catalog.stockOut },
+        ]}
+        hrefFor={(stock) => hrefFor({ stock, page: 1 })}
+      />
+
+      <FilterPills
+        label={dict.catalog.saleLabel}
+        value={query.sale}
+        options={[
+          { value: "all", label: dict.catalog.saleAll },
+          { value: "yes", label: dict.catalog.saleYes },
+          { value: "no", label: dict.catalog.saleNo },
+        ]}
+        hrefFor={(sale) => hrefFor({ sale, page: 1 })}
+      />
+
+      <FilterPills
+        label={dict.catalog.priceTypeLabel}
+        value={query.priceType}
+        options={[
+          { value: "all", label: dict.catalog.priceTypeAll },
+          { value: "priced", label: dict.catalog.priceTypePriced },
+          { value: "on-request", label: dict.catalog.priceTypeOnRequest },
+        ]}
+        hrefFor={(priceType) => hrefFor({ priceType, page: 1 })}
+      />
+
+      <form className="space-y-2" onSubmit={onApplyPriceRange}>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink/45">{dict.catalog.priceRange}</p>
+        {priceBounds && (
+          <p className="text-sm text-ink/50">
+            {dict.catalog.priceRangeHint}: {formatCount(priceBounds.min)} – {formatCount(priceBounds.max)}
+          </p>
+        )}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="grid gap-1 text-sm">
+            <span className="text-ink/60">{dict.catalog.priceMin}</span>
+            <input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              value={minValue}
+              onChange={(event) => setMinValue(event.target.value)}
+              placeholder={priceBounds ? String(priceBounds.min) : "0"}
+              className="w-full rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none transition focus:border-tech"
+            />
+          </label>
+          <label className="grid gap-1 text-sm">
+            <span className="text-ink/60">{dict.catalog.priceMax}</span>
+            <input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              value={maxValue}
+              onChange={(event) => setMaxValue(event.target.value)}
+              placeholder={priceBounds ? String(priceBounds.max) : "0"}
+              className="w-full rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none transition focus:border-tech"
+            />
+          </label>
+        </div>
+        <button type="submit" className="rounded-full bg-tech px-5 py-2.5 text-sm font-semibold text-cream">
+          {dict.catalog.applyFilters}
+        </button>
+      </form>
+
+      <FilterPills
+        label={dict.catalog.sortLabel}
+        value={query.sort}
+        options={[
+          { value: "name", label: dict.catalog.sortName },
+          { value: "price-asc", label: dict.catalog.sortPriceAsc },
+          { value: "price-desc", label: dict.catalog.sortPriceDesc },
+        ]}
+        hrefFor={(sort) => hrefFor({ sort, page: 1 })}
+      />
+    </div>
+  );
+}
+
+export function CatalogFilters({
+  query,
+  hrefFor,
+  priceBounds,
+  showSource = true,
+}: {
+  query: ParsedCatalogQuery;
+  hrefFor: (next: Partial<ParsedCatalogQuery>) => string;
+  priceBounds: { min: number; max: number } | null;
+  showSource?: boolean;
+}) {
+  const router = useRouter();
+  const { dict } = useLocale();
+  const [minValue, setMinValue] = useState(query.min?.toString() ?? "");
+  const [maxValue, setMaxValue] = useState(query.max?.toString() ?? "");
+  const active = hasActiveFilters(query);
+
+  function applyPriceRange(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const min = minValue.trim() ? Math.max(0, Math.round(Number(minValue))) : undefined;
+    const max = maxValue.trim() ? Math.max(0, Math.round(Number(maxValue))) : undefined;
+    router.push(
+      hrefFor({
+        min: Number.isFinite(min) ? min : undefined,
+        max: Number.isFinite(max) ? max : undefined,
+        page: 1,
+      }),
+    );
+  }
+
+  const fields = (
+    <CatalogFilterFields
+      query={query}
+      hrefFor={hrefFor}
+      priceBounds={priceBounds}
+      showSource={showSource}
+      minValue={minValue}
+      maxValue={maxValue}
+      setMinValue={setMinValue}
+      setMaxValue={setMaxValue}
+      onApplyPriceRange={applyPriceRange}
+    />
+  );
+
+  const clearHref = hrefFor({
+    stock: "all",
+    sale: "all",
+    priceType: "all",
+    min: undefined,
+    max: undefined,
+    page: 1,
+  });
+
+  return (
+    <>
+      <details className="group rounded-3xl border border-ink/10 bg-card shadow-sm lg:hidden">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-5 [&::-webkit-details-marker]:hidden">
+          <div className="flex items-center gap-2">
+            <h2 className="font-display text-xl">{dict.catalog.filters}</h2>
+            {active && (
+              <span className="rounded-full bg-tech/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-tech">
+                •
+              </span>
+            )}
+          </div>
+          <ChevronDown className="h-4 w-4 shrink-0 text-ink/45 transition group-open:rotate-180" />
+        </summary>
+        <div className="space-y-5 border-t border-ink/10 px-5 pb-5 pt-4">
+          {active && (
+            <Link href={clearHref} className="inline-block text-sm font-semibold text-tech">
+              {dict.catalog.clearFilters}
+            </Link>
+          )}
+          {fields}
+        </div>
+      </details>
+
+      <aside className="hidden lg:sticky lg:top-20 lg:block">
+        <div className="space-y-5 rounded-3xl border border-ink/10 bg-card p-6 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-display text-xl">{dict.catalog.filters}</h2>
+            {active && (
+              <Link href={clearHref} className="text-sm font-semibold text-tech">
+                {dict.catalog.clearFilters}
+              </Link>
+            )}
+          </div>
+          {fields}
+        </div>
+      </aside>
+    </>
+  );
+}

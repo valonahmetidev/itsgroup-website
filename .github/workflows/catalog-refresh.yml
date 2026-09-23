@@ -1,0 +1,53 @@
+name: Daily catalog refresh
+
+on:
+  schedule:
+    # Midnight Europe/Skopje
+    - cron: "0 0 * * *"
+      timezone: Europe/Skopje
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: catalog-refresh
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch Treco and Tremark catalog
+        run: npm run catalog:refresh
+
+      - name: Reconcile orphaned D1 rows
+        run: node scripts/prune-catalog-orphans.mjs --apply
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Commit catalog changes
+        id: commit
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: refresh catalog from Treco and Tremark"
+          file_pattern: data/catalog.json src/lib/i18n/category-names.ts
+
+      - name: Deploy to Cloudflare
+        if: steps.commit.outputs.changes_detected == 'true'
+        run: npm run deploy:cf
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

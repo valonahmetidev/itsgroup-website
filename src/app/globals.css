@@ -88,6 +88,72 @@ body {
   animation: hero-float 5.5s ease-in-out infinite alternate;
 }
 
+body:has(.admin-root) > header,
+body:has(.admin-root) > footer {
+  display: none;
+}
+
+body:has(.admin-root) > main {
+  min-height: 100dvh;
+}
+
+@keyframes search-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes search-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes search-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes btn-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(15 110 86 / 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgb(15 110 86 / 0);
+  }
+}
+
+.search-backdrop {
+  animation: search-backdrop-in 0.2s ease both;
+}
+
+.search-modal {
+  animation: search-modal-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.search-panel {
+  animation: search-panel-in 0.22s cubic-bezier(0.22, 1, 0.36, 1) 0.06s both;
+}
+
+.btn-pulse {
+  animation: btn-pulse 1.6s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -95,7 +161,11 @@ body {
 
   .marquee,
   .rise,
-  .hero-float {
+  .hero-float,
+  .search-backdrop,
+  .search-modal,
+  .search-panel,
+  .btn-pulse {
     animation: none;
   }
 }

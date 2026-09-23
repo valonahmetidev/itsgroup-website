@@ -4,6 +4,6 @@ export function categoryHref(category: { source: Source; id: number }) {
   return `/kategorija/${category.source}/${category.id}`;
 }
 
-export function productHref(product: { source: Source; id: number }) {
+export function productHref(product: { source: Source; id: number | string }) {
   return `/proizvod/${product.source}/${product.id}`;
 }

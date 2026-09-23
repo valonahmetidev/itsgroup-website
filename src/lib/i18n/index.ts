@@ -5,10 +5,10 @@ import type { Dictionary, Locale, MenuGroupKey } from "@/lib/i18n/types";
 
 export type { Dictionary, Locale, MenuGroupKey };
 
-export const locales: { code: Locale; label: string }[] = [
-  { code: "mk", label: "MK" },
-  { code: "sq", label: "SQ" },
-  { code: "en", label: "EN" },
+export const locales: { code: Locale; label: string; name: string }[] = [
+  { code: "mk", label: "MK", name: "Македонски" },
+  { code: "sq", label: "SQ", name: "Shqip" },
+  { code: "en", label: "EN", name: "English" },
 ];
 
 export const LOCALE_COOKIE = "its-locale";

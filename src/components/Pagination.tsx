@@ -22,7 +22,7 @@ export function Pagination({
   for (let number = windowStart; number <= windowEnd; number += 1) numbers.push(number);
 
   return (
-    <nav className="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Pages">
+    <nav className="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label={dict.pagination.label}>
       <PageLink href={hrefFor(page - 1)} disabled={page <= 1}>
         {dict.pagination.prev}
       </PageLink>

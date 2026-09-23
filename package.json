@@ -7,16 +7,20 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "catalog:refresh": "node scripts/fetch-catalog.mjs",
+    "catalog:refresh": "node scripts/fetch-catalog.mjs && node scripts/generate-category-translations.mjs",
+    "catalog:sync": "npm run catalog:refresh && node scripts/prune-catalog-orphans.mjs --apply",
     "preview:cf": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy:cf": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
+    "deploy:cf": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "db:migrate": "wrangler d1 execute itsgroup-db --remote --file=./migrations/0001_init.sql && wrangler d1 execute itsgroup-db --remote --file=./migrations/0002_admin.sql && wrangler d1 execute itsgroup-db --remote --file=./migrations/0003_product_media.sql && wrangler d1 execute itsgroup-db --remote --file=./migrations/0004_media_assets.sql && wrangler d1 execute itsgroup-db --remote --file=./migrations/0005_customers.sql && wrangler d1 execute itsgroup-db --remote --file=./migrations/0006_product_units.sql",
+    "db:migrate:local": "wrangler d1 execute itsgroup-db --local --file=./migrations/0001_init.sql && wrangler d1 execute itsgroup-db --local --file=./migrations/0002_admin.sql && wrangler d1 execute itsgroup-db --local --file=./migrations/0003_product_media.sql && wrangler d1 execute itsgroup-db --local --file=./migrations/0004_media_assets.sql && wrangler d1 execute itsgroup-db --local --file=./migrations/0005_customers.sql && wrangler d1 execute itsgroup-db --local --file=./migrations/0006_product_units.sql"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.20.6",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.12",
+    "html2pdf.js": "^0.14.0",
     "lucide-react": "^0.544.0",
-    "next": "^16.1.0",
+    "next": "15.5.24",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwind-merge": "^3.3.1"
@@ -27,7 +31,7 @@
     "@types/react-dom": "^19.2.0",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.36.0",
-    "eslint-config-next": "^16.1.0",
+    "eslint-config-next": "15.5.24",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.9.2",

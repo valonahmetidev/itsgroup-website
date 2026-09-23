@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useLocale } from "@/components/LocaleProvider";
 import { cn } from "@/lib/cn";
 
 type LogoProps = {
@@ -15,12 +18,13 @@ const pngSizes = {
 } as const;
 
 export function Logo({ href = "/", className, imageClassName, variant = "header" }: LogoProps) {
+  const { dict } = useLocale();
   const size = pngSizes[variant];
   const content = (
     <span className={cn("inline-flex items-center", className)}>
       <Image
         src="/logo.png"
-        alt="ITS Group"
+        alt={dict.meta.siteName}
         width={size.width}
         height={size.height}
         priority={variant !== "footer"}
@@ -35,7 +39,7 @@ export function Logo({ href = "/", className, imageClassName, variant = "header"
     <Link
       href={href}
       className="group shrink-0 transition hover:opacity-90 focus-visible:outline-none"
-      aria-label="ITS Group"
+      aria-label={dict.meta.siteName}
     >
       <span className="inline-block transition duration-300 group-hover:scale-[1.02]">{content}</span>
     </Link>

@@ -2,9 +2,9 @@ export const site = {
   name: "ITS Group",
   domain: "itsgroup.mk",
   url: "https://itsgroup.mk",
-  description:
-    "Заеднички каталог на ITS Group: технолошки производи од Treco и апарати за дом од Tremark.",
-  email: "",
+  description: "Заеднички каталог на ITS Group: технологија и апарати за дом.",
+  whatsapp: "38976302228",
+  email: "info@itsgroup.mk",
   phone: "+389 76 302 228",
   phoneHref: "tel:+38976302228",
   address: "",
@@ -13,16 +13,23 @@ export const site = {
 export const sourceMeta = {
   treco: {
     label: "Технологија",
-    brand: "Treco",
+    brand: "ITS Group",
     href: "/tehnologija",
-    origin: "https://treco.mk",
+    origin: "https://itsgroup.mk",
     tone: "tech" as const,
   },
   tremark: {
     label: "Дом",
-    brand: "Tremark",
+    brand: "ITS Group",
     href: "/dom",
-    origin: "https://tremark.mk",
+    origin: "https://itsgroup.mk",
     tone: "home" as const,
+  },
+  its: {
+    label: "ITS Group",
+    brand: "ITS",
+    href: "/katalog?source=its",
+    origin: "https://itsgroup.mk",
+    tone: "tech" as const,
   },
 };

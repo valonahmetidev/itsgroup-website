@@ -1,5 +1,6 @@
 import rawCatalog from "../../data/catalog.json";
 import { categoryHref } from "@/lib/paths";
+import { searchAndRankProducts } from "@/lib/product-search";
 import type { Category, MenuColumn, MenuGroup, MenuLink, Product, Source } from "@/lib/types";
 
 export { categoryHref, productHref } from "@/lib/paths";
@@ -22,6 +23,7 @@ const namedEntities: Record<string, string> = {
 };
 
 function decodeText(value: string) {
+  if (!value.includes("&") && !/\s{2}|^\s|\s$/.test(value)) return value;
   let text = value;
   for (let pass = 0; pass < 3; pass += 1) {
     const next = text.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (match, entity: string) => {
@@ -41,31 +43,35 @@ function decodeText(value: string) {
 }
 
 export const fetchedAt = catalog.fetchedAt;
-export const categories = catalog.categories.map((category) => ({
-  ...category,
-  name: decodeText(category.name),
-}));
+export const categories = catalog.categories
+  .map((category) => ({
+    ...category,
+    name: decodeText(category.name),
+  }))
+  .sort((a, b) => a.name.localeCompare(b.name, "mk") || String(a.id).localeCompare(String(b.id)));
 function publishedPrice(amount: number | null) {
   if (amount == null || amount <= 0) return null;
   return amount;
 }
 
-export const products = catalog.products.map((product) => {
-  const price = publishedPrice(product.price);
-  const regularPrice = publishedPrice(product.regularPrice);
-  return {
-    ...product,
-    name: decodeText(product.name),
-    excerpt: decodeText(product.excerpt),
-    price,
-    regularPrice,
-    onSale: Boolean(product.onSale && price != null && regularPrice != null && price < regularPrice),
-    categories: product.categories.map((category) => ({
-      ...category,
-      name: decodeText(category.name),
-    })),
-  };
-});
+export const products = catalog.products
+  .map((product) => {
+    const price = publishedPrice(product.price);
+    const regularPrice = publishedPrice(product.regularPrice);
+    return {
+      ...product,
+      name: decodeText(product.name),
+      excerpt: decodeText(product.excerpt),
+      price,
+      regularPrice,
+      onSale: Boolean(product.onSale && price != null && regularPrice != null && price < regularPrice),
+      categories: product.categories.map((category) => ({
+        ...category,
+        name: decodeText(category.name),
+      })),
+    };
+  })
+  .sort((a, b) => a.name.localeCompare(b.name, "mk") || String(a.id).localeCompare(String(b.id)));
 
 const childrenByParent = new Map<string, Category[]>();
 for (const category of categories) {
@@ -75,20 +81,36 @@ for (const category of categories) {
   childrenByParent.set(key, list);
 }
 
-const directProducts = new Map<string, Product[]>();
+const categoryByKey = new Map<string, Category>();
+for (const category of categories) {
+  categoryByKey.set(`${category.source}:${category.id}`, category);
+}
+
+const productsByCategory = new Map<string, Product[]>();
 for (const product of products) {
+  const seen = new Set<number>();
   for (const category of product.categories) {
-    const key = `${product.source}:${category.id}`;
-    const list = directProducts.get(key) ?? [];
-    list.push(product);
-    directProducts.set(key, list);
+    const visited = new Set<number>();
+    let currentId = category.id;
+    while (currentId && !visited.has(currentId)) {
+      visited.add(currentId);
+      if (!seen.has(currentId)) {
+        seen.add(currentId);
+        const key = `${product.source}:${currentId}`;
+        const list = productsByCategory.get(key) ?? [];
+        list.push(product);
+        productsByCategory.set(key, list);
+      }
+      currentId = categoryByKey.get(`${product.source}:${currentId}`)?.parent ?? 0;
+    }
   }
 }
 
-const descendantCache = new Map<string, number[]>();
-const expandedCache = new Map<string, Product[]>();
-
 export function isSource(value: string): value is Source {
+  return value === "treco" || value === "tremark" || value === "its";
+}
+
+export function isCatalogSource(value: string): value is "treco" | "tremark" {
   return value === "treco" || value === "tremark";
 }
 
@@ -96,38 +118,8 @@ function childrenOf(source: Source, parentId: number) {
   return childrenByParent.get(`${source}:${parentId}`) ?? [];
 }
 
-function collectDescendants(source: Source, id: number, seen: Set<number>): number[] {
-  if (seen.has(id)) return [];
-  seen.add(id);
-  const ids = [id];
-  for (const child of childrenOf(source, id)) {
-    ids.push(...collectDescendants(source, child.id, seen));
-  }
-  return ids;
-}
-
-function descendantIds(source: Source, id: number) {
-  const key = `${source}:${id}`;
-  const cached = descendantCache.get(key);
-  if (cached) return cached;
-  const ids = collectDescendants(source, id, new Set());
-  descendantCache.set(key, ids);
-  return ids;
-}
-
 export function productsInCategory(source: Source, id: number) {
-  const key = `${source}:${id}`;
-  const cached = expandedCache.get(key);
-  if (cached) return cached;
-  const merged = new Map<number, Product>();
-  for (const descendantId of descendantIds(source, id)) {
-    for (const product of directProducts.get(`${source}:${descendantId}`) ?? []) {
-      merged.set(product.id, product);
-    }
-  }
-  const list = [...merged.values()].sort((a, b) => a.name.localeCompare(b.name, "mk"));
-  expandedCache.set(key, list);
-  return list;
+  return productsByCategory.get(`${source}:${id}`) ?? [];
 }
 
 function categoryHasProducts(category: Category) {
@@ -161,15 +153,8 @@ export function categoryTrail(category: Category) {
 }
 
 export function searchProducts(query: string, source?: Source) {
-  const terms = query.toLocaleLowerCase("mk").split(/\s+/).filter(Boolean);
-  return products.filter((product) => {
-    if (source && product.source !== source) return false;
-    if (!terms.length) return true;
-    const haystack = `${product.name} ${product.excerpt} ${product.categories
-      .map((category) => category.name)
-      .join(" ")}`.toLocaleLowerCase("mk");
-    return terms.every((term) => haystack.includes(term));
-  });
+  const pool = source ? products.filter((product) => product.source === source) : products;
+  return searchAndRankProducts(pool, query, "mk");
 }
 
 export function featuredProducts(source: Source, limit: number) {
@@ -196,12 +181,14 @@ export function featuredProducts(source: Source, limit: number) {
   return picked;
 }
 
+const catalogCounts = {
+  treco: products.filter((product) => product.source === "treco").length,
+  tremark: products.filter((product) => product.source === "tremark").length,
+  categories: categories.filter(categoryHasProducts).length,
+};
+
 export function counts() {
-  return {
-    treco: products.filter((product) => product.source === "treco").length,
-    tremark: products.filter((product) => product.source === "tremark").length,
-    categories: categories.filter(categoryHasProducts).length,
-  };
+  return catalogCounts;
 }
 
 const trecoGroups: { key: string; title: string; slugs: string[] }[] = [
@@ -287,13 +274,14 @@ function toLink(category: Category, depth: number): MenuLink {
       ? []
       : childrenOf(category.source, category.id)
           .filter(categoryHasProducts)
-          .sort((a, b) => a.name.localeCompare(b.name, "mk"))
           .map((child) => toLink(child, depth - 1));
 
   return {
     name: category.name,
     href: categoryHref(category),
     count: productsInCategory(category.source, category.id).length,
+    source: category.source,
+    slug: category.slug,
     children,
   };
 }
@@ -304,6 +292,8 @@ function toColumn(category: Category): MenuColumn {
     title: link.name,
     href: link.href,
     count: link.count,
+    source: category.source,
+    slug: category.slug,
     children: link.children,
   };
 }
@@ -314,9 +304,9 @@ export function menuGroups(source: Source): MenuGroup[] {
   const cached = menuCache.get(source);
   if (cached) return cached;
 
-  const roots = categories
-    .filter((category) => category.source === source && category.parent === 0 && categoryHasProducts(category))
-    .sort((a, b) => a.name.localeCompare(b.name, "mk"));
+  const roots = categories.filter(
+    (category) => category.source === source && category.parent === 0 && categoryHasProducts(category),
+  );
 
   if (source === "tremark") {
     const homeGroups = [{ key: "home", title: "Дом", columns: roots.map(toColumn) }];

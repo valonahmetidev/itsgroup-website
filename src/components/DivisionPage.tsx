@@ -5,29 +5,24 @@ import { PageHeader } from "@/components/PageHeader";
 import { useLocale } from "@/components/LocaleProvider";
 import { menuGroups, products } from "@/lib/catalog";
 import { countProducts } from "@/lib/format";
+import { useCategoryLabel } from "@/lib/i18n/catalog-labels";
 import { menuGroupTitle } from "@/lib/i18n/menu";
-import { sourceMeta } from "@/lib/site";
 import type { Source } from "@/lib/types";
 
 export function DivisionPage({ source }: { source: Source }) {
   const { dict } = useLocale();
+  const categoryLabel = useCategoryLabel();
   const groups = menuGroups(source);
   const total = products.filter((product) => product.source === source).length;
-  const meta = sourceMeta[source];
   const content =
     source === "treco"
-      ? { eyebrow: "Treco", title: dict.division.trecoTitle, text: dict.division.trecoText }
-      : { eyebrow: "Tremark", title: dict.division.tremarkTitle, text: dict.division.tremarkText };
+      ? { eyebrow: dict.nav.technology, title: dict.division.trecoTitle, text: dict.division.trecoText }
+      : { eyebrow: dict.nav.home, title: dict.division.tremarkTitle, text: dict.division.tremarkText };
 
   return (
     <>
       <PageHeader eyebrow={content.eyebrow} title={content.title} text={content.text} />
-      <div className="shell pb-6 text-sm text-ink/60">
-        {countProducts(total, dict)} ·{" "}
-        <a href={meta.origin} className="font-semibold text-tech">
-          {meta.origin.replace("https://", "")}
-        </a>
-      </div>
+      <div className="shell pb-6 text-sm text-ink/60">{countProducts(total, dict)}</div>
       <div className="shell space-y-12 pb-8">
         {groups.map((group) => (
           <section key={group.key}>
@@ -36,7 +31,7 @@ export function DivisionPage({ source }: { source: Source }) {
               {group.columns.map((column) => (
                 <article key={column.href} className="rounded-3xl border border-ink/10 bg-card p-5">
                   <Link href={column.href} className="font-display text-2xl leading-tight hover:text-tech">
-                    {column.title}
+                    {categoryLabel(column)}
                   </Link>
                   <p className="mt-1 text-sm text-ink/45">{countProducts(column.count, dict)}</p>
                   {column.children.length > 0 && (
@@ -44,7 +39,7 @@ export function DivisionPage({ source }: { source: Source }) {
                       {column.children.map((child) => (
                         <li key={child.href}>
                           <Link href={child.href} className="text-sm hover:text-tech">
-                            {child.name}
+                            {categoryLabel(child)}
                             <span className="ml-2 text-ink/35">{child.count}</span>
                           </Link>
                           {child.children.length > 0 && (

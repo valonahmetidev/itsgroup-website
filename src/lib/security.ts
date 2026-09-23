@@ -7,7 +7,7 @@ function contentSecurityPolicy() {
     "default-src 'self'",
     `script-src ${scriptSrc}`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob: https://treco.mk https://tremark.mk",
+    "img-src 'self' data: blob: https://treco.mk https://www.treco.mk https://tremark.mk https://www.tremark.mk",
     "font-src 'self'",
     "connect-src 'self'",
     "media-src 'self'",
@@ -18,7 +18,6 @@ function contentSecurityPolicy() {
     "form-action 'self'",
     "frame-src 'none'",
     "frame-ancestors 'none'",
-    isDev ? "" : "upgrade-insecure-requests",
   ]
     .filter(Boolean)
     .join("; ");
@@ -26,7 +25,6 @@ function contentSecurityPolicy() {
 
 export const securityHeaders = [
   { key: "Content-Security-Policy", value: contentSecurityPolicy() },
-  { key: "Strict-Transport-Security", value: "max-age=63072000" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -34,6 +32,6 @@ export const securityHeaders = [
   { key: "X-DNS-Prefetch-Control", value: "off" },
   { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
-  { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
+  { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
   { key: "Origin-Agent-Cluster", value: "?1" },
 ];

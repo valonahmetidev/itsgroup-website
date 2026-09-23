@@ -5,7 +5,6 @@ import { securityHeaders } from "./src/lib/security";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  agentRules: false,
   turbopack: {
     root: path.join(__dirname),
   },

@@ -1,23 +1,41 @@
 import { Hero } from "@/components/Hero";
 import { HomeSections } from "@/components/HomeSections";
 import { HomeTicker } from "@/components/HomeTicker";
-import { counts, divisionCategories, featuredProducts, menuGroups, productHref, products } from "@/lib/catalog";
+import { counts, divisionCategories, menuGroups, productHref, products } from "@/lib/catalog";
+import { liveFeaturedProducts, liveStoreProducts } from "@/lib/catalog-live";
+import { getServerI18n } from "@/lib/i18n/server";
 import type { HeroShot } from "@/components/Hero";
 import type { Product } from "@/lib/types";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { locale } = await getServerI18n();
   const totals = counts();
-  const techFeatured = featuredProducts("treco", 8);
-  const homeFeatured = featuredProducts("tremark", 8);
+  const techFeatured = await liveFeaturedProducts("treco", 8, locale);
+  const homeFeatured = await liveFeaturedProducts("tremark", 8, locale);
+  const itsFeatured = await liveStoreProducts(locale, 8);
   const techCategories = divisionCategories("treco").slice(0, 8);
   const homeCategories = divisionCategories("tremark");
   const ticker = menuGroups("treco")
-    .flatMap((group) => group.columns.map((column) => ({ title: column.title, href: column.href })))
-    .concat(homeCategories.map((category) => ({ title: category.title, href: category.href })));
+    .flatMap((group) =>
+      group.columns.map((column) => ({
+        title: column.title,
+        href: column.href,
+        source: column.source,
+        slug: column.slug,
+      })),
+    )
+    .concat(
+      homeCategories.map((category) => ({
+        title: category.title,
+        href: category.href,
+        source: category.source,
+        slug: category.slug,
+      })),
+    );
 
   return (
     <>
-      <div className="flex min-h-[calc(100dvh-4.75rem)] flex-col overflow-hidden">
+      <div className="flex h-[calc(100dvh-4rem)] flex-col overflow-hidden">
         <Hero techCount={totals.treco} homeCount={totals.tremark} shots={heroPool()} />
         <HomeTicker items={ticker} />
       </div>
@@ -25,6 +43,7 @@ export default function HomePage() {
       <HomeSections
         techFeatured={techFeatured}
         homeFeatured={homeFeatured}
+        itsFeatured={itsFeatured}
         techCategories={techCategories}
         homeCategories={homeCategories}
         totals={totals}

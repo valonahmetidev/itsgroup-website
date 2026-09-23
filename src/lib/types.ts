@@ -1,8 +1,12 @@
-export type Source = "treco" | "tremark";
+import type { ProductNames } from "@/lib/product-names";
+import type { ProductUnit } from "@/lib/units";
+
+export type Source = "treco" | "tremark" | "its";
+export type CatalogSource = "treco" | "tremark";
 
 export type Category = {
   id: number;
-  source: Source;
+  source: CatalogSource;
   name: string;
   slug: string;
   parent: number;
@@ -10,9 +14,10 @@ export type Category = {
 };
 
 export type Product = {
-  id: number;
+  id: number | string;
   source: Source;
   name: string;
+  names?: ProductNames;
   slug: string;
   price: number | null;
   regularPrice: number | null;
@@ -23,12 +28,16 @@ export type Product = {
   categories: { id: number; name: string; slug: string }[];
   excerpt: string;
   permalink: string;
+  customerDiscountPercent?: number;
+  unit?: ProductUnit;
 };
 
 export type MenuLink = {
   name: string;
   href: string;
   count: number;
+  source: Source;
+  slug: string;
   children: MenuLink[];
 };
 
@@ -36,6 +45,8 @@ export type MenuColumn = {
   title: string;
   href: string;
   count: number;
+  source: Source;
+  slug: string;
   children: MenuLink[];
 };
 
@@ -45,9 +56,18 @@ export type MenuGroup = {
   columns: MenuColumn[];
 };
 
+export type StockFilter = "all" | "in" | "out";
+export type SaleFilter = "all" | "yes" | "no";
+export type PriceTypeFilter = "all" | "priced" | "on-request";
+
 export type CatalogQuery = {
   q?: string;
   source?: "all" | Source;
   sort?: "name" | "price-asc" | "price-desc";
   page?: number;
+  min?: number;
+  max?: number;
+  stock?: StockFilter;
+  sale?: SaleFilter;
+  priceType?: PriceTypeFilter;
 };

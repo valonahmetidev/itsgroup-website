@@ -21,7 +21,15 @@ export function ContactView() {
             </div>
             <div>
               <dt className="font-semibold text-ink">{dict.contact.email}</dt>
-              <dd>{site.email || dict.contact.pending}</dd>
+              <dd>
+                {site.email ? (
+                  <a href={`mailto:${site.email}`} className="font-medium text-ink hover:text-tech">
+                    {site.email}
+                  </a>
+                ) : (
+                  dict.contact.pending
+                )}
+              </dd>
             </div>
             <div>
               <dt className="font-semibold text-ink">{dict.contact.phone}</dt>

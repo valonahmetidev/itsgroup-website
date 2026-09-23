@@ -2,6 +2,15 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CategoryView } from "@/components/CategoryView";
 import { categories, categoryTrail, getCategory, isSource, productsInCategory } from "@/lib/catalog";
+import { liveProductsInCategory } from "@/lib/catalog-live";
+import {
+  applyCatalogFilters,
+  getPriceBounds,
+  parseCatalogSearchParams,
+  sortCatalogProducts,
+} from "@/lib/catalog-filters";
+import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
+import { getServerI18n, getServerLocale } from "@/lib/i18n/server";
 
 const PAGE_SIZE = 24;
 
@@ -20,7 +29,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { source, id } = await params;
   const category = getCategory(source, Number(id));
-  return { title: category?.name ?? "Category" };
+  if (!category) return { title: "Category" };
+  const locale = await getServerLocale();
+  return { title: categoryDisplayName(category, locale) };
 }
 
 export default async function CategoryPage({
@@ -28,17 +39,20 @@ export default async function CategoryPage({
   searchParams,
 }: {
   params: Promise<{ source: string; id: string }>;
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const { source, id } = await params;
   const category = getCategory(source, Number(id));
   if (!category || !isSource(source)) notFound();
 
-  const page = Math.max(1, Number((await searchParams).page) || 1);
-  const matched = productsInCategory(category.source, category.id);
+  const { locale } = await getServerI18n();
+  const query = parseCatalogSearchParams(await searchParams);
+  const base = await liveProductsInCategory(category.source, category.id, locale);
+  const priceBounds = getPriceBounds(base);
+  const matched = sortCatalogProducts(applyCatalogFilters(base, query), query.sort);
   const pages = Math.max(1, Math.ceil(matched.length / PAGE_SIZE));
-  const current = Math.min(page, pages);
-  const visible = matched.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
+  const page = Math.min(query.page, pages);
+  const visible = matched.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const trail = categoryTrail(category);
   const children = categories.filter(
     (item) => item.source === category.source && item.parent === category.id && productsInCategory(item.source, item.id).length > 0,
@@ -49,10 +63,12 @@ export default async function CategoryPage({
       category={category}
       trail={trail}
       children={children}
+      query={query}
       total={matched.length}
-      page={current}
+      page={page}
       pages={pages}
       visible={visible}
+      priceBounds={priceBounds}
     />
   );
 }

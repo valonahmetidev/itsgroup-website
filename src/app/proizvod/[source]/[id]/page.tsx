@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductView } from "@/components/ProductView";
 import { getCategory, getProduct, products } from "@/lib/catalog";
+import { liveGetProduct, liveProducts } from "@/lib/catalog-live";
+import { getServerI18n } from "@/lib/i18n/server";
 
 export function generateStaticParams() {
   return products.map((product) => ({ source: product.source, id: String(product.id) }));
@@ -14,8 +16,9 @@ export async function generateMetadata({
 }: {
   params: Promise<{ source: string; id: string }>;
 }): Promise<Metadata> {
+  const { locale } = await getServerI18n();
   const { source, id } = await params;
-  const product = getProduct(source, Number(id));
+  const product = await liveGetProduct(source, id, locale);
   return {
     title: product?.name ?? "Product",
     description: product?.excerpt || undefined,
@@ -27,22 +30,26 @@ export default async function ProductPage({
 }: {
   params: Promise<{ source: string; id: string }>;
 }) {
+  const { locale } = await getServerI18n();
   const { source, id } = await params;
-  const product = getProduct(source, Number(id));
+  const base = getProduct(source, Number(id));
+  if (!base) notFound();
+
+  const product = await liveGetProduct(source, id, locale);
   if (!product) notFound();
 
-  const primaryCategory = product.categories[0];
+  const primaryCategory = base.categories[0];
   const category = primaryCategory ? getCategory(product.source, primaryCategory.id) : undefined;
+  const catalog = await liveProducts(locale);
   const relatedPool = primaryCategory
-    ? products.filter(
+    ? catalog.filter(
         (item) =>
           item.source === product.source &&
           item.id !== product.id &&
           item.categories.some((entry) => entry.id === primaryCategory.id),
       )
-    : [];
-  const withImage = relatedPool.filter((item) => item.image);
-  const related = (withImage.length > 0 ? withImage : relatedPool).slice(0, 4);
+    : catalog.filter((item) => item.source === product.source && item.id !== product.id);
+  const related = relatedPool.slice(0, 4);
 
   return <ProductView product={product} category={category} related={related} />;
 }

@@ -1,18 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import { CatalogImage } from "@/components/CatalogImage";
 import { AddButton } from "@/components/Inquiry";
 import { useLocale } from "@/components/LocaleProvider";
+import { customerDivisionLabel, customerDivisionTone } from "@/lib/division-display";
 import { formatPrice, salePercent } from "@/lib/format";
 import { productHref } from "@/lib/catalog";
-import { sourceMeta } from "@/lib/site";
 import type { Product } from "@/lib/types";
 
 export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
   const { dict, locale } = useLocale();
   const href = productHref(product);
   const discount = product.onSale ? salePercent(product.price, product.regularPrice) : null;
-  const meta = sourceMeta[product.source];
+  const tone = customerDivisionTone(product.source);
+  const division = customerDivisionLabel(product.source, locale, dict);
 
   return (
     <article
@@ -21,34 +23,42 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
     >
       <Link href={href} className="relative flex h-48 items-center justify-center overflow-hidden rounded-2xl bg-white">
         {product.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={product.image} alt={product.name} className="h-full w-full object-contain p-4 transition duration-500 group-hover:scale-105" />
+          <CatalogImage src={product.image} alt={product.name} className="h-full w-full object-contain p-4 transition duration-500 group-hover:scale-105" />
         ) : (
-          <span className="font-display text-ink/30">ITS</span>
+          <span className="font-display text-ink/30">{dict.product.placeholderInitials}</span>
         )}
         {discount && (
           <span className="absolute left-3 top-3 rounded-full bg-home px-2 py-1 text-xs font-bold text-white">-{discount}%</span>
         )}
       </Link>
       <div className="flex flex-1 flex-col px-1 pb-1 pt-3">
-        <p className={meta.tone === "tech" ? "text-xs font-semibold text-tech" : "text-xs font-semibold text-home"}>
-          {meta.brand}
-        </p>
+        <div className="flex items-center justify-between gap-2">
+          <p className={tone === "tech" ? "text-xs font-semibold text-tech" : "text-xs font-semibold text-home"}>
+            {division}
+          </p>
+          <p className="text-[11px] text-ink/45">{product.inStock ? dict.product.inStock : dict.product.checkStock}</p>
+        </div>
         <Link href={href} className="mt-1 line-clamp-2 min-h-12 font-medium leading-6 hover:text-tech">
           {product.name}
         </Link>
-        <div className="mt-auto pt-3">
-          <p className="font-display text-lg">{formatPrice(product.price, locale, dict)}</p>
-          {discount && product.regularPrice != null && (
-            <p className="text-sm text-ink/40 line-through">{formatPrice(product.regularPrice, locale, dict)}</p>
+        <div className="mt-auto min-w-0 space-y-2 pt-3">
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <p className="font-display text-lg leading-none">{formatPrice(product.price, locale, dict)}</p>
+            {discount && product.regularPrice != null && (
+              <p className="text-sm text-ink/40 line-through">{formatPrice(product.regularPrice, locale, dict)}</p>
+            )}
+          </div>
+          {product.customerDiscountPercent && (
+            <p className="text-xs font-semibold text-tech">{dict.customer.yourDiscount}</p>
           )}
-          <p className="text-xs text-ink/45">{product.inStock ? dict.product.inStock : dict.product.checkStock}</p>
           <AddButton
             source={product.source}
             id={product.id}
             name={product.name}
             price={product.price}
             image={product.image}
+            unit={product.unit}
+            unitLocked={Boolean(product.unit)}
           />
         </div>
       </div>
