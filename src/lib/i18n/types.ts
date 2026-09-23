@@ -118,7 +118,7 @@ export type Dictionary = {
     sendWhatsApp: string;
     whatsAppInquiryTitle: string;
     whatsAppInquiryIntro: string;
-    whatsAppProformaNote: string;
+    sendingWhatsApp: string;
     customProducts: string;
     customCloudHint: string;
     customLocalHint: string;

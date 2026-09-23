@@ -1,2 +1,2 @@
 export type { ProformaCustomer } from "@/lib/proforma-types";
-export { downloadProformaPdf } from "@/lib/proforma-html";
+export { downloadProformaPdf, generateProformaPdfBlob } from "@/lib/proforma-html";

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { adminListCustomers } from "@/app/admin/actions";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { CustomerAdmin } from "@/components/admin/CustomerAdmin";
 import { getServerI18n } from "@/lib/i18n/server";
 
@@ -13,11 +14,8 @@ export default async function AdminCustomersPage() {
   const customers = await adminListCustomers();
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="font-display text-3xl">{dict.admin.customers}</h2>
-        <p className="mt-2 text-ink/60">{dict.admin.customersText}</p>
-      </div>
+    <div className="space-y-4">
+      <AdminPageHeader title={dict.admin.customers} description={dict.admin.customersText} />
       <CustomerAdmin initial={customers} />
     </div>
   );

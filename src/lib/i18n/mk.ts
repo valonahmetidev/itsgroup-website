@@ -118,7 +118,7 @@ const mk: Dictionary = {
     sendWhatsApp: "Испрати на WhatsApp",
     whatsAppInquiryTitle: "Прашање за производи",
     whatsAppInquiryIntro: "Здраво, заинтересиран/а сум да купам овие производи:",
-    whatsAppProformaNote: "Можам да испратам и проформа PDF документ по потреба.",
+    sendingWhatsApp: "Подготвување на PDF…",
     customProducts: "Сопствени производи",
     customCloudHint: "Производите се зачувани во облакот и достапни за сите.",
     customLocalHint: "Додадете сопствени производи. Ќе се синхронизираат во облакот кога базата ќе биде активна.",

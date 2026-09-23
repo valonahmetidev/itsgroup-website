@@ -11,7 +11,7 @@ import { PRODUCT_UNITS, type ProductUnit, unitLabel } from "@/lib/units";
 import type { ProformaCustomer } from "@/lib/proforma";
 import { productHref } from "@/lib/paths";
 import { site } from "@/lib/site";
-import { buildWhatsAppProformaUrl } from "@/lib/whatsapp";
+import { shareProformaViaWhatsApp } from "@/lib/whatsapp";
 
 // Personalized/custom products are disabled for now.
 // import { createCustomProduct, fetchCustomProducts, removeCustomProduct } from "@/app/actions";
@@ -23,6 +23,7 @@ export function QuoteView() {
   const { dict, locale } = useLocale();
   const { currency, rates, formatPrice } = useCurrency();
   const [customer, setCustomer] = useState<ProformaCustomer>({ name: "", phone: "", email: "", company: "" });
+  const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
 
   const total = items.reduce((sum, item) => sum + (lineTotal(item) ?? 0), 0);
 
@@ -42,19 +43,25 @@ export function QuoteView() {
     });
   }
 
-  function sendWhatsApp() {
-    if (!customer.name.trim() || items.length === 0) return;
-    const url = buildWhatsAppProformaUrl({
-      phoneE164: site.whatsapp,
-      customer,
-      items,
-      locale,
-      dict,
-      siteName: dict.meta.siteName,
-      currency,
-      rates: rates.rates,
-    });
-    window.open(url, "_blank", "noopener,noreferrer");
+  async function sendWhatsApp() {
+    if (!customer.name.trim() || items.length === 0 || sendingWhatsApp) return;
+    setSendingWhatsApp(true);
+    try {
+      await shareProformaViaWhatsApp({
+        phoneE164: site.whatsapp,
+        customer,
+        items,
+        locale,
+        dict,
+        siteName: dict.meta.siteName,
+        sitePhone: site.phone,
+        siteDomain: site.domain,
+        currency,
+        rates: rates.rates,
+      });
+    } finally {
+      setSendingWhatsApp(false);
+    }
   }
 
   return (
@@ -197,11 +204,11 @@ export function QuoteView() {
             </button>
             <button
               type="button"
-              onClick={sendWhatsApp}
-              disabled={!customer.name.trim()}
+              onClick={() => void sendWhatsApp()}
+              disabled={!customer.name.trim() || sendingWhatsApp}
               className="rounded-full border border-ink/10 bg-surface px-5 py-2.5 text-sm font-semibold hover:border-tech hover:text-tech disabled:opacity-40"
             >
-              {dict.quote.sendWhatsApp}
+              {sendingWhatsApp ? dict.quote.sendingWhatsApp : dict.quote.sendWhatsApp}
             </button>
             <button type="button" onClick={clearItems} className="text-sm font-semibold text-ink/50">
               {dict.quote.clear}

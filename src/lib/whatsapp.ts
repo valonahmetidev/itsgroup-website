@@ -3,18 +3,10 @@ import type { Dictionary, Locale } from "@/lib/i18n";
 import type { DisplayCurrency, ExchangeRateSnapshot } from "@/lib/currency";
 import { formatPrice } from "@/lib/format";
 import { formatQuantity } from "@/lib/units";
+import { generateProformaPdfBlob } from "@/lib/proforma-html";
 import type { ProformaCustomer } from "@/lib/proforma-types";
 
-export function buildWhatsAppProformaUrl({
-  phoneE164,
-  customer,
-  items,
-  locale,
-  dict,
-  siteName,
-  currency = "MKD",
-  rates,
-}: {
+type WhatsAppProformaInput = {
   phoneE164: string;
   customer: ProformaCustomer;
   items: InquiryItem[];
@@ -23,7 +15,17 @@ export function buildWhatsAppProformaUrl({
   siteName: string;
   currency?: DisplayCurrency;
   rates?: ExchangeRateSnapshot["rates"];
-}) {
+};
+
+export function buildWhatsAppProformaMessage({
+  customer,
+  items,
+  locale,
+  dict,
+  siteName,
+  currency = "MKD",
+  rates,
+}: Omit<WhatsAppProformaInput, "phoneE164">) {
   const priceLabel = (amount: number | null) => formatPrice(amount, locale, dict, currency, rates);
   const lines = [
     `*${dict.quote.whatsAppInquiryTitle}*`,
@@ -49,8 +51,76 @@ export function buildWhatsAppProformaUrl({
     lines.push(`${index + 1}. ${item.name}${qty} — ${unitLabel} = ${lineLabel}`);
   });
   lines.push("", `*${dict.quote.total}:* ${priceLabel(total > 0 ? total : null)}`);
-  lines.push("", dict.quote.whatsAppProformaNote);
 
-  const digits = phoneE164.replace(/\D/g, "");
-  return `https://wa.me/${digits}?text=${encodeURIComponent(lines.join("\n"))}`;
+  return lines.join("\n");
+}
+
+export function buildWhatsAppProformaUrl(input: WhatsAppProformaInput) {
+  const digits = input.phoneE164.replace(/\D/g, "");
+  const message = buildWhatsAppProformaMessage(input);
+  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+}
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+export async function shareProformaViaWhatsApp({
+  phoneE164,
+  customer,
+  items,
+  locale,
+  dict,
+  siteName,
+  sitePhone,
+  siteDomain,
+  currency = "MKD",
+  rates,
+}: WhatsAppProformaInput & {
+  sitePhone: string;
+  siteDomain: string;
+}) {
+  const message = buildWhatsAppProformaMessage({
+    customer,
+    items,
+    locale,
+    dict,
+    siteName,
+    currency,
+    rates,
+  });
+
+  const { blob, filename } = await generateProformaPdfBlob({
+    customer,
+    items,
+    locale,
+    dict,
+    siteName,
+    sitePhone,
+    siteDomain,
+    currency,
+    rates,
+  });
+
+  const file = new File([blob], filename, { type: "application/pdf" });
+  const shareData = { files: [file], text: message };
+
+  if (typeof navigator !== "undefined" && navigator.share) {
+    if (!navigator.canShare || navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") return;
+      }
+    }
+  }
+
+  downloadBlob(blob, filename);
+  window.open(buildWhatsAppProformaUrl({ phoneE164, customer, items, locale, dict, siteName, currency, rates }), "_blank", "noopener,noreferrer");
 }

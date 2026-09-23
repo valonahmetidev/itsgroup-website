@@ -65,26 +65,26 @@ export function StoreProductForm({ row }: { row?: StoreProductRow }) {
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-2xl space-y-3">
       {row?.id && (
         <Link
           href={productHref({ source: "its", id: row.id })}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-ink/10 bg-surface px-4 py-2 text-sm font-semibold transition hover:border-tech hover:text-tech"
+          className="inline-flex items-center gap-1.5 rounded-full border border-ink/10 bg-surface px-3 py-1.5 text-xs font-semibold transition hover:border-tech hover:text-tech sm:text-sm"
         >
           {dict.admin.viewOnSite}
-          <ExternalLink className="h-4 w-4" />
+          <ExternalLink className="h-3.5 w-3.5" />
         </Link>
       )}
       <form
-        className="space-y-4 rounded-3xl border border-ink/10 bg-card p-6"
+        className="space-y-3 rounded-xl border border-ink/10 bg-card p-4"
         onSubmit={(event) => {
           event.preventDefault();
           void save();
         }}
       >
-        <h3 className="font-display text-xl">{row ? dict.admin.editProduct : dict.admin.addCustom}</h3>
+        <h3 className="font-display text-lg">{row ? dict.admin.editProduct : dict.admin.addCustom}</h3>
         <label className="grid gap-1 text-sm">
           <span>{dict.admin.nameMk}</span>
           <input

@@ -439,17 +439,7 @@ async function waitForLogo(url: string) {
   });
 }
 
-export async function downloadProformaPdf({
-  customer,
-  items,
-  locale,
-  dict,
-  siteName,
-  sitePhone,
-  siteDomain,
-  currency = "MKD",
-  rates,
-}: {
+type ProformaPdfInput = {
   customer: ProformaCustomer;
   items: InquiryItem[];
   locale: Locale;
@@ -459,21 +449,30 @@ export async function downloadProformaPdf({
   siteDomain: string;
   currency?: DisplayCurrency;
   rates?: ExchangeRateSnapshot["rates"];
-}) {
+};
+
+function proformaFilename(customer: ProformaCustomer) {
+  const safeName = customer.name.trim().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-") || "proforma";
+  return `ITS-proforma-${safeName}.pdf`;
+}
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+async function renderProformaPdfElement(input: ProformaPdfInput) {
   const origin = window.location.origin;
   const logoUrl = `${origin}/logo.png`;
   const html = buildProformaHtml({
-    customer,
-    items,
-    locale,
-    dict,
-    siteName,
-    sitePhone,
-    siteDomain,
+    ...input,
     logoUrl,
     assetOrigin: origin,
-    currency,
-    rates,
+    currency: input.currency ?? "MKD",
   });
 
   const host = document.createElement("div");
@@ -498,17 +497,21 @@ export async function downloadProformaPdf({
   }
 
   await Promise.all([waitForFonts(), waitForLogo(logoUrl)]);
+  return { host, element };
+}
 
-  const html2pdf = (await import("html2pdf.js")).default;
-  const safeName = customer.name.trim().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-") || "proforma";
+export async function generateProformaPdfBlob(input: ProformaPdfInput) {
+  const filename = proformaFilename(input.customer);
+  const { host, element } = await renderProformaPdfElement(input);
   const captureWidth = element.scrollWidth;
   const captureHeight = element.scrollHeight;
 
   try {
-    await html2pdf()
+    const html2pdf = (await import("html2pdf.js")).default;
+    const blob = await html2pdf()
       .set({
         margin: 0,
-        filename: `ITS-proforma-${safeName}.pdf`,
+        filename,
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: {
           scale: 2,
@@ -524,8 +527,15 @@ export async function downloadProformaPdf({
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       })
       .from(element)
-      .save();
+      .outputPdf("blob");
+
+    return { blob: blob as Blob, filename };
   } finally {
     document.body.removeChild(host);
   }
+}
+
+export async function downloadProformaPdf(input: ProformaPdfInput) {
+  const { blob, filename } = await generateProformaPdfBlob(input);
+  downloadBlob(blob, filename);
 }

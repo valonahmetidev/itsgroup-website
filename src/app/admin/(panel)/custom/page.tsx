@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { adminListStoreProducts } from "@/app/admin/actions";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { CatalogImage } from "@/components/CatalogImage";
 import { getServerI18n } from "@/lib/i18n/server";
 import { formatPrice } from "@/lib/format";
@@ -15,19 +16,19 @@ export default async function AdminCustomPage() {
   const products = await adminListStoreProducts();
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h2 className="font-display text-3xl">{dict.admin.custom}</h2>
-          <p className="mt-2 text-ink/60">{dict.admin.customText}</p>
-        </div>
-        <Link
-          href="/admin/products/its/new"
-          className="rounded-full bg-tech px-5 py-2.5 text-sm font-semibold text-cream"
-        >
-          {dict.admin.addCustom}
-        </Link>
-      </div>
+    <div className="space-y-4">
+      <AdminPageHeader
+        title={dict.admin.custom}
+        description={dict.admin.customText}
+        actions={
+          <Link
+            href="/admin/products/its/new"
+            className="rounded-full bg-tech px-4 py-1.5 text-sm font-semibold text-cream"
+          >
+            {dict.admin.addCustom}
+          </Link>
+        }
+      />
 
       {products.length === 0 ? (
         <p className="text-ink/60">{dict.admin.noCustom}</p>

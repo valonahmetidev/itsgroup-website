@@ -22,6 +22,8 @@ export type AdminCategoryOption = {
 
 const PAGE_SIZE = 24;
 
+const pillClass = "shrink-0 rounded-full px-2.5 py-1 text-xs font-medium sm:px-3 sm:py-1.5 sm:text-sm";
+
 function categoryKey(category: AdminCategoryOption | null) {
   return category ? `${category.source}:${category.slug}` : "all";
 }
@@ -140,59 +142,55 @@ export function ProductSearch({
   const showSpinner = loading || typing;
 
   return (
-    <div className="space-y-5">
-      <label className="relative block">
-        <span className="sr-only">{dict.admin.search}</span>
-        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/40" />
-        {showSpinner && (
-          <Loader2 className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-ink/35" />
-        )}
-        <input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder={dict.admin.searchPlaceholder}
-          className="w-full rounded-2xl border border-ink/10 bg-surface py-3 pl-11 pr-11 text-sm outline-none transition focus:border-tech"
-        />
-      </label>
-
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => setEditedOnly((current) => !current)}
-          className={cn(
-            "shrink-0 rounded-full px-4 py-2 text-sm font-medium",
-            editedOnly ? "bg-home text-white" : "bg-surface hover:bg-ink/5",
+    <div className="space-y-3">
+      <div className="space-y-2.5 rounded-xl border border-ink/10 bg-card p-3">
+        <label className="relative block">
+          <span className="sr-only">{dict.admin.search}</span>
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/40" />
+          {showSpinner && (
+            <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-ink/35" />
           )}
-        >
-          {dict.admin.overrides}
-        </button>
-      </div>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={dict.admin.searchPlaceholder}
+            className="w-full rounded-xl border border-ink/10 bg-surface py-2 pl-9 pr-9 text-sm outline-none transition focus:border-tech"
+          />
+        </label>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {filters.map((filter) => (
+        <div className="flex flex-wrap items-center gap-1.5">
           <button
-            key={filter.value}
             type="button"
-            onClick={() => {
-              setSource(filter.value);
-              if (category && filter.value !== "all" && category.source !== filter.value) {
-                setCategory(null);
-              }
-            }}
-            className={cn(
-              "shrink-0 rounded-full px-4 py-2 text-sm font-medium",
-              source === filter.value ? "bg-ink text-paper" : "bg-surface hover:bg-ink/5",
-            )}
+            onClick={() => setEditedOnly((current) => !current)}
+            className={cn(pillClass, editedOnly ? "bg-home text-white" : "bg-surface hover:bg-ink/5")}
           >
-            {filter.label}
+            {dict.admin.overrides}
           </button>
-        ))}
-      </div>
+          {filters.map((filter) => (
+            <button
+              key={filter.value}
+              type="button"
+              onClick={() => {
+                setSource(filter.value);
+                if (category && filter.value !== "all" && category.source !== filter.value) {
+                  setCategory(null);
+                }
+              }}
+              className={cn(
+                pillClass,
+                source === filter.value ? "bg-ink text-paper" : "bg-surface hover:bg-ink/5",
+              )}
+            >
+              {filter.label}
+            </button>
+          ))}
+          {!loading && total > 0 && (
+            <span className="ml-auto text-xs text-ink/45">
+              {results.length} / {total}
+            </span>
+          )}
+        </div>
 
-      <div className="space-y-2">
-        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-ink/45">
-          {dict.admin.categoryFilter}
-        </span>
         <AdminCategoryPicker
           categories={categories}
           source={source}
@@ -201,18 +199,12 @@ export function ProductSearch({
         />
       </div>
 
-      {!loading && total > 0 && (
-        <p className="text-sm text-ink/55">
-          {results.length} / {total}
-        </p>
-      )}
-
       {loading ? (
         <p className="text-sm text-ink/55">{dict.admin.loadingProducts}</p>
       ) : results.length === 0 ? (
         <p className="text-sm text-ink/55">{dict.admin.noProducts}</p>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-1 lg:grid-cols-2">
+        <div className="grid gap-2 lg:grid-cols-2">
           {results.map((product) => (
             <AdminProductCard key={`${product.source}-${product.id}`} product={product} />
           ))}

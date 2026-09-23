@@ -21,26 +21,16 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-paper">
-      <header className="border-b border-ink/10 bg-card">
-        <div className="shell flex flex-col gap-4 py-4 sm:py-5">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-tech">{dict.admin.title}</p>
-              <h1 className="font-display text-xl sm:text-2xl">{dict.admin.panel}</h1>
-            </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <AdminLocaleSwitcher />
-              <ThemeToggle className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/10 bg-surface hover:bg-paper" />
-            </div>
-          </div>
-
-          <nav className="flex gap-2 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <header className="sticky top-0 z-20 border-b border-ink/10 bg-card/95 backdrop-blur">
+        <div className="shell flex items-center gap-2 py-2 sm:gap-3">
+          <p className="hidden shrink-0 font-display text-base sm:block">{dict.admin.panel}</p>
+          <nav className="flex min-w-0 flex-1 gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium",
+                  "shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium sm:px-3 sm:text-sm",
                   pathname === link.href ? "bg-ink text-paper" : "bg-surface hover:bg-ink/5",
                 )}
               >
@@ -50,14 +40,18 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <button
               type="button"
               onClick={() => void adminLogout()}
-              className="shrink-0 whitespace-nowrap rounded-full border border-ink/10 px-4 py-2 text-sm font-medium hover:border-home hover:text-home"
+              className="shrink-0 whitespace-nowrap rounded-full border border-ink/10 px-2.5 py-1 text-xs font-medium hover:border-home hover:text-home sm:px-3 sm:text-sm"
             >
               {dict.admin.logout}
             </button>
           </nav>
+          <div className="flex shrink-0 items-center gap-1">
+            <AdminLocaleSwitcher />
+            <ThemeToggle className="flex h-8 w-8 items-center justify-center rounded-full border border-ink/10 bg-surface hover:bg-paper" />
+          </div>
         </div>
       </header>
-      <div className="shell py-6 sm:py-8">{children}</div>
+      <div className="shell py-4 sm:py-5">{children}</div>
     </div>
   );
 }

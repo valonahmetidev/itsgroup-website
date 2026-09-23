@@ -118,7 +118,7 @@ const sq: Dictionary = {
     sendWhatsApp: "Dërgo në WhatsApp",
     whatsAppInquiryTitle: "Pyetje për produkte",
     whatsAppInquiryIntro: "Përshëndetje, jam i/e interesuar të blej këto produkte:",
-    whatsAppProformaNote: "Mund të dërgoj edhe një PDF profaturë nëse është e nevojshme.",
+    sendingWhatsApp: "Duke përgatitur PDF…",
     customProducts: "Produkte të personalizuara",
     customCloudHint: "Produktet ruhen në cloud dhe janë të disponueshme për të gjithë.",
     customLocalHint: "Shtoni produkte të personalizuara. Do të sinkronizohen në cloud kur baza të jetë aktive.",

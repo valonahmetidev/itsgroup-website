@@ -167,25 +167,25 @@ export function CustomerEditForm({
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-3xl">{customer.name}</h2>
-          <p className="mt-1 text-sm text-ink/55">{customer.email}</p>
+          <h2 className="font-display text-xl">{customer.name}</h2>
+          <p className="text-sm text-ink/55">{customer.email}</p>
         </div>
-        <Link href="/admin/customers" className="rounded-full border border-ink/10 px-5 py-2.5 text-sm font-semibold hover:border-tech hover:text-tech">
+        <Link href="/admin/customers" className="rounded-full border border-ink/10 px-4 py-1.5 text-sm font-semibold hover:border-tech hover:text-tech">
           {dict.admin.back}
         </Link>
       </div>
 
-      <div className="flex flex-wrap gap-2 rounded-2xl border border-ink/10 bg-card p-2">
+      <div className="flex flex-wrap gap-1.5 rounded-xl border border-ink/10 bg-card p-1.5">
         {tabs.map((item) => (
           <button
             key={item.id}
             type="button"
             onClick={() => setTab(item.id)}
             className={cn(
-              "rounded-xl px-4 py-2.5 text-sm font-semibold transition",
+              "rounded-lg px-3 py-1.5 text-sm font-semibold transition",
               tab === item.id ? "bg-ink text-paper" : "text-ink/70 hover:bg-surface",
             )}
           >
@@ -201,7 +201,7 @@ export function CustomerEditForm({
 
       {tab === "details" && (
         <form
-          className="max-w-2xl space-y-4 rounded-3xl border border-ink/10 bg-card p-6"
+          className="max-w-2xl space-y-3 rounded-xl border border-ink/10 bg-card p-4"
           onSubmit={(event) => {
             event.preventDefault();
             void saveCustomer();
@@ -232,9 +232,9 @@ export function CustomerEditForm({
       )}
 
       {tab === "discounts" && (
-        <section className="space-y-6 rounded-3xl border border-ink/10 bg-card p-6">
+        <section className="space-y-4 rounded-xl border border-ink/10 bg-card p-4">
           <div>
-            <h3 className="font-display text-xl">{dict.admin.productDiscounts}</h3>
+            <h3 className="font-display text-lg">{dict.admin.productDiscounts}</h3>
             <p className="mt-1 text-sm text-ink/55">
               {discounts.length === 1
                 ? dict.products.one

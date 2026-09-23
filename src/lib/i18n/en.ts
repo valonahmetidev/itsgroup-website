@@ -118,7 +118,7 @@ const en: Dictionary = {
     sendWhatsApp: "Send via WhatsApp",
     whatsAppInquiryTitle: "Product inquiry",
     whatsAppInquiryIntro: "Hello, I'm interested in buying these products:",
-    whatsAppProformaNote: "I can also send a proforma invoice PDF if needed.",
+    sendingWhatsApp: "Preparing PDF…",
     customProducts: "Custom products",
     customCloudHint: "Products are saved in the cloud and available to everyone.",
     customLocalHint: "Add custom products. They will sync to the cloud once the database is active.",

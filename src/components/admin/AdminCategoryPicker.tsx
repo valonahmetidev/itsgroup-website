@@ -87,7 +87,7 @@ export function AdminCategoryPicker({
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className="flex w-full items-center justify-between gap-3 rounded-2xl border border-ink/10 bg-surface px-4 py-3 text-left text-sm outline-none transition focus:border-tech"
+        className="flex w-full items-center justify-between gap-2 rounded-xl border border-ink/10 bg-surface px-3 py-2 text-left text-sm outline-none transition focus:border-tech"
         aria-expanded={open}
         aria-haspopup="listbox"
       >
