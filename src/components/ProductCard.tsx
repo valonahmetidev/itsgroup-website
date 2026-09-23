@@ -7,6 +7,7 @@ import { useCurrency } from "@/components/CurrencyProvider";
 import { useLocale } from "@/components/LocaleProvider";
 import { customerDivisionLabel, customerDivisionTone } from "@/lib/division-display";
 import { salePercent } from "@/lib/format";
+import { stockAvailabilityLabel } from "@/lib/stock-label";
 import { productHref } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import type { Product } from "@/lib/types";
@@ -40,7 +41,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
             {division}
           </p>
           <p className="text-[11px] leading-snug text-ink/45">
-            {product.inStock ? dict.product.inStock : dict.product.checkStock}
+            {stockAvailabilityLabel(product, dict)}
           </p>
         </div>
         <Link href={href} className="mt-1 line-clamp-2 min-h-12 font-medium leading-6 hover:text-tech">

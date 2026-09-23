@@ -25,6 +25,7 @@ export type Product = {
   currency: string;
   image: string | null;
   inStock: boolean;
+  stockQuantity?: number | null;
   categories: { id: number; name: string; slug: string }[];
   excerpt: string;
   permalink: string;

@@ -225,7 +225,7 @@ export function SearchBox({
                 placeholder={dict.search.placeholder}
                 autoComplete="off"
                 spellCheck={false}
-                className="min-w-0 flex-1 border-0 bg-transparent py-2 text-base outline-none sm:text-sm"
+                className="search-field min-w-0 flex-1 border-0 bg-transparent py-2 text-base outline-none focus:outline-none focus-visible:outline-none sm:text-sm"
               />
               {loading && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-ink/35" />}
               <button
@@ -299,7 +299,7 @@ export function SearchBox({
   return (
     <form ref={formRef} className="relative" onSubmit={submitSearch}>
       <label className="sr-only" htmlFor="catalog-search">{dict.search.label}</label>
-      <div className="flex items-center gap-2 rounded-full border border-ink/10 bg-surface px-3 py-1.5 transition focus-within:border-tech/50 focus-within:ring-2 focus-within:ring-tech/15">
+      <div className="flex items-center gap-2 rounded-full border border-ink/10 bg-surface px-3 py-1.5 transition focus-within:border-tech/40">
         <Search className="h-4 w-4 shrink-0 text-ink/40" />
         <input
           ref={inputRef}
@@ -317,7 +317,7 @@ export function SearchBox({
           placeholder={dict.search.placeholder}
           autoComplete="off"
           spellCheck={false}
-          className="min-w-0 flex-1 border-0 bg-transparent py-1 text-sm outline-none"
+          className="search-field min-w-0 flex-1 border-0 bg-transparent py-1 text-sm outline-none focus:outline-none focus-visible:outline-none"
         />
         {loading && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-ink/35" />}
         {query && (

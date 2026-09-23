@@ -86,6 +86,7 @@ const mk: Dictionary = {
   },
   product: {
     inStock: "На залиха",
+    inStockCount: "{count} на залиха",
     checkStock: "Проверете достапност",
     addToQuote: "Додај во понуда",
     inQuote: "Во понудата",
@@ -185,6 +186,9 @@ const mk: Dictionary = {
     label: "Страници",
     prev: "Претходна",
     next: "Следна",
+    pageOf: "Страница {page} од {pages}",
+    goToPage: "Оди на страница",
+    go: "Оди",
   },
   notFound: {
     title: "Оваа страница не постои.",
@@ -226,6 +230,7 @@ const mk: Dictionary = {
     regularPrice: "Редовна цена (MKD)",
     stock: "Залиха",
     stockDefault: "Како во каталогот",
+    stockHint: "Оставете празно за вредност од каталогот. Внесете 0 ако нема на залиха.",
     unit: "Мерна единица",
     unitDefault: "Не е поставена (клиентот може да избере)",
     hideProduct: "Сокриј од јавниот каталог",

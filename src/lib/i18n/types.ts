@@ -86,6 +86,7 @@ export type Dictionary = {
   };
   product: {
     inStock: string;
+    inStockCount: string;
     checkStock: string;
     addToQuote: string;
     inQuote: string;
@@ -179,6 +180,9 @@ export type Dictionary = {
     label: string;
     prev: string;
     next: string;
+    pageOf: string;
+    goToPage: string;
+    go: string;
   };
   notFound: {
     title: string;
@@ -213,6 +217,7 @@ export type Dictionary = {
     regularPrice: string;
     stock: string;
     stockDefault: string;
+    stockHint: string;
     unit: string;
     unitDefault: string;
     hideProduct: string;

@@ -9,9 +9,13 @@ import { UnitSelectField } from "@/components/admin/UnitSelectField";
 import { useLocale } from "@/components/LocaleProvider";
 import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
 import { formatPrice } from "@/lib/format";
+import { stockAvailabilityLabel } from "@/lib/stock-label";
 import { catalogSourceName, sourceLabels } from "@/lib/source-labels";
 import type { ProductOverrideRow } from "@/lib/catalog-overrides";
 import type { CatalogSource, Product } from "@/lib/types";
+
+const fieldClass =
+  "rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech focus:outline-none focus-visible:outline-none";
 
 export function ProductEditForm({
   product,
@@ -30,12 +34,8 @@ export function ProductEditForm({
   const [regularPrice, setRegularPrice] = useState(
     override?.regular_price?.toString() ?? product.regularPrice?.toString() ?? "",
   );
-  const [inStock, setInStock] = useState<"default" | "yes" | "no">(
-    override?.in_stock === null || override?.in_stock === undefined
-      ? "default"
-      : override.in_stock === 1
-        ? "yes"
-        : "no",
+  const [stock, setStock] = useState(
+    override?.in_stock === null || override?.in_stock === undefined ? "" : String(override.in_stock),
   );
   const [hidden, setHidden] = useState(Boolean(override?.hidden));
   const [unit, setUnit] = useState(override?.unit ?? "");
@@ -53,7 +53,7 @@ export function ProductEditForm({
       imageUrl,
       price,
       regularPrice,
-      inStock,
+      stock,
       hidden,
       unit,
       reset,
@@ -78,77 +78,70 @@ export function ProductEditForm({
   const previewImage = imageUrl || product.image;
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <div className="rounded-3xl border border-ink/10 bg-card p-6">
-        <div className="flex flex-wrap items-start gap-4">
-          {previewImage && (
-            <div className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white">
-              <CatalogImage src={previewImage} alt={product.name} className="h-full w-full object-contain p-2" />
-            </div>
-          )}
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span
-                className={
-                  product.source === "treco"
-                    ? "rounded-full bg-tech/15 px-2.5 py-1 text-xs font-semibold text-tech"
-                    : "rounded-full bg-home/15 px-2.5 py-1 text-xs font-semibold text-home"
-                }
-              >
-                {catalogSourceName(product.source)}
-              </span>
-              <span className="text-xs text-ink/50">{division.mk} · {division.sq}</span>
-            </div>
-            <p className="mt-3 text-sm text-ink/55">{dict.admin.catalogOriginal}</p>
-            <h2 className="mt-1 font-display text-2xl">{product.name}</h2>
-            {categoryMk && categorySq && (
-              <p className="mt-2 text-sm text-ink/60">
-                <span className="font-medium">{dict.admin.langMk}:</span> {categoryMk}
-                <span className="mx-2 text-ink/25">·</span>
-                <span className="font-medium">{dict.admin.langSq}:</span> {categorySq}
-              </p>
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] xl:items-start">
+      <aside className="space-y-4 xl:sticky xl:top-20">
+        <div className="rounded-3xl border border-ink/10 bg-card p-5">
+          <div className="flex h-44 items-center justify-center overflow-hidden rounded-2xl bg-white">
+            {previewImage ? (
+              <CatalogImage src={previewImage} alt={product.name} className="max-h-full max-w-full object-contain p-3" />
+            ) : (
+              <span className="font-display text-ink/25">ITS</span>
             )}
-            <p className="mt-2 text-sm text-ink/60">
-              {formatPrice(product.price, locale, dict)} · {product.inStock ? dict.product.inStock : dict.product.checkStock}
-            </p>
           </div>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span
+              className={
+                product.source === "treco"
+                  ? "rounded-full bg-tech/15 px-2.5 py-1 text-xs font-semibold text-tech"
+                  : "rounded-full bg-home/15 px-2.5 py-1 text-xs font-semibold text-home"
+              }
+            >
+              {catalogSourceName(product.source)}
+            </span>
+            <span className="text-xs text-ink/50">{division.mk} · {division.sq}</span>
+          </div>
+          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-ink/45">
+            {dict.admin.catalogOriginal}
+          </p>
+          <h2 className="mt-1 font-display text-xl leading-snug">{product.name}</h2>
+          {categoryMk && categorySq && (
+            <p className="mt-2 text-sm text-ink/60">
+              <span className="font-medium">{dict.admin.langMk}:</span> {categoryMk}
+              <span className="mx-2 text-ink/25">·</span>
+              <span className="font-medium">{dict.admin.langSq}:</span> {categorySq}
+            </p>
+          )}
+          <p className="mt-2 text-sm text-ink/60">
+            {formatPrice(product.price, locale, dict)} · {stockAvailabilityLabel(product, dict)}
+          </p>
         </div>
-      </div>
+      </aside>
 
       <form
-        className="space-y-4 rounded-3xl border border-ink/10 bg-card p-6"
+        className="rounded-3xl border border-ink/10 bg-card p-5 sm:p-6"
         onSubmit={(event) => {
           event.preventDefault();
           void save(false);
         }}
       >
         <h3 className="font-display text-xl">{dict.admin.editProduct}</h3>
-        <label className="grid gap-1 text-sm">
-          <span>{dict.admin.nameMk}</span>
-          <input
-            value={nameMk}
-            onChange={(event) => setNameMk(event.target.value)}
-            className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech"
-          />
-        </label>
-        <label className="grid gap-1 text-sm">
-          <span>{dict.admin.nameEn}</span>
-          <input
-            value={nameEn}
-            onChange={(event) => setNameEn(event.target.value)}
-            className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech"
-          />
-        </label>
-        <label className="grid gap-1 text-sm">
-          <span>{dict.admin.nameSq}</span>
-          <input
-            value={nameSq}
-            onChange={(event) => setNameSq(event.target.value)}
-            className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech"
-          />
-        </label>
-        <ImageUploadField value={imageUrl} onChange={setImageUrl} alt={nameMk || product.name} />
-        <div className="grid gap-4 sm:grid-cols-2">
+
+        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+          <label className="grid gap-1 text-sm lg:col-span-2">
+            <span>{dict.admin.nameMk}</span>
+            <input value={nameMk} onChange={(event) => setNameMk(event.target.value)} className={fieldClass} />
+          </label>
+          <label className="grid gap-1 text-sm">
+            <span>{dict.admin.nameEn}</span>
+            <input value={nameEn} onChange={(event) => setNameEn(event.target.value)} className={fieldClass} />
+          </label>
+          <label className="grid gap-1 text-sm">
+            <span>{dict.admin.nameSq}</span>
+            <input value={nameSq} onChange={(event) => setNameSq(event.target.value)} className={fieldClass} />
+          </label>
+          <div className="lg:col-span-2">
+            <ImageUploadField value={imageUrl} onChange={setImageUrl} alt={nameMk || product.name} />
+          </div>
           <label className="grid gap-1 text-sm">
             <span>{dict.admin.price}</span>
             <input
@@ -156,7 +149,7 @@ export function ProductEditForm({
               min={0}
               value={price}
               onChange={(event) => setPrice(event.target.value)}
-              className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech"
+              className={fieldClass}
             />
           </label>
           <label className="grid gap-1 text-sm">
@@ -166,28 +159,30 @@ export function ProductEditForm({
               min={0}
               value={regularPrice}
               onChange={(event) => setRegularPrice(event.target.value)}
-              className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech"
+              className={fieldClass}
             />
           </label>
+          <label className="grid gap-1 text-sm">
+            <span>{dict.admin.stock}</span>
+            <input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              value={stock}
+              onChange={(event) => setStock(event.target.value)}
+              placeholder={dict.admin.stockDefault}
+              className={fieldClass}
+            />
+            <span className="text-xs text-ink/50">{dict.admin.stockHint}</span>
+          </label>
+          <UnitSelectField value={unit} onChange={setUnit} />
+          <label className="flex items-center gap-2 text-sm lg:col-span-2">
+            <input type="checkbox" checked={hidden} onChange={(event) => setHidden(event.target.checked)} />
+            <span>{dict.admin.hideProduct}</span>
+          </label>
         </div>
-        <UnitSelectField value={unit} onChange={setUnit} />
-        <label className="grid gap-1 text-sm">
-          <span>{dict.admin.stock}</span>
-          <select
-            value={inStock}
-            onChange={(event) => setInStock(event.target.value as "default" | "yes" | "no")}
-            className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech"
-          >
-            <option value="default">{dict.admin.stockDefault}</option>
-            <option value="yes">{dict.product.inStock}</option>
-            <option value="no">{dict.product.checkStock}</option>
-          </select>
-        </label>
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={hidden} onChange={(event) => setHidden(event.target.checked)} />
-          <span>{dict.admin.hideProduct}</span>
-        </label>
-        <div className="flex flex-wrap gap-3 pt-2">
+
+        <div className="mt-6 flex flex-wrap gap-3 border-t border-ink/10 pt-5">
           <button
             type="submit"
             disabled={loading}
@@ -204,7 +199,7 @@ export function ProductEditForm({
             {dict.admin.resetOverride}
           </button>
         </div>
-        {status && <p className="text-sm text-tech">{status}</p>}
+        {status && <p className="mt-3 text-sm text-tech">{status}</p>}
       </form>
     </div>
   );

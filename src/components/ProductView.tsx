@@ -9,6 +9,7 @@ import { useLocale } from "@/components/LocaleProvider";
 import { categoryHref } from "@/lib/catalog";
 import { customerDivisionLabel, customerDivisionTone } from "@/lib/division-display";
 import { salePercent } from "@/lib/format";
+import { stockAvailabilityLabel } from "@/lib/stock-label";
 import { useCategoryLabel } from "@/lib/i18n/catalog-labels";
 import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
 import type { Category, Product } from "@/lib/types";
@@ -70,7 +71,7 @@ export function ProductView({
             {product.customerDiscountPercent && (
               <p className="mt-2 text-sm font-semibold text-tech">{dict.customer.yourDiscount}</p>
             )}
-            <p className="mt-2 text-sm text-ink/55">{product.inStock ? dict.product.inStock : dict.product.checkStock}</p>
+            <p className="mt-2 text-sm text-ink/55">{stockAvailabilityLabel(product, dict)}</p>
             <div className="mt-5">
               <AddButton
                 variant="detail"

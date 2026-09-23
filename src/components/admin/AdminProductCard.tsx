@@ -5,6 +5,7 @@ import { CatalogImage } from "@/components/CatalogImage";
 import { useLocale } from "@/components/LocaleProvider";
 import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
 import { formatPrice } from "@/lib/format";
+import { stockAvailabilityLabel } from "@/lib/stock-label";
 import { catalogSourceName, sourceLabels } from "@/lib/source-labels";
 import type { AdminProductListItem } from "@/app/admin/actions";
 
@@ -56,7 +57,7 @@ export function AdminProductCard({ product }: { product: AdminProductListItem })
           </p>
         )}
         <p className="mt-2 text-sm text-ink/55">
-          {formatPrice(product.price, locale, dict)} · {product.inStock ? dict.product.inStock : dict.product.checkStock}
+          {formatPrice(product.price, locale, dict)} · {stockAvailabilityLabel(product, dict)}
         </p>
       </div>
     </Link>

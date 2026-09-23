@@ -89,7 +89,7 @@ export async function upsertProductOverride(
     imageUrl: string | null;
     price: number | null;
     regularPrice: number | null;
-    inStock: boolean | null;
+    stockQuantity: number | null;
     hidden: boolean;
     unit: ProductUnit | null;
   },
@@ -122,7 +122,7 @@ export async function upsertProductOverride(
       input.imageUrl,
       input.price,
       input.regularPrice,
-      input.inStock === null ? null : input.inStock ? 1 : 0,
+      input.stockQuantity,
       input.hidden ? 1 : 0,
       input.unit,
       new Date().toISOString(),
@@ -159,7 +159,8 @@ export function applyProductOverride(
     price,
     regularPrice,
     onSale,
-    inStock: override.in_stock === null ? product.inStock : override.in_stock === 1,
+    inStock: override.in_stock === null ? product.inStock : override.in_stock > 0,
+    stockQuantity: override.in_stock === null ? product.stockQuantity : override.in_stock,
     unit,
   };
 }

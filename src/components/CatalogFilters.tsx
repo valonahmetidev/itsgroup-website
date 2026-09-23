@@ -72,7 +72,7 @@ function CatalogFilterFields({
   const { dict } = useLocale();
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {showSource && (
         <FilterPills
           label={dict.catalog.sourceLabel}
@@ -326,9 +326,14 @@ export function CatalogFilters({
         </div>
       </details>
 
-      <aside className={cn("hidden lg:sticky lg:top-20 lg:block", hideDesktopSidebar && "lg:hidden")}>
-        <div className="space-y-5 rounded-3xl border border-ink/10 bg-card p-6 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+      <aside
+        className={cn(
+          "hidden lg:sticky lg:top-20 lg:block lg:max-h-[calc(100dvh-6rem)] lg:self-start",
+          hideDesktopSidebar && "lg:hidden",
+        )}
+      >
+        <div className="flex max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-3xl border border-ink/10 bg-card shadow-sm">
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-ink/10 px-5 py-4">
             <h2 className="font-display text-xl">{dict.catalog.filters}</h2>
             {active && (
               <Link href={clearHref} className="text-sm font-semibold text-tech">
@@ -336,7 +341,9 @@ export function CatalogFilters({
               </Link>
             )}
           </div>
-          {fields}
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-5">
+            {fields}
+          </div>
         </div>
       </aside>
     </>

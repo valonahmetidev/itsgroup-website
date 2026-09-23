@@ -86,6 +86,7 @@ const en: Dictionary = {
   },
   product: {
     inStock: "In stock",
+    inStockCount: "{count} in stock",
     checkStock: "Check availability",
     addToQuote: "Add to quote",
     inQuote: "In quote",
@@ -185,6 +186,9 @@ const en: Dictionary = {
     label: "Pages",
     prev: "Previous",
     next: "Next",
+    pageOf: "Page {page} of {pages}",
+    goToPage: "Go to page",
+    go: "Go",
   },
   notFound: {
     title: "This page does not exist.",
@@ -226,6 +230,7 @@ const en: Dictionary = {
     regularPrice: "Regular price (MKD)",
     stock: "Stock",
     stockDefault: "Same as catalog",
+    stockHint: "Leave empty to use the catalog value. Enter 0 for out of stock.",
     unit: "Unit of measure",
     unitDefault: "Not set (customer can choose)",
     hideProduct: "Hide from public catalog",

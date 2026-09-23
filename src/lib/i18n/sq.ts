@@ -86,6 +86,7 @@ const sq: Dictionary = {
   },
   product: {
     inStock: "Në stok",
+    inStockCount: "{count} në stok",
     checkStock: "Kontrolloni disponueshmërinë",
     addToQuote: "Shto në ofertë",
     inQuote: "Në ofertë",
@@ -185,6 +186,9 @@ const sq: Dictionary = {
     label: "Faqet",
     prev: "E mëparshme",
     next: "Tjetra",
+    pageOf: "Faqja {page} nga {pages}",
+    goToPage: "Shko te faqja",
+    go: "Shko",
   },
   notFound: {
     title: "Kjo faqe nuk ekziston.",
@@ -226,6 +230,7 @@ const sq: Dictionary = {
     regularPrice: "Çmimi i rregullt (MKD)",
     stock: "Stoku",
     stockDefault: "Si në katalog",
+    stockHint: "Lëreni bosh për vlerën e katalogut. Vendosni 0 nëse nuk ka stok.",
     unit: "Njësia matëse",
     unitDefault: "Pa caktuar (klienti mund të zgjedhë)",
     hideProduct: "Fshih nga katalogu publik",

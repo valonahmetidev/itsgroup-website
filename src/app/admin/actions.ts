@@ -44,6 +44,7 @@ export type AdminProductListItem = {
   name: string;
   price: number | null;
   inStock: boolean;
+  stockQuantity?: number | null;
   image: string | null;
   category: { source: CatalogSource; slug: string; name: string } | null;
 };
@@ -150,6 +151,7 @@ function toAdminCatalogItem(product: Product, effective?: Product | null): Admin
     name: display.name,
     price: display.price,
     inStock: display.inStock,
+    stockQuantity: display.stockQuantity,
     image: display.image,
     category: category
       ? { source: product.source as CatalogSource, slug: category.slug, name: category.name }
@@ -299,7 +301,7 @@ export async function adminSaveProduct(input: {
   imageUrl: string;
   price: string;
   regularPrice: string;
-  inStock: "default" | "yes" | "no";
+  stock: string;
   hidden: boolean;
   unit: string;
   reset: boolean;
@@ -315,7 +317,13 @@ export async function adminSaveProduct(input: {
 
   const price = input.price.trim() ? Math.max(0, Math.round(Number(input.price))) : null;
   const regularPrice = input.regularPrice.trim() ? Math.max(0, Math.round(Number(input.regularPrice))) : null;
-  const inStock = input.inStock === "default" ? null : input.inStock === "yes";
+  const stockTrimmed = input.stock.trim();
+  const stockQuantity =
+    stockTrimmed === ""
+      ? null
+      : Number.isFinite(Number(stockTrimmed))
+        ? Math.max(0, Math.round(Number(stockTrimmed)))
+        : null;
   const nameMk = input.nameMk.trim() || null;
   const nameEn = input.nameEn.trim() || null;
   const nameSq = input.nameSq.trim() || null;
@@ -330,7 +338,7 @@ export async function adminSaveProduct(input: {
     imageUrl,
     price: Number.isFinite(price) ? price : null,
     regularPrice: Number.isFinite(regularPrice) ? regularPrice : null,
-    inStock,
+    stockQuantity,
     hidden: input.hidden,
     unit: parseAdminUnit(input.unit),
   });
