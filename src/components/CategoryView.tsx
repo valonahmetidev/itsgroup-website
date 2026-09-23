@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CatalogFilters } from "@/components/CatalogFilters";
-import { Pagination } from "@/components/Pagination";
-import { ProductGrid } from "@/components/ProductCard";
+import { CatalogProductsSection } from "@/components/CatalogProductsSection";
 import { useLocale } from "@/components/LocaleProvider";
 import { categoryHref } from "@/lib/catalog";
 import { categoryCatalogHref, countProducts } from "@/lib/format";
@@ -65,22 +63,16 @@ export function CategoryView({
           ))}
         </div>
       )}
-      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start">
-        <CatalogFilters
-          query={query}
-          priceBounds={priceBounds}
-          showSource={false}
-          hrefFor={(next) => categoryCatalogHref(category, { ...query, ...next })}
-        />
-        <div>
-          <ProductGrid products={visible} />
-          <Pagination
-            page={page}
-            pages={pages}
-            hrefFor={(nextPage) => categoryCatalogHref(category, { ...query, page: nextPage })}
-          />
-        </div>
-      </div>
+      <CatalogProductsSection
+        className="mt-8"
+        query={query}
+        priceBounds={priceBounds}
+        showSource={false}
+        hrefFor={(next) => categoryCatalogHref(category, { ...query, ...next })}
+        page={page}
+        pages={pages}
+        visible={visible}
+      />
     </div>
   );
 }

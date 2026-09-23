@@ -60,6 +60,8 @@ export type Dictionary = {
     sortPriceDesc: string;
     noProducts: string;
     filters: string;
+    showFilters: string;
+    hideFilters: string;
     clearFilters: string;
     sourceLabel: string;
     sortLabel: string;

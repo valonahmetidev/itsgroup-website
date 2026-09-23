@@ -49,6 +49,8 @@ const en: Dictionary = {
     sortPriceDesc: "Price ↓",
     noProducts: "No products match your filters.",
     filters: "Filters",
+    showFilters: "Show filters",
+    hideFilters: "Hide filters",
     clearFilters: "Clear filters",
     sourceLabel: "Catalog",
     sortLabel: "Sort by",

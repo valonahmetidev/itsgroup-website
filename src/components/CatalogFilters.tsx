@@ -172,11 +172,13 @@ export function CatalogFilters({
   hrefFor,
   priceBounds,
   showSource = true,
+  hideDesktopSidebar = false,
 }: {
   query: ParsedCatalogQuery;
   hrefFor: (next: Partial<ParsedCatalogQuery>) => string;
   priceBounds: { min: number; max: number } | null;
   showSource?: boolean;
+  hideDesktopSidebar?: boolean;
 }) {
   const router = useRouter();
   const { dict } = useLocale();
@@ -244,7 +246,7 @@ export function CatalogFilters({
         </div>
       </details>
 
-      <aside className="hidden lg:sticky lg:top-20 lg:block">
+      <aside className={cn("hidden lg:sticky lg:top-20 lg:block", hideDesktopSidebar && "lg:hidden")}>
         <div className="space-y-5 rounded-3xl border border-ink/10 bg-card p-6 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-display text-xl">{dict.catalog.filters}</h2>

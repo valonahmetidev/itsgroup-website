@@ -49,6 +49,8 @@ const sq: Dictionary = {
     sortPriceDesc: "Çmimi ↓",
     noProducts: "Nuk ka produkte për filtrat e zgjedhur.",
     filters: "Filtrat",
+    showFilters: "Shfaq filtrat",
+    hideFilters: "Fshih filtrat",
     clearFilters: "Pastro filtrat",
     sourceLabel: "Katalogu",
     sortLabel: "Rendit sipas",

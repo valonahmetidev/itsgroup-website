@@ -7,6 +7,7 @@ import { useLocale } from "@/components/LocaleProvider";
 import { customerDivisionLabel, customerDivisionTone } from "@/lib/division-display";
 import { formatPrice, salePercent } from "@/lib/format";
 import { productHref } from "@/lib/catalog";
+import { cn } from "@/lib/cn";
 import type { Product } from "@/lib/types";
 
 export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
@@ -66,7 +67,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
   );
 }
 
-export function ProductGrid({ products }: { products: Product[] }) {
+export function ProductGrid({ products, wide = false }: { products: Product[]; wide?: boolean }) {
   const { dict } = useLocale();
 
   if (products.length === 0) {
@@ -74,7 +75,12 @@ export function ProductGrid({ products }: { products: Product[] }) {
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div
+      className={cn(
+        "grid gap-4 sm:grid-cols-2",
+        wide ? "lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "lg:grid-cols-3 xl:grid-cols-4",
+      )}
+    >
       {products.map((product, index) => (
         <ProductCard key={`${product.source}-${product.id}`} product={product} index={index} />
       ))}

@@ -49,6 +49,8 @@ const mk: Dictionary = {
     sortPriceDesc: "Цена ↓",
     noProducts: "Нема производи за избраните филтри.",
     filters: "Филтри",
+    showFilters: "Прикажи филтри",
+    hideFilters: "Сокриј филтри",
     clearFilters: "Исчисти ги филтрите",
     sourceLabel: "Каталог",
     sortLabel: "Подреди по",
