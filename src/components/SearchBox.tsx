@@ -51,7 +51,7 @@ export function SearchBox({
   }, [expanded]);
 
   useEffect(() => {
-    if (!expanded || onAdmin) {
+    if (!expandable || !expanded || onAdmin) {
       document.body.style.removeProperty("overflow");
       return;
     }
@@ -59,17 +59,16 @@ export function SearchBox({
     return () => {
       document.body.style.removeProperty("overflow");
     };
-  }, [expanded, onAdmin]);
+  }, [expanded, expandable, onAdmin]);
 
   useEffect(() => {
-    if (!onAdmin || !expandable) return;
-    setExpanded(false);
+    setExpanded(expandable ? false : true);
     setQuery("");
     setResults([]);
     setOpen(false);
     setActiveIndex(-1);
     document.body.style.removeProperty("overflow");
-  }, [onAdmin, expandable]);
+  }, [pathname, expandable]);
 
   useEffect(() => {
     const cleaned = query.trim();
