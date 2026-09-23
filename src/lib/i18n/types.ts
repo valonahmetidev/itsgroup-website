@@ -273,5 +273,7 @@ export type Dictionary = {
     customersCount: string;
     allCategories: string;
     categoryFilter: string;
+    searchCategoryPlaceholder: string;
+    noCategories: string;
   };
 };

@@ -1,14 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2, Search } from "lucide-react";
 import { adminBrowseProducts, adminSearchProducts, type AdminCategoryFilter } from "@/app/admin/actions";
 import type { AdminProductListItem } from "@/app/admin/actions";
+import { AdminCategoryPicker } from "@/components/admin/AdminCategoryPicker";
 import { AdminProductCard } from "@/components/admin/AdminProductCard";
 import { useLocale } from "@/components/LocaleProvider";
-import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
 import { cn } from "@/lib/cn";
-import { catalogSourceName } from "@/lib/source-labels";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import type { Source } from "@/lib/types";
 
@@ -31,7 +30,7 @@ function toCategoryFilter(item: AdminCategoryOption | null): AdminCategoryFilter
 }
 
 export function ProductSearch({ categories }: { categories: AdminCategoryOption[] }) {
-  const { dict, locale } = useLocale();
+  const { dict } = useLocale();
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query, 320);
   const [source, setSource] = useState<SourceFilter>("all");
@@ -49,21 +48,6 @@ export function ProductSearch({ categories }: { categories: AdminCategoryOption[
 
   const selectedCategoryKey = categoryKey(category);
   const typing = query.trim() !== debouncedQuery.trim();
-
-  const visibleCategories = useMemo(
-    () => categories.filter((item) => source === "all" || item.source === source),
-    [categories, source],
-  );
-
-  const groupedCategories = useMemo(() => {
-    const groups = new Map<Source, AdminCategoryOption[]>();
-    for (const item of visibleCategories) {
-      const list = groups.get(item.source) ?? [];
-      list.push(item);
-      groups.set(item.source, list);
-    }
-    return groups;
-  }, [visibleCategories]);
 
   const loadPage = useCallback(
     async (
@@ -168,45 +152,17 @@ export function ProductSearch({ categories }: { categories: AdminCategoryOption[
         ))}
       </div>
 
-      <label className="block space-y-2">
+      <div className="space-y-2">
         <span className="text-xs font-semibold uppercase tracking-[0.14em] text-ink/45">
           {dict.admin.categoryFilter}
         </span>
-        <select
-          value={selectedCategoryKey}
-          onChange={(event) => {
-            const key = event.target.value;
-            if (key === "all") {
-              setCategory(null);
-              return;
-            }
-            const match = visibleCategories.find((item) => categoryKey(item) === key);
-            setCategory(match ?? null);
-          }}
-          className="w-full rounded-2xl border border-ink/10 bg-surface px-4 py-3 text-sm outline-none transition focus:border-tech"
-        >
-          <option value="all">{dict.admin.allCategories}</option>
-          {source === "all"
-            ? (["treco", "tremark", "its"] as Source[]).map((groupSource) => {
-                const items = groupedCategories.get(groupSource);
-                if (!items?.length) return null;
-                return (
-                  <optgroup key={groupSource} label={catalogSourceName(groupSource)}>
-                    {items.map((item) => (
-                      <option key={categoryKey(item)} value={categoryKey(item)}>
-                        {categoryDisplayName(item, locale)}
-                      </option>
-                    ))}
-                  </optgroup>
-                );
-              })
-            : visibleCategories.map((item) => (
-                <option key={categoryKey(item)} value={categoryKey(item)}>
-                  {categoryDisplayName(item, locale)}
-                </option>
-              ))}
-        </select>
-      </label>
+        <AdminCategoryPicker
+          categories={categories}
+          source={source}
+          value={category}
+          onChange={setCategory}
+        />
+      </div>
 
       {!loading && total > 0 && (
         <p className="text-sm text-ink/55">

@@ -286,6 +286,8 @@ const sq: Dictionary = {
     customersCount: "Klientë",
     allCategories: "Të gjitha kategoritë",
     categoryFilter: "Kategoria",
+    searchCategoryPlaceholder: "Kërko kategori...",
+    noCategories: "Asnjë kategori nuk përputhet me kërkimin.",
   },
 };
 

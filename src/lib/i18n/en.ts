@@ -286,6 +286,8 @@ const en: Dictionary = {
     customersCount: "Customers",
     allCategories: "All categories",
     categoryFilter: "Category",
+    searchCategoryPlaceholder: "Search categories...",
+    noCategories: "No categories match your search.",
   },
 };
 

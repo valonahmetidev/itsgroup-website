@@ -286,6 +286,8 @@ const mk: Dictionary = {
     customersCount: "Корисници",
     allCategories: "Сите категории",
     categoryFilter: "Категорија",
+    searchCategoryPlaceholder: "Пребарај категории...",
+    noCategories: "Нема категории за пребарувањето.",
   },
 };
 
