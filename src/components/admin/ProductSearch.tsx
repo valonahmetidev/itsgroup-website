@@ -37,12 +37,15 @@ export function ProductSearch({ categories }: { categories: AdminCategoryOption[
   const activeQueryRef = useRef("");
   const activeSourceRef = useRef<SourceFilter>("all");
   const activeCategoryRef = useRef<AdminCategoryFilter>(null);
+  const requestRef = useRef(0);
 
-  const categoryFilter: AdminCategoryFilter = category
-    ? { source: category.source, slug: category.slug }
-    : null;
+  const selectedCategoryKey = categoryKey(category);
 
   const visibleCategories = categories.filter((item) => source === "all" || item.source === source);
+
+  function toCategoryFilter(item: AdminCategoryOption | null): AdminCategoryFilter {
+    return item ? { source: item.source, slug: item.slug } : null;
+  }
 
   const loadPage = useCallback(
     async (
@@ -55,9 +58,12 @@ export function ProductSearch({ categories }: { categories: AdminCategoryOption[
       if (offset === 0) setLoading(true);
       else setLoadingMore(true);
 
+      const requestId = ++requestRef.current;
       const response = nextQuery.trim().length >= 2
         ? await adminSearchProducts(nextQuery, nextSource, offset, PAGE_SIZE, nextCategory)
         : await adminBrowseProducts(nextSource, offset, PAGE_SIZE, nextCategory);
+
+      if (requestId !== requestRef.current) return;
 
       setResults((current) => (append ? [...current, ...response.items] : response.items));
       setHasMore(response.hasMore);
@@ -69,18 +75,19 @@ export function ProductSearch({ categories }: { categories: AdminCategoryOption[
   );
 
   useEffect(() => {
+    const nextCategory = toCategoryFilter(category);
     activeQueryRef.current = "";
     activeSourceRef.current = source;
-    activeCategoryRef.current = categoryFilter;
-    void loadPage("", source, categoryFilter, 0, false);
-  }, [source, category, loadPage, categoryFilter]);
+    activeCategoryRef.current = nextCategory;
+    void loadPage("", source, nextCategory, 0, false);
+  }, [source, selectedCategoryKey, category, loadPage]);
 
   async function search(event: React.FormEvent) {
     event.preventDefault();
     activeQueryRef.current = query;
     activeSourceRef.current = source;
-    activeCategoryRef.current = categoryFilter;
-    await loadPage(query, source, categoryFilter, 0, false);
+    activeCategoryRef.current = toCategoryFilter(category);
+    await loadPage(query, source, toCategoryFilter(category), 0, false);
   }
 
   useEffect(() => {

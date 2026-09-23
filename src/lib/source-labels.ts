@@ -27,3 +27,10 @@ const labels: Record<Source, SourceLabels> = {
 export function sourceLabels(source: Source): SourceLabels {
   return labels[source];
 }
+
+/** Catalog feed name shown in admin (Treco, Tremark, ITS). */
+export function catalogSourceName(source: Source): string {
+  if (source === "treco") return "Treco";
+  if (source === "tremark") return "Tremark";
+  return "ITS";
+}

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Loader2, Search, X } from "lucide-react";
 import { findProducts } from "@/app/actions";
 import { CatalogImage } from "@/components/CatalogImage";
@@ -28,7 +28,9 @@ export function SearchBox({
   expandable?: boolean;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { dict } = useLocale();
+  const onAdmin = pathname.startsWith("/admin");
   const rootRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -49,12 +51,25 @@ export function SearchBox({
   }, [expanded]);
 
   useEffect(() => {
-    if (!expanded) return;
+    if (!expanded || onAdmin) {
+      document.body.style.removeProperty("overflow");
+      return;
+    }
     document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.removeProperty("overflow");
     };
-  }, [expanded]);
+  }, [expanded, onAdmin]);
+
+  useEffect(() => {
+    if (!onAdmin || !expandable) return;
+    setExpanded(false);
+    setQuery("");
+    setResults([]);
+    setOpen(false);
+    setActiveIndex(-1);
+    document.body.style.removeProperty("overflow");
+  }, [onAdmin, expandable]);
 
   useEffect(() => {
     const cleaned = query.trim();

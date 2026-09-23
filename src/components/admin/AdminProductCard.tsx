@@ -5,7 +5,7 @@ import { CatalogImage } from "@/components/CatalogImage";
 import { useLocale } from "@/components/LocaleProvider";
 import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
 import { formatPrice } from "@/lib/format";
-import { sourceLabels } from "@/lib/source-labels";
+import { catalogSourceName, sourceLabels } from "@/lib/source-labels";
 import type { AdminProductListItem } from "@/app/admin/actions";
 
 export function AdminProductCard({ product }: { product: AdminProductListItem }) {
@@ -41,10 +41,10 @@ export function AdminProductCard({ product }: { product: AdminProductListItem })
                   : "rounded-full bg-ink/10 px-2.5 py-1 text-xs font-semibold text-ink"
             }
           >
-            {division.brand}
+            {catalogSourceName(product.source)}
           </span>
           <span className="text-xs text-ink/50">
-            {division.mk} · {division.sq}
+            {product.source === "its" ? dict.admin.storeProducts : `${division.mk} · ${division.sq}`}
           </span>
         </div>
         <p className="mt-2 line-clamp-2 font-medium leading-6">{product.name}</p>

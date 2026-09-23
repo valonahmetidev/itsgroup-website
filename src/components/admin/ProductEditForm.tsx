@@ -9,7 +9,7 @@ import { UnitSelectField } from "@/components/admin/UnitSelectField";
 import { useLocale } from "@/components/LocaleProvider";
 import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
 import { formatPrice } from "@/lib/format";
-import { sourceLabels } from "@/lib/source-labels";
+import { catalogSourceName, sourceLabels } from "@/lib/source-labels";
 import type { ProductOverrideRow } from "@/lib/catalog-overrides";
 import type { CatalogSource, Product } from "@/lib/types";
 
@@ -95,7 +95,7 @@ export function ProductEditForm({
                     : "rounded-full bg-home/15 px-2.5 py-1 text-xs font-semibold text-home"
                 }
               >
-                {division.brand}
+                {catalogSourceName(product.source)}
               </span>
               <span className="text-xs text-ink/50">{division.mk} · {division.sq}</span>
             </div>

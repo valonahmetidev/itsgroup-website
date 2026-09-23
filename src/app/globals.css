@@ -93,8 +93,13 @@ body:has(.admin-root) > footer {
   display: none;
 }
 
+body:has(.admin-root) {
+  overflow-y: auto;
+}
+
 body:has(.admin-root) > main {
   min-height: 100dvh;
+  overflow: visible;
 }
 
 @keyframes search-backdrop-in {
