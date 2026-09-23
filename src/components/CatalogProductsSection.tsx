@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
-import { CatalogFilters } from "@/components/CatalogFilters";
+import { ActiveCatalogFilters, CatalogFilters } from "@/components/CatalogFilters";
+import { hasVisibleActiveFilters } from "@/lib/catalog-filters";
 import { Pagination } from "@/components/Pagination";
 import { ProductGrid } from "@/components/ProductCard";
 import { useLocale } from "@/components/LocaleProvider";
@@ -33,6 +34,7 @@ export function CatalogProductsSection({
 }) {
   const { dict } = useLocale();
   const [filtersVisible, setFiltersVisible] = useState(true);
+  const activeFilters = hasVisibleActiveFilters(query, { showSource });
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -64,11 +66,11 @@ export function CatalogProductsSection({
       />
 
       <div className="min-w-0">
-        <div className="mb-4 hidden lg:flex">
+        <div className="mb-4 flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={toggleFilters}
-            className="inline-flex items-center gap-2 rounded-full border border-ink/10 bg-surface px-4 py-2 text-sm font-semibold transition hover:border-tech hover:text-tech"
+            className="hidden items-center gap-2 rounded-full border border-ink/10 bg-surface px-4 py-2 text-sm font-semibold transition hover:border-tech hover:text-tech lg:inline-flex"
           >
             {filtersVisible ? (
               <>
@@ -82,6 +84,15 @@ export function CatalogProductsSection({
               </>
             )}
           </button>
+
+          {activeFilters && (
+            <ActiveCatalogFilters
+              query={query}
+              hrefFor={hrefFor}
+              showSource={showSource}
+              className={cn(filtersVisible && "lg:hidden")}
+            />
+          )}
         </div>
 
         <ProductGrid products={visible} wide={!filtersVisible} />

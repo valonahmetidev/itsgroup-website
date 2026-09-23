@@ -71,6 +71,47 @@ export function hasActiveFilters(query: ParsedCatalogQuery) {
   );
 }
 
+export type ActiveCatalogFilterChip = {
+  id: string;
+  patch: Partial<ParsedCatalogQuery>;
+};
+
+export function getActiveCatalogFilterChips(
+  query: ParsedCatalogQuery,
+  options: { showSource?: boolean } = {},
+): ActiveCatalogFilterChip[] {
+  const { showSource = true } = options;
+  const chips: ActiveCatalogFilterChip[] = [];
+
+  if (showSource && query.source !== "all") {
+    chips.push({ id: "source", patch: { source: "all", page: 1 } });
+  }
+  if (query.stock !== "all") {
+    chips.push({ id: "stock", patch: { stock: "all", page: 1 } });
+  }
+  if (query.sale !== "all") {
+    chips.push({ id: "sale", patch: { sale: "all", page: 1 } });
+  }
+  if (query.priceType !== "all") {
+    chips.push({ id: "priceType", patch: { priceType: "all", page: 1 } });
+  }
+  if (query.min !== undefined || query.max !== undefined) {
+    chips.push({ id: "priceRange", patch: { min: undefined, max: undefined, page: 1 } });
+  }
+  if (query.sort !== "name") {
+    chips.push({ id: "sort", patch: { sort: "name", page: 1 } });
+  }
+
+  return chips;
+}
+
+export function hasVisibleActiveFilters(
+  query: ParsedCatalogQuery,
+  options: { showSource?: boolean } = {},
+) {
+  return getActiveCatalogFilterChips(query, options).length > 0;
+}
+
 export function getPriceBounds(products: Product[]) {
   const prices = products.map((product) => product.price).filter((price): price is number => price != null && price > 0);
   if (prices.length === 0) return null;

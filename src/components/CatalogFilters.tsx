@@ -3,10 +3,15 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
+import type { Dictionary } from "@/lib/i18n";
 import { formatCount } from "@/lib/format";
-import { hasActiveFilters, type ParsedCatalogQuery } from "@/lib/catalog-filters";
+import {
+  getActiveCatalogFilterChips,
+  hasVisibleActiveFilters,
+  type ParsedCatalogQuery,
+} from "@/lib/catalog-filters";
 import { cn } from "@/lib/cn";
 
 type PillOption<T extends string> = { value: T; label: string };
@@ -167,6 +172,81 @@ function CatalogFilterFields({
   );
 }
 
+function activeFilterLabel(id: string, query: ParsedCatalogQuery, dict: Dictionary) {
+  switch (id) {
+    case "source":
+      if (query.source === "treco") return dict.nav.technology;
+      if (query.source === "tremark") return dict.nav.home;
+      if (query.source === "its") return dict.catalog.itsProducts;
+      return dict.catalog.all;
+    case "stock":
+      return query.stock === "in" ? dict.catalog.stockIn : dict.catalog.stockOut;
+    case "sale":
+      return query.sale === "yes" ? dict.catalog.saleYes : dict.catalog.saleNo;
+    case "priceType":
+      return query.priceType === "priced" ? dict.catalog.priceTypePriced : dict.catalog.priceTypeOnRequest;
+    case "priceRange": {
+      const min = query.min !== undefined ? formatCount(query.min) : null;
+      const max = query.max !== undefined ? formatCount(query.max) : null;
+      if (min && max) return `${dict.catalog.priceMin} ${min} – ${dict.catalog.priceMax} ${max}`;
+      if (min) return `${dict.catalog.priceMin} ${min}`;
+      if (max) return `${dict.catalog.priceMax} ${max}`;
+      return dict.catalog.priceRange;
+    }
+    case "sort":
+      return query.sort === "price-asc" ? dict.catalog.sortPriceAsc : dict.catalog.sortPriceDesc;
+    default:
+      return id;
+  }
+}
+
+export function ActiveCatalogFilters({
+  query,
+  hrefFor,
+  showSource = true,
+  className,
+}: {
+  query: ParsedCatalogQuery;
+  hrefFor: (next: Partial<ParsedCatalogQuery>) => string;
+  showSource?: boolean;
+  className?: string;
+}) {
+  const { dict } = useLocale();
+  const chips = getActiveCatalogFilterChips(query, { showSource });
+
+  if (chips.length === 0) return null;
+
+  const clearHref = hrefFor({
+    source: showSource ? "all" : query.source,
+    stock: "all",
+    sale: "all",
+    priceType: "all",
+    min: undefined,
+    max: undefined,
+    sort: "name",
+    page: 1,
+  });
+
+  return (
+    <div className={cn("flex flex-wrap items-center gap-2", className)}>
+      {chips.map((chip) => (
+        <Link
+          key={chip.id}
+          href={hrefFor(chip.patch)}
+          className="inline-flex items-center gap-1.5 rounded-full border border-tech/20 bg-tech/10 px-3 py-1.5 text-sm font-medium text-tech transition hover:border-tech/35 hover:bg-tech/15"
+          aria-label={`${dict.catalog.clearFilters}: ${activeFilterLabel(chip.id, query, dict)}`}
+        >
+          <span>{activeFilterLabel(chip.id, query, dict)}</span>
+          <X className="h-3.5 w-3.5 shrink-0 opacity-70" aria-hidden />
+        </Link>
+      ))}
+      <Link href={clearHref} className="text-sm font-semibold text-ink/50 transition hover:text-tech">
+        {dict.catalog.clearFilters}
+      </Link>
+    </div>
+  );
+}
+
 export function CatalogFilters({
   query,
   hrefFor,
@@ -184,7 +264,7 @@ export function CatalogFilters({
   const { dict } = useLocale();
   const [minValue, setMinValue] = useState(query.min?.toString() ?? "");
   const [maxValue, setMaxValue] = useState(query.max?.toString() ?? "");
-  const active = hasActiveFilters(query);
+  const active = hasVisibleActiveFilters(query, { showSource });
 
   function applyPriceRange(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
