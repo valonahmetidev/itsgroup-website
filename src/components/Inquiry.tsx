@@ -9,6 +9,8 @@ import {
   formatQuantityValue,
   minQuantity,
   normalizeProductUnit,
+  parseQuantityInput,
+  quantityInputStep,
   quantityStep,
   type ProductUnit,
 } from "@/lib/units";
@@ -174,10 +176,28 @@ function QuantityControl({
   compact?: boolean;
 }) {
   const { dict, locale } = useLocale();
-  const step = quantityStep(unit);
+  const adjustStep = quantityStep(unit);
+  const inputStep = quantityInputStep(unit);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(() => formatQuantityValue(quantity, locale));
+
+  useEffect(() => {
+    if (!editing) {
+      setDraft(formatQuantityValue(quantity, locale));
+    }
+  }, [quantity, locale, editing]);
+
+  function commitDraft() {
+    const parsed = parseQuantityInput(draft);
+    if (parsed != null) {
+      onChange(clampQuantity(parsed, unit));
+    }
+    setEditing(false);
+  }
 
   function adjust(delta: number) {
-    onChange(clampQuantity(quantity + delta));
+    setEditing(false);
+    onChange(clampQuantity(quantity + delta, unit));
   }
 
   return (
@@ -187,7 +207,7 @@ function QuantityControl({
         <button
           type="button"
           aria-label={dict.product.decreaseQuantity}
-          onClick={() => adjust(-step)}
+          onClick={() => adjust(-adjustStep)}
           className={cn(
             "flex items-center justify-center rounded-full hover:bg-paper",
             compact ? "h-8 w-8" : "h-9 w-9",
@@ -199,23 +219,31 @@ function QuantityControl({
           type="number"
           min={minQuantity(unit)}
           max={9999}
-          step={step}
-          value={formatQuantityValue(quantity, locale)}
-          onChange={(event) => {
-            const next = Number(event.target.value);
-            if (!Number.isFinite(next)) return;
-            onChange(clampQuantity(next));
+          step={inputStep}
+          value={editing ? draft : formatQuantityValue(quantity, locale)}
+          onFocus={() => {
+            setDraft(formatQuantityValue(quantity, locale));
+            setEditing(true);
+          }}
+          onBlur={commitDraft}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              commitDraft();
+              event.currentTarget.blur();
+            }
           }}
           className={cn(
             "border-0 bg-transparent text-center font-semibold tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
-            compact ? "w-14 text-xs" : "w-16 text-sm",
+            compact ? "w-16 text-xs" : "w-[4.5rem] text-sm",
           )}
           aria-label={dict.product.quantity}
         />
         <button
           type="button"
           aria-label={dict.product.increaseQuantity}
-          onClick={() => adjust(step)}
+          onClick={() => adjust(adjustStep)}
           className={cn(
             "flex items-center justify-center rounded-full hover:bg-paper",
             compact ? "h-8 w-8" : "h-9 w-9",

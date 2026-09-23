@@ -81,7 +81,7 @@ export function Hero({
           </div>
         </div>
 
-        <div className="w-full max-w-md self-center lg:max-w-lg">
+        <div className="w-full max-w-md self-center pb-1 sm:pb-2 lg:max-w-lg">
           <HeroSlideshow shots={shots} fromCatalog={dict.hero.fromCatalog} />
         </div>
       </div>

@@ -29,9 +29,19 @@ export function unitLabel(unit: string, locale: Locale) {
   return unitLabels[key][locale];
 }
 
-export function quantityStep(unit: string) {
+export function allowsDecimalQuantity(unit: string) {
   const key = normalizeProductUnit(unit);
-  return key === "pc" || key === "set" ? 1 : 0.01;
+  return key !== "pc" && key !== "set";
+}
+
+/** Step for +/- buttons — always whole numbers. */
+export function quantityStep(_unit: string) {
+  return 1;
+}
+
+/** HTML input step: integers for pieces/sets, decimals allowed for measure units. */
+export function quantityInputStep(unit: string): number | "any" {
+  return allowsDecimalQuantity(unit) ? "any" : 1;
 }
 
 export function minQuantity(unit: string) {
@@ -43,9 +53,20 @@ export function roundQuantity(value: number) {
   return Math.round(value * 100) / 100;
 }
 
+export function parseQuantityInput(value: string): number | null {
+  const trimmed = value.trim().replace(",", ".");
+  if (!trimmed || trimmed === "." || trimmed === "-") return null;
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 export function clampQuantity(value: number, unit?: string) {
   const min = unit ? minQuantity(unit) : 0.01;
-  return Math.max(min, Math.min(9999, roundQuantity(value)));
+  let next = roundQuantity(value);
+  if (unit && !allowsDecimalQuantity(unit)) {
+    next = Math.round(next);
+  }
+  return Math.max(min, Math.min(9999, next));
 }
 
 export function formatQuantityValue(quantity: number, locale: Locale) {

@@ -1,12 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Loader2, Search } from "lucide-react";
 import { adminBrowseProducts, adminSearchProducts, type AdminCategoryFilter } from "@/app/admin/actions";
 import type { AdminProductListItem } from "@/app/admin/actions";
 import { AdminProductCard } from "@/components/admin/AdminProductCard";
 import { useLocale } from "@/components/LocaleProvider";
 import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
 import { cn } from "@/lib/cn";
+import { catalogSourceName } from "@/lib/source-labels";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
 import type { Source } from "@/lib/types";
 
 type SourceFilter = "all" | Source;
@@ -23,9 +26,14 @@ function categoryKey(category: AdminCategoryOption | null) {
   return category ? `${category.source}:${category.slug}` : "all";
 }
 
+function toCategoryFilter(item: AdminCategoryOption | null): AdminCategoryFilter {
+  return item ? { source: item.source, slug: item.slug } : null;
+}
+
 export function ProductSearch({ categories }: { categories: AdminCategoryOption[] }) {
   const { dict, locale } = useLocale();
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebouncedValue(query, 320);
   const [source, setSource] = useState<SourceFilter>("all");
   const [category, setCategory] = useState<AdminCategoryOption | null>(null);
   const [results, setResults] = useState<AdminProductListItem[]>([]);
@@ -40,12 +48,22 @@ export function ProductSearch({ categories }: { categories: AdminCategoryOption[
   const requestRef = useRef(0);
 
   const selectedCategoryKey = categoryKey(category);
+  const typing = query.trim() !== debouncedQuery.trim();
 
-  const visibleCategories = categories.filter((item) => source === "all" || item.source === source);
+  const visibleCategories = useMemo(
+    () => categories.filter((item) => source === "all" || item.source === source),
+    [categories, source],
+  );
 
-  function toCategoryFilter(item: AdminCategoryOption | null): AdminCategoryFilter {
-    return item ? { source: item.source, slug: item.slug } : null;
-  }
+  const groupedCategories = useMemo(() => {
+    const groups = new Map<Source, AdminCategoryOption[]>();
+    for (const item of visibleCategories) {
+      const list = groups.get(item.source) ?? [];
+      list.push(item);
+      groups.set(item.source, list);
+    }
+    return groups;
+  }, [visibleCategories]);
 
   const loadPage = useCallback(
     async (
@@ -76,19 +94,11 @@ export function ProductSearch({ categories }: { categories: AdminCategoryOption[
 
   useEffect(() => {
     const nextCategory = toCategoryFilter(category);
-    activeQueryRef.current = "";
+    activeQueryRef.current = debouncedQuery;
     activeSourceRef.current = source;
     activeCategoryRef.current = nextCategory;
-    void loadPage("", source, nextCategory, 0, false);
-  }, [source, selectedCategoryKey, category, loadPage]);
-
-  async function search(event: React.FormEvent) {
-    event.preventDefault();
-    activeQueryRef.current = query;
-    activeSourceRef.current = source;
-    activeCategoryRef.current = toCategoryFilter(category);
-    await loadPage(query, source, toCategoryFilter(category), 0, false);
-  }
+    void loadPage(debouncedQuery, source, nextCategory, 0, false);
+  }, [source, selectedCategoryKey, debouncedQuery, loadPage, category]);
 
   useEffect(() => {
     const node = sentinelRef.current;
@@ -119,9 +129,25 @@ export function ProductSearch({ categories }: { categories: AdminCategoryOption[
     { value: "its", label: "ITS" },
   ];
 
+  const showSpinner = loading || typing;
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap gap-2">
+    <div className="space-y-5">
+      <label className="relative block">
+        <span className="sr-only">{dict.admin.search}</span>
+        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/40" />
+        {showSpinner && (
+          <Loader2 className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-ink/35" />
+        )}
+        <input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={dict.admin.searchPlaceholder}
+          className="w-full rounded-2xl border border-ink/10 bg-surface py-3 pl-11 pr-11 text-sm outline-none transition focus:border-tech"
+        />
+      </label>
+
+      <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {filters.map((filter) => (
           <button
             key={filter.value}
@@ -133,7 +159,7 @@ export function ProductSearch({ categories }: { categories: AdminCategoryOption[
               }
             }}
             className={cn(
-              "rounded-full px-4 py-2 text-sm font-medium",
+              "shrink-0 rounded-full px-4 py-2 text-sm font-medium",
               source === filter.value ? "bg-ink text-paper" : "bg-surface hover:bg-ink/5",
             )}
           >
@@ -142,46 +168,45 @@ export function ProductSearch({ categories }: { categories: AdminCategoryOption[
         ))}
       </div>
 
-      <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink/45">{dict.admin.categoryFilter}</p>
-        <div className="flex max-h-40 flex-wrap gap-2 overflow-y-auto rounded-2xl border border-ink/10 bg-surface p-3">
-          <button
-            type="button"
-            onClick={() => setCategory(null)}
-            className={cn(
-              "rounded-full px-3 py-1.5 text-sm font-medium",
-              !category ? "bg-ink text-paper" : "bg-card hover:bg-paper",
-            )}
-          >
-            {dict.admin.allCategories}
-          </button>
-          {visibleCategories.map((item) => (
-            <button
-              key={categoryKey(item)}
-              type="button"
-              onClick={() => setCategory(item)}
-              className={cn(
-                "rounded-full px-3 py-1.5 text-sm font-medium",
-                categoryKey(category) === categoryKey(item) ? "bg-ink text-paper" : "bg-card hover:bg-paper",
-              )}
-            >
-              {categoryDisplayName(item, locale)}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <form onSubmit={search} className="flex flex-wrap gap-3">
-        <input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder={dict.admin.searchPlaceholder}
-          className="min-w-[16rem] flex-1 rounded-2xl border border-ink/10 bg-surface px-4 py-3 outline-none focus:border-tech"
-        />
-        <button type="submit" disabled={loading} className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-paper">
-          {dict.admin.search}
-        </button>
-      </form>
+      <label className="block space-y-2">
+        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-ink/45">
+          {dict.admin.categoryFilter}
+        </span>
+        <select
+          value={selectedCategoryKey}
+          onChange={(event) => {
+            const key = event.target.value;
+            if (key === "all") {
+              setCategory(null);
+              return;
+            }
+            const match = visibleCategories.find((item) => categoryKey(item) === key);
+            setCategory(match ?? null);
+          }}
+          className="w-full rounded-2xl border border-ink/10 bg-surface px-4 py-3 text-sm outline-none transition focus:border-tech"
+        >
+          <option value="all">{dict.admin.allCategories}</option>
+          {source === "all"
+            ? (["treco", "tremark", "its"] as Source[]).map((groupSource) => {
+                const items = groupedCategories.get(groupSource);
+                if (!items?.length) return null;
+                return (
+                  <optgroup key={groupSource} label={catalogSourceName(groupSource)}>
+                    {items.map((item) => (
+                      <option key={categoryKey(item)} value={categoryKey(item)}>
+                        {categoryDisplayName(item, locale)}
+                      </option>
+                    ))}
+                  </optgroup>
+                );
+              })
+            : visibleCategories.map((item) => (
+                <option key={categoryKey(item)} value={categoryKey(item)}>
+                  {categoryDisplayName(item, locale)}
+                </option>
+              ))}
+        </select>
+      </label>
 
       {!loading && total > 0 && (
         <p className="text-sm text-ink/55">
@@ -194,7 +219,7 @@ export function ProductSearch({ categories }: { categories: AdminCategoryOption[
       ) : results.length === 0 ? (
         <p className="text-sm text-ink/55">{dict.admin.noProducts}</p>
       ) : (
-        <div className="grid gap-3 lg:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-1 lg:grid-cols-2">
           {results.map((product) => (
             <AdminProductCard key={`${product.source}-${product.id}`} product={product} />
           ))}

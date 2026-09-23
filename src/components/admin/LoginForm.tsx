@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { adminLogin } from "@/app/admin/auth-actions";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useLocale } from "@/components/LocaleProvider";
 
 export function LoginForm() {
@@ -27,7 +28,11 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="mx-auto mt-16 max-w-md rounded-3xl border border-ink/10 bg-card p-8 shadow-sm">
+    <div className="shell py-6">
+      <div className="flex justify-end">
+        <ThemeToggle className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/10 bg-card shadow-sm hover:bg-surface" />
+      </div>
+      <form onSubmit={onSubmit} className="mx-auto mt-8 max-w-md rounded-3xl border border-ink/10 bg-card p-6 shadow-sm sm:mt-12 sm:p-8">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-tech">{dict.admin.title}</p>
       <h1 className="mt-2 font-display text-3xl">{dict.admin.loginTitle}</h1>
       <p className="mt-2 text-sm text-ink/60">{dict.admin.loginText}</p>
@@ -50,6 +55,7 @@ export function LoginForm() {
       >
         {loading ? dict.admin.loggingIn : dict.admin.loginButton}
       </button>
-    </form>
+      </form>
+    </div>
   );
 }

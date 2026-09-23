@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { Check, CheckSquare, Pencil, Plus, Trash2, XCircle } from "lucide-react";
+import { Check, CheckSquare, Loader2, Pencil, Plus, Search, Trash2, XCircle } from "lucide-react";
 import {
   adminRemoveCustomerProductDiscount,
   adminSaveCustomer,
@@ -17,7 +17,8 @@ import { CatalogImage } from "@/components/CatalogImage";
 import { useLocale } from "@/components/LocaleProvider";
 import { cn } from "@/lib/cn";
 import { formatPrice } from "@/lib/format";
-import { sourceLabels } from "@/lib/source-labels";
+import { catalogSourceName, sourceLabels } from "@/lib/source-labels";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
 import type { Source } from "@/lib/types";
 
 function productKey(source: Source, id: string | number) {
@@ -42,8 +43,10 @@ export function CustomerEditForm({
   const [generalDiscount, setGeneralDiscount] = useState(customer.discount_percent?.toString() ?? "");
   const [active, setActive] = useState(customer.active === 1);
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebouncedValue(query, 320);
   const [results, setResults] = useState<AdminProductListItem[]>([]);
   const [searched, setSearched] = useState(false);
+  const [searching, setSearching] = useState(false);
   const [discountPercent, setDiscountPercent] = useState("10");
   const [discountValues, setDiscountValues] = useState<Record<string, string>>({});
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -81,19 +84,30 @@ export function CustomerEditForm({
     router.refresh();
   }
 
-  async function searchProducts() {
-    const cleaned = query.trim();
+  useEffect(() => {
+    const cleaned = debouncedQuery.trim();
     if (cleaned.length < 2) {
       setResults([]);
       setSearched(false);
       setSelected(new Set());
+      setSearching(false);
       return;
     }
-    const response = await adminSearchProducts(cleaned, "all");
-    setResults(response.items);
-    setSelected(new Set());
-    setSearched(true);
-  }
+
+    let cancelled = false;
+    setSearching(true);
+    void adminSearchProducts(cleaned, "all").then((response) => {
+      if (cancelled) return;
+      setResults(response.items);
+      setSelected(new Set());
+      setSearched(true);
+      setSearching(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedQuery]);
 
   function toggleSelect(key: string) {
     if (discountedKeys.has(key)) return;
@@ -249,7 +263,9 @@ export function CustomerEditForm({
                       </span>
                     </div>
                     <div className="mt-2 space-y-2">
-                      <span className="inline-block rounded-full bg-ink/10 px-2 py-0.5 text-[10px] font-semibold">{division.brand}</span>
+                      <span className="inline-block rounded-full bg-ink/10 px-2 py-0.5 text-[10px] font-semibold">
+                        {catalogSourceName(row.source as Source)}
+                      </span>
                       <p className="line-clamp-2 text-sm font-medium leading-snug">{row.productName}</p>
                       <p className="text-xs text-ink/50">
                         {formatPrice(row.price, locale, dict)} · {row.inStock ? dict.product.inStock : dict.product.checkStock}
@@ -305,31 +321,32 @@ export function CustomerEditForm({
 
           <div className="space-y-4 border-t border-ink/10 pt-6">
             <h4 className="font-display text-lg">{dict.admin.addProductDiscount}</h4>
-            <div className="flex flex-wrap gap-3">
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    void searchProducts();
-                  }
-                }}
-                placeholder={dict.admin.searchPlaceholder}
-                className="min-w-[12rem] flex-1 rounded-2xl border border-ink/10 bg-surface px-4 py-2.5"
-              />
-              <input
-                type="number"
-                min={1}
-                max={100}
-                value={discountPercent}
-                onChange={(e) => setDiscountPercent(e.target.value)}
-                className="w-24 rounded-2xl border border-ink/10 bg-surface px-4 py-2.5"
-                aria-label={dict.admin.discountPercent}
-              />
-              <button type="button" onClick={() => void searchProducts()} className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-paper">
-                {dict.admin.search}
-              </button>
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <label className="relative min-w-0 flex-1 sm:min-w-[14rem]">
+                <span className="sr-only">{dict.admin.search}</span>
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/40" />
+                {(searching || query.trim() !== debouncedQuery.trim()) && (
+                  <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-ink/35" />
+                )}
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={dict.admin.searchPlaceholder}
+                  className="w-full rounded-2xl border border-ink/10 bg-surface py-2.5 pl-10 pr-10 text-sm outline-none focus:border-tech"
+                />
+              </label>
+              <label className="flex items-center gap-2 sm:w-auto">
+                <span className="shrink-0 text-sm text-ink/55">{dict.admin.discountPercent}</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={discountPercent}
+                  onChange={(e) => setDiscountPercent(e.target.value)}
+                  className="w-20 rounded-2xl border border-ink/10 bg-surface px-3 py-2.5 text-sm"
+                  aria-label={dict.admin.discountPercent}
+                />
+              </label>
             </div>
 
             {searched && results.length === 0 && (
@@ -432,7 +449,7 @@ export function CustomerEditForm({
                                   : "bg-ink/10 text-ink",
                             )}
                           >
-                            {division.brand}
+                            {catalogSourceName(product.source)}
                           </span>
                           <p className="line-clamp-2 text-sm font-medium leading-snug">{product.name}</p>
                           <p className="text-xs text-ink/50">
