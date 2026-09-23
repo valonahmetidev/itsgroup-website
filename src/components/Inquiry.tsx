@@ -9,9 +9,11 @@ import {
   minQuantity,
   normalizeProductUnit,
   parseQuantityInput,
+  PRODUCT_UNITS,
   quantityFieldValue,
   quantityInputStep,
   quantityStep,
+  unitLabel,
   type ProductUnit,
 } from "@/lib/units";
 import type { ProductNames } from "@/lib/product-names";
@@ -282,13 +284,14 @@ export function AddButton({
   variant?: "card" | "detail";
 }) {
   const { items, addItem, setItemQuantity, removeItem } = useInquiry();
-  const { dict } = useLocale();
+  const { dict, locale } = useLocale();
   const key = itemKey(source, id);
   const saved = items.find((item) => item.key === key);
   const [quantity, setQuantity] = useState(1);
+  const [selectedUnit, setSelectedUnit] = useState<ProductUnit>(() => normalizeProductUnit(unit));
   const detail = variant === "detail";
-  const locked = unitLocked || Boolean(unit);
-  const productUnit = normalizeProductUnit(unit);
+  const locked = unitLocked;
+  const productUnit = locked ? normalizeProductUnit(unit) : selectedUnit;
 
   if (saved) {
     if (detail) {
@@ -327,7 +330,23 @@ export function AddButton({
   }
 
   return (
-    <div className={detail ? "flex flex-col gap-3 sm:flex-row sm:items-center" : "mt-3 flex flex-col gap-2"}>
+    <div className={detail ? "flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end" : "mt-3 flex flex-col gap-2"}>
+      {!locked && (
+        <label className={detail ? "shrink-0" : "w-full"}>
+          <span className="mb-1 block text-xs text-ink/55">{dict.product.unit}</span>
+          <select
+            value={selectedUnit}
+            onChange={(event) => setSelectedUnit(event.target.value as ProductUnit)}
+            className="w-full rounded-full border border-ink/10 bg-surface px-3 py-2 text-sm font-medium outline-none focus:border-tech"
+          >
+            {PRODUCT_UNITS.map((entry) => (
+              <option key={entry} value={entry}>
+                {unitLabel(entry, locale)}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       <QuantityControl quantity={quantity} unit={productUnit} onChange={setQuantity} compact />
       <button
         type="button"

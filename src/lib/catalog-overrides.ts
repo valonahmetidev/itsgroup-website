@@ -1,5 +1,6 @@
 import type { Locale } from "@/lib/i18n";
 import { excerptsFromOverride, namesFromOverride, resolveProductName } from "@/lib/product-names";
+import { parseProductTags } from "@/lib/product-tags";
 import { normalizeProductUnit, type ProductUnit } from "@/lib/units";
 import type { Product, CatalogSource } from "@/lib/types";
 import type { D1Database } from "@/lib/db";
@@ -20,10 +21,14 @@ export type ProductOverrideRow = {
   in_stock: number | null;
   hidden: number;
   unit: string | null;
+  tags: string | null;
   updated_at: string;
 };
 
 const overrideColumns =
+  "source, product_id, name, name_mk, name_en, name_sq, excerpt_mk, excerpt_en, excerpt_sq, image_url, price, regular_price, in_stock, hidden, unit, tags, updated_at";
+
+const excerptOverrideColumns =
   "source, product_id, name, name_mk, name_en, name_sq, excerpt_mk, excerpt_en, excerpt_sq, image_url, price, regular_price, in_stock, hidden, unit, updated_at";
 
 const mediaOverrideColumns =
@@ -32,7 +37,8 @@ const mediaOverrideColumns =
 const legacyOverrideColumns =
   "source, product_id, name, price, regular_price, in_stock, hidden, updated_at";
 
-type MediaProductOverrideRow = Omit<ProductOverrideRow, "excerpt_mk" | "excerpt_en" | "excerpt_sq">;
+type ExcerptProductOverrideRow = Omit<ProductOverrideRow, "tags">;
+type MediaProductOverrideRow = Omit<ExcerptProductOverrideRow, "excerpt_mk" | "excerpt_en" | "excerpt_sq">;
 type LegacyProductOverrideRow = Omit<MediaProductOverrideRow, "name_mk" | "name_en" | "name_sq" | "image_url" | "unit">;
 
 function withExcerptDefaults<T extends Partial<ProductOverrideRow>>(row: T): ProductOverrideRow {
@@ -45,6 +51,7 @@ function withExcerptDefaults<T extends Partial<ProductOverrideRow>>(row: T): Pro
     name_mk: null,
     name_en: null,
     name_sq: null,
+    tags: null,
     ...row,
   } as ProductOverrideRow;
 }
@@ -63,16 +70,24 @@ async function queryAllOverrides(db: D1Database) {
   } catch {
     try {
       const { results } = await db
-        .prepare(`SELECT ${mediaOverrideColumns} FROM product_overrides ORDER BY updated_at DESC`)
+        .prepare(`SELECT ${excerptOverrideColumns} FROM product_overrides ORDER BY updated_at DESC`)
         .bind()
-        .all<MediaProductOverrideRow>();
+        .all<ExcerptProductOverrideRow>();
       return results.map(toOverrideRow);
     } catch {
+      try {
+        const { results } = await db
+          .prepare(`SELECT ${mediaOverrideColumns} FROM product_overrides ORDER BY updated_at DESC`)
+          .bind()
+          .all<MediaProductOverrideRow>();
+        return results.map(toOverrideRow);
+      } catch {
       const { results } = await db
         .prepare(`SELECT ${legacyOverrideColumns} FROM product_overrides ORDER BY updated_at DESC`)
         .bind()
         .all<LegacyProductOverrideRow>();
       return results.map(toOverrideRow);
+      }
     }
   }
 }
@@ -86,16 +101,24 @@ async function queryOneOverride(db: D1Database, source: CatalogSource, productId
   } catch {
     try {
       const row = await db
-        .prepare(`SELECT ${mediaOverrideColumns} FROM product_overrides WHERE source = ? AND product_id = ?`)
+        .prepare(`SELECT ${excerptOverrideColumns} FROM product_overrides WHERE source = ? AND product_id = ?`)
         .bind(source, productId)
-        .first<MediaProductOverrideRow>();
+        .first<ExcerptProductOverrideRow>();
       return row ? toOverrideRow(row) : null;
     } catch {
+      try {
+        const row = await db
+          .prepare(`SELECT ${mediaOverrideColumns} FROM product_overrides WHERE source = ? AND product_id = ?`)
+          .bind(source, productId)
+          .first<MediaProductOverrideRow>();
+        return row ? toOverrideRow(row) : null;
+      } catch {
       const row = await db
         .prepare(`SELECT ${legacyOverrideColumns} FROM product_overrides WHERE source = ? AND product_id = ?`)
         .bind(source, productId)
         .first<LegacyProductOverrideRow>();
       return row ? toOverrideRow(row) : null;
+      }
     }
   }
 }
@@ -125,13 +148,14 @@ export async function upsertProductOverride(
     stockQuantity: number | null;
     hidden: boolean;
     unit: ProductUnit | null;
+    tags: string | null;
   },
 ) {
   const legacyName = input.nameMk;
   await db
     .prepare(
-      `INSERT INTO product_overrides (source, product_id, name, name_mk, name_en, name_sq, excerpt_mk, excerpt_en, excerpt_sq, image_url, price, regular_price, in_stock, hidden, unit, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO product_overrides (source, product_id, name, name_mk, name_en, name_sq, excerpt_mk, excerpt_en, excerpt_sq, image_url, price, regular_price, in_stock, hidden, unit, tags, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(source, product_id) DO UPDATE SET
          name = excluded.name,
          name_mk = excluded.name_mk,
@@ -146,6 +170,7 @@ export async function upsertProductOverride(
          in_stock = excluded.in_stock,
          hidden = excluded.hidden,
          unit = excluded.unit,
+         tags = excluded.tags,
          updated_at = excluded.updated_at`,
     )
     .bind(
@@ -164,6 +189,7 @@ export async function upsertProductOverride(
       input.stockQuantity,
       input.hidden ? 1 : 0,
       input.unit,
+      input.tags,
       new Date().toISOString(),
     )
     .run();
@@ -194,6 +220,7 @@ export function applyProductOverride(
   const image = override.image_url?.trim() || product.image;
 
   const unit = override.unit ? normalizeProductUnit(override.unit) : undefined;
+  const tags = parseProductTags(override.tags);
 
   return {
     ...product,
@@ -208,6 +235,7 @@ export function applyProductOverride(
     inStock: override.in_stock === null ? product.inStock : override.in_stock > 0,
     stockQuantity: override.in_stock === null ? product.stockQuantity : override.in_stock,
     unit,
+    tags: tags.length > 0 ? tags : undefined,
   };
 }
 

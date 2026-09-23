@@ -220,6 +220,8 @@ export type Dictionary = {
     stockHint: string;
     unit: string;
     unitDefault: string;
+    tags: string;
+    tagsHint: string;
     hideProduct: string;
     save: string;
     resetOverride: string;

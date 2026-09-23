@@ -32,6 +32,7 @@ export type Product = {
   permalink: string;
   customerDiscountPercent?: number;
   unit?: ProductUnit;
+  tags?: string[];
 };
 
 export type MenuLink = {

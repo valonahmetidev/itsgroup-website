@@ -233,6 +233,8 @@ const sq: Dictionary = {
     stockHint: "Lëreni bosh për vlerën e katalogut. Vendosni 0 nëse nuk ka stok.",
     unit: "Njësia matëse",
     unitDefault: "Pa caktuar (klienti mund të zgjedhë)",
+    tags: "Etiketat",
+    tagsHint: "Të ndara me presje, p.sh. zbritje, i ri, i veçuar",
     hideProduct: "Fshih nga katalogu publik",
     save: "Ruaj",
     resetOverride: "Kthe origjinalin",

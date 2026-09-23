@@ -2,6 +2,7 @@ import type { Locale } from "@/lib/i18n";
 import { getDbAsync } from "@/lib/cloudflare";
 import { getStoreProduct, listStoreProducts, type StoreProductRow } from "@/lib/db";
 import { resolveProductName } from "@/lib/product-names";
+import { parseProductTags } from "@/lib/product-tags";
 import { normalizeProductUnit } from "@/lib/units";
 import type { Product } from "@/lib/types";
 
@@ -31,6 +32,10 @@ function rowToProduct(row: StoreProductRow, locale: Locale): Product {
     excerpt: row.note?.trim() || "",
     permalink: `/proizvod/its/${row.id}`,
     unit: row.unit ? normalizeProductUnit(row.unit) : undefined,
+    tags: (() => {
+      const tags = parseProductTags(row.tags);
+      return tags.length > 0 ? tags : undefined;
+    })(),
   };
 }
 

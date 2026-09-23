@@ -233,6 +233,8 @@ const en: Dictionary = {
     stockHint: "Leave empty to use the catalog value. Enter 0 for out of stock.",
     unit: "Unit of measure",
     unitDefault: "Not set (customer can choose)",
+    tags: "Tags",
+    tagsHint: "Comma-separated labels, e.g. sale, new, featured",
     hideProduct: "Hide from public catalog",
     save: "Save",
     resetOverride: "Reset to original",

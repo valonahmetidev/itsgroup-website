@@ -10,6 +10,7 @@ import {
   type ProductOverrideRow,
 } from "@/lib/catalog-overrides";
 import { getProduct, products, searchProducts } from "@/lib/catalog";
+import { parseTagsInput, serializeProductTags } from "@/lib/product-tags";
 import { getDb } from "@/lib/cloudflare";
 import {
   deleteStoreProduct,
@@ -359,6 +360,7 @@ export async function adminSaveProduct(input: {
   stock: string;
   hidden: boolean;
   unit: string;
+  tags: string;
   reset: boolean;
 }) {
   await requireAdmin();
@@ -402,6 +404,7 @@ export async function adminSaveProduct(input: {
     stockQuantity,
     hidden: input.hidden,
     unit: parseAdminUnit(input.unit),
+    tags: serializeProductTags(parseTagsInput(input.tags)),
   });
 
   return { ok: true as const };
@@ -419,6 +422,7 @@ export async function adminSaveStoreProduct(input: {
   inStock: boolean;
   hidden: boolean;
   unit: string;
+  tags: string;
 }) {
   await requireAdmin();
   const db = getDb();
@@ -434,6 +438,7 @@ export async function adminSaveStoreProduct(input: {
   const nameEn = input.nameEn.trim() || null;
   const nameSq = input.nameSq.trim() || null;
   const unit = parseAdminUnit(input.unit);
+  const tags = serializeProductTags(parseTagsInput(input.tags));
 
   if (input.id) {
     await updateStoreProduct(db, {
@@ -448,6 +453,7 @@ export async function adminSaveStoreProduct(input: {
       inStock: input.inStock,
       hidden: input.hidden,
       unit,
+      tags,
     });
     return { ok: true as const, id: input.id };
   }
@@ -466,6 +472,7 @@ export async function adminSaveStoreProduct(input: {
     inStock: input.inStock,
     hidden: input.hidden,
     unit,
+    tags,
     createdAt,
   });
   return { ok: true as const, id };
@@ -529,6 +536,7 @@ export async function adminCreateCustomProduct(input: { name: string; price: str
     inStock: true,
     hidden: false,
     unit: "",
+    tags: "",
   });
 }
 

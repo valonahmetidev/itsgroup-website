@@ -12,6 +12,7 @@ import { useLocale } from "@/components/LocaleProvider";
 import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
 import { formatPrice } from "@/lib/format";
 import { productHref } from "@/lib/paths";
+import { formatTagsInput, parseProductTags } from "@/lib/product-tags";
 import { stockAvailabilityLabel } from "@/lib/stock-label";
 import { catalogSourceName, sourceLabels } from "@/lib/source-labels";
 import type { ProductOverrideRow } from "@/lib/catalog-overrides";
@@ -45,6 +46,7 @@ export function ProductEditForm({
   );
   const [hidden, setHidden] = useState(Boolean(override?.hidden));
   const [unit, setUnit] = useState(override?.unit ?? "");
+  const [tags, setTags] = useState(formatTagsInput(parseProductTags(override?.tags)));
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -65,6 +67,7 @@ export function ProductEditForm({
       stock,
       hidden,
       unit,
+      tags,
       reset,
     });
     setLoading(false);
@@ -229,6 +232,16 @@ export function ProductEditForm({
             <span className="text-xs text-ink/50">{dict.admin.stockHint}</span>
           </label>
           <UnitSelectField value={unit} onChange={setUnit} />
+          <label className="grid gap-1 text-sm lg:col-span-2">
+            <span>{dict.admin.tags}</span>
+            <input
+              value={tags}
+              onChange={(event) => setTags(event.target.value)}
+              placeholder={dict.admin.tagsHint}
+              className={fieldClass}
+            />
+            <span className="text-xs text-ink/50">{dict.admin.tagsHint}</span>
+          </label>
           <label className="flex items-center gap-2 text-sm lg:col-span-2">
             <input type="checkbox" checked={hidden} onChange={(event) => setHidden(event.target.checked)} />
             <span>{dict.admin.hideProduct}</span>
