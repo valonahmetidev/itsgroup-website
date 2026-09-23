@@ -36,7 +36,7 @@ export function Hero({
   const { dict } = useLocale();
 
   return (
-    <section className="relative flex min-h-0 flex-1 overflow-hidden">
+    <section className="relative overflow-hidden lg:flex lg:min-h-0 lg:flex-1">
       <Image
         src="/logo-mark.png"
         alt=""
@@ -46,7 +46,7 @@ export function Hero({
         priority
         className="pointer-events-none absolute -left-6 top-1/2 w-[min(760px,80vw)] max-w-none -translate-y-1/2 select-none opacity-[0.12] blur-[8px] dark:opacity-[0.5] dark:blur-[5px]"
       />
-      <div className="shell relative z-10 grid min-h-0 flex-1 items-center gap-4 overflow-y-auto py-4 sm:gap-6 sm:py-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12 lg:overflow-visible lg:py-6">
+      <div className="shell relative z-10 grid items-center gap-4 py-4 sm:gap-6 sm:py-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:min-h-0 lg:flex-1 lg:gap-12 lg:py-6">
         <div>
           <motion.h1
             initial={{ y: 16 }}

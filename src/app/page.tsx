@@ -35,7 +35,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <div className="flex h-[calc(100dvh-4rem)] flex-col overflow-hidden">
+      <div className="flex flex-col lg:h-[calc(100dvh-4rem)] lg:overflow-hidden">
         <Hero techCount={totals.treco} homeCount={totals.tremark} shots={heroPool()} />
         <HomeTicker items={ticker} />
       </div>
