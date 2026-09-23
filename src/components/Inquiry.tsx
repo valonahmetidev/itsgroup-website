@@ -6,10 +6,10 @@ import { useLocale } from "@/components/LocaleProvider";
 import { cn } from "@/lib/cn";
 import {
   clampQuantity,
-  formatQuantityValue,
   minQuantity,
   normalizeProductUnit,
   parseQuantityInput,
+  quantityFieldValue,
   quantityInputStep,
   quantityStep,
   type ProductUnit,
@@ -175,22 +175,24 @@ function QuantityControl({
   onChange: (quantity: number) => void;
   compact?: boolean;
 }) {
-  const { dict, locale } = useLocale();
+  const { dict } = useLocale();
   const adjustStep = quantityStep(unit);
   const inputStep = quantityInputStep(unit);
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(() => formatQuantityValue(quantity, locale));
+  const [draft, setDraft] = useState(() => quantityFieldValue(quantity));
 
   useEffect(() => {
     if (!editing) {
-      setDraft(formatQuantityValue(quantity, locale));
+      setDraft(quantityFieldValue(quantity));
     }
-  }, [quantity, locale, editing]);
+  }, [quantity, editing]);
 
   function commitDraft() {
     const parsed = parseQuantityInput(draft);
     if (parsed != null) {
       onChange(clampQuantity(parsed, unit));
+    } else {
+      setDraft(quantityFieldValue(quantity));
     }
     setEditing(false);
   }
@@ -220,9 +222,9 @@ function QuantityControl({
           min={minQuantity(unit)}
           max={9999}
           step={inputStep}
-          value={editing ? draft : formatQuantityValue(quantity, locale)}
+          value={editing ? draft : quantityFieldValue(quantity)}
           onFocus={() => {
-            setDraft(formatQuantityValue(quantity, locale));
+            setDraft(quantityFieldValue(quantity));
             setEditing(true);
           }}
           onBlur={commitDraft}

@@ -17,7 +17,7 @@ export function HomeTicker({ items }: { items: TickerItem[] }) {
   const track = [...items, ...items];
 
   return (
-    <div className="relative shrink-0 overflow-hidden border-t border-ink/10 bg-surface/60">
+    <div className="relative mt-3 shrink-0 overflow-hidden border-t border-ink/10 bg-surface/60 sm:mt-4">
       <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-12 bg-gradient-to-r from-surface/95 to-transparent sm:w-24" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-[5] w-12 bg-gradient-to-l from-surface/95 to-transparent sm:w-24" />
       <div className="marquee flex w-max items-center gap-8 py-4 text-xs font-medium sm:gap-12 sm:py-6 sm:text-base">

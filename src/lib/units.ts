@@ -69,6 +69,13 @@ export function clampQuantity(value: number, unit?: string) {
   return Math.max(min, Math.min(9999, next));
 }
 
+/** Dot-decimal string for HTML quantity inputs (never locale commas). */
+export function quantityFieldValue(quantity: number) {
+  const rounded = roundQuantity(quantity);
+  if (Number.isInteger(rounded)) return String(rounded);
+  return rounded.toFixed(2);
+}
+
 export function formatQuantityValue(quantity: number, locale: Locale) {
   const tag = locale === "mk" ? "mk-MK" : locale === "sq" ? "sq-AL" : "en-GB";
   if (Number.isInteger(quantity)) return String(quantity);

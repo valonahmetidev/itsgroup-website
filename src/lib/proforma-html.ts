@@ -244,14 +244,15 @@ export function buildProformaHtml({
           font-size: 8px;
           text-transform: uppercase;
           letter-spacing: 0.08em;
+          text-align: center;
           vertical-align: middle;
           font-weight: 700;
         }
         thead th:first-child { border-radius: 10px 0 0 10px; }
-        thead th:last-child { border-radius: 0 10px 10px 0; text-align: right; }
+        thead th:last-child { border-radius: 0 10px 10px 0; }
         thead th.num { width: 4%; padding-left: 8px; padding-right: 4px; }
         thead th.name { width: 58%; }
-        thead th.qty { width: 12%; text-align: right; padding-left: 4px; padding-right: 8px; }
+        thead th.qty { width: 12%; padding-left: 4px; padding-right: 8px; }
         thead th.price { width: 26%; }
         tbody td {
           padding: 10px 8px;
@@ -268,6 +269,8 @@ export function buildProformaHtml({
           white-space: nowrap;
         }
         tbody td.name {
+          text-align: left;
+          vertical-align: middle;
           font-weight: 500;
           word-break: break-word;
           overflow-wrap: anywhere;
@@ -308,7 +311,7 @@ export function buildProformaHtml({
           font-size: 8px;
           text-transform: uppercase;
           letter-spacing: 0.12em;
-          color: #8fa39a;
+          color: #18a07c;
           font-weight: 700;
         }
         .total .value {
@@ -317,7 +320,7 @@ export function buildProformaHtml({
           font-weight: 700;
           text-align: right;
           word-break: break-word;
-          color: #ffffff;
+          color: #18a07c;
         }
         .note {
           margin-top: 18px;

@@ -81,7 +81,7 @@ export function Hero({
           </div>
         </div>
 
-        <div className="w-full max-w-md self-center pb-1 sm:pb-2 lg:max-w-lg">
+        <div className="w-full max-w-md self-center lg:max-w-lg">
           <HeroSlideshow shots={shots} fromCatalog={dict.hero.fromCatalog} />
         </div>
       </div>
@@ -130,7 +130,7 @@ function HeroSlideshow({ shots, fromCatalog }: { shots: HeroShot[]; fromCatalog:
 
   return (
     <div
-      className="rounded-[2rem] border border-ink/10 bg-card p-4 shadow-lift sm:p-6"
+      className="rounded-[2rem] border border-ink/10 bg-card p-3 shadow-lift sm:p-5"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -141,24 +141,24 @@ function HeroSlideshow({ shots, fromCatalog }: { shots: HeroShot[]; fromCatalog:
         </p>
       </div>
 
-      <Link href={shot.href} className="mt-4 block">
-        <div className="relative h-[168px] overflow-hidden rounded-2xl bg-white sm:h-[220px] lg:h-[260px] xl:h-[300px]">
+      <Link href={shot.href} className="mt-3 block">
+        <div className="flex aspect-[5/4] max-h-[min(34dvh,220px)] w-full items-center justify-center overflow-hidden rounded-2xl bg-white sm:max-h-[min(36dvh,260px)] lg:max-h-[280px]">
           <CatalogImage
             key={shot.src}
             src={shot.src}
             alt={shot.alt}
-            className="absolute inset-0 h-full w-full object-contain p-3"
+            className="max-h-full max-w-full object-contain p-3"
           />
         </div>
-        <p className="mt-3 line-clamp-2 min-h-[2.5rem] text-sm font-medium leading-5 sm:min-h-[3rem] sm:text-base sm:leading-6">
+        <p className="mt-2 line-clamp-2 text-sm font-medium leading-5 sm:mt-3 sm:text-base sm:leading-6">
           {shot.label}
         </p>
-        <p className="mt-1 min-h-[1.5rem] font-display text-lg sm:min-h-[1.75rem] sm:text-xl">
+        <p className="mt-1 font-display text-base sm:text-lg">
           {formatPrice(shot.price, locale, dict)}
         </p>
       </Link>
 
-      <div className="mt-3 flex items-center justify-between gap-4 sm:mt-5">
+      <div className="mt-2 flex items-center justify-between gap-4 sm:mt-4">
         <div className="flex gap-2">
           {deck.map((item, itemIndex) => (
             <button
