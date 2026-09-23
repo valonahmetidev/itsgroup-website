@@ -10,11 +10,13 @@ import { salePercent } from "@/lib/format";
 import { stockAvailabilityLabel } from "@/lib/stock-label";
 import { productHref } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
+import { useProductName } from "@/lib/use-product-name";
 import type { Product } from "@/lib/types";
 
 export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
   const { dict, locale } = useLocale();
   const { formatPrice } = useCurrency();
+  const productName = useProductName(product);
   const href = productHref(product);
   const discount = product.onSale ? salePercent(product.price, product.regularPrice) : null;
   const tone = customerDivisionTone(product.source);
@@ -27,7 +29,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
     >
       <Link href={href} className="relative flex h-48 items-center justify-center overflow-hidden rounded-2xl bg-white">
         {product.image ? (
-          <CatalogImage src={product.image} alt={product.name} className="h-full w-full object-contain p-4 transition duration-500 group-hover:scale-105" />
+          <CatalogImage src={product.image} alt={productName} className="h-full w-full object-contain p-4 transition duration-500 group-hover:scale-105" />
         ) : (
           <span className="font-display text-ink/30">{dict.product.placeholderInitials}</span>
         )}
@@ -45,7 +47,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
           </p>
         </div>
         <Link href={href} className="mt-1 line-clamp-2 min-h-12 font-medium leading-6 hover:text-tech">
-          {product.name}
+          {productName}
         </Link>
         <div className="mt-auto min-w-0 space-y-2 pt-3">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
@@ -60,7 +62,8 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
           <AddButton
             source={product.source}
             id={product.id}
-            name={product.name}
+            name={productName}
+            names={product.names}
             price={product.price}
             image={product.image}
             unit={product.unit}

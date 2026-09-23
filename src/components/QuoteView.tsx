@@ -4,13 +4,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { CatalogImage } from "@/components/CatalogImage";
-import { lineTotal, QuoteQuantityControl, useInquiry } from "@/components/Inquiry";
+import { lineTotal, QuoteQuantityControl, useInquiry, type InquiryItem } from "@/components/Inquiry";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { useLocale } from "@/components/LocaleProvider";
 import { PRODUCT_UNITS, type ProductUnit, unitLabel } from "@/lib/units";
 import type { ProformaCustomer } from "@/lib/proforma";
 import { productHref } from "@/lib/paths";
 import { site } from "@/lib/site";
+import { useResolvedName } from "@/lib/use-product-name";
 import { shareProformaViaWhatsApp } from "@/lib/whatsapp";
 
 // Personalized/custom products are disabled for now.
@@ -120,74 +121,12 @@ export function QuoteView() {
       ) : (
         <div className="mt-8 space-y-3">
           {items.map((item) => (
-            <article key={item.key} className="relative rounded-3xl border border-ink/10 bg-card p-4 sm:p-5">
-              <button
-                type="button"
-                onClick={() => removeItem(item.key)}
-                className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-ink/40 transition hover:bg-home/10 hover:text-home"
-                aria-label={dict.quote.remove}
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-              <div className="flex gap-4 pr-8">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white">
-                  {item.image ? (
-                    <CatalogImage src={item.image} alt="" className="h-full w-full object-contain" />
-                  ) : (
-                    <span className="text-xs text-ink/30">{dict.product.placeholderInitials}</span>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      {item.source === "custom" ? (
-                        <p className="font-medium leading-snug">{item.name}</p>
-                      ) : (
-                        <Link
-                          href={productHref({ source: item.source, id: item.id })}
-                          className="block font-medium leading-snug hover:text-tech"
-                        >
-                          {item.name}
-                        </Link>
-                      )}
-                      <p className="mt-1 text-sm text-ink/55">
-                        {formatPrice(item.price)} / {unitLabel(item.unit, locale)}
-                      </p>
-                    </div>
-                    <p className="shrink-0 text-right text-sm font-semibold tabular-nums">
-                      {formatPrice(lineTotal(item))}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 flex flex-wrap items-end gap-3 border-t border-ink/10 pt-4">
-                  {item.unitLocked ? (
-                    <div className="shrink-0">
-                      <p className="mb-1 text-xs text-ink/55">{dict.product.unit}</p>
-                      <span className="inline-flex rounded-full border border-ink/10 bg-surface px-3 py-2 text-sm font-medium">
-                        {unitLabel(item.unit, locale)}
-                      </span>
-                    </div>
-                  ) : (
-                    <label className="shrink-0">
-                      <span className="mb-1 block text-xs text-ink/55">{dict.product.unit}</span>
-                      <select
-                        value={item.unit}
-                        onChange={(event) => setItemUnit(item.key, event.target.value as ProductUnit)}
-                        className="rounded-full border border-ink/10 bg-surface px-3 py-2 text-sm font-medium outline-none focus:border-tech"
-                      >
-                        {PRODUCT_UNITS.map((unit) => (
-                          <option key={unit} value={unit}>
-                            {unitLabel(unit, locale)}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  )}
-                  <QuoteQuantityControl item={item} />
-              </div>
-            </article>
+            <QuoteItemRow
+              key={item.key}
+              item={item}
+              onRemove={() => removeItem(item.key)}
+              onUnitChange={(unit) => setItemUnit(item.key, unit)}
+            />
           ))}
           <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-ink/10 bg-card px-5 py-4">
             <p className="font-display text-xl">{dict.quote.total}</p>
@@ -237,5 +176,90 @@ export function QuoteView() {
         </section>
       )}
     </div>
+  );
+}
+
+function QuoteItemRow({
+  item,
+  onRemove,
+  onUnitChange,
+}: {
+  item: InquiryItem;
+  onRemove: () => void;
+  onUnitChange: (unit: ProductUnit) => void;
+}) {
+  const { dict, locale } = useLocale();
+  const { formatPrice } = useCurrency();
+  const itemName = useResolvedName(item.name, item.names);
+
+  return (
+    <article className="relative rounded-3xl border border-ink/10 bg-card p-4 sm:p-5">
+      <button
+        type="button"
+        onClick={onRemove}
+        className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-ink/40 transition hover:bg-home/10 hover:text-home"
+        aria-label={dict.quote.remove}
+      >
+        <Trash2 className="h-4 w-4" />
+      </button>
+      <div className="flex gap-4 pr-8">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white">
+          {item.image ? (
+            <CatalogImage src={item.image} alt="" className="h-full w-full object-contain" />
+          ) : (
+            <span className="text-xs text-ink/30">{dict.product.placeholderInitials}</span>
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              {item.source === "custom" ? (
+                <p className="font-medium leading-snug">{itemName}</p>
+              ) : (
+                <Link
+                  href={productHref({ source: item.source, id: item.id })}
+                  className="block font-medium leading-snug hover:text-tech"
+                >
+                  {itemName}
+                </Link>
+              )}
+              <p className="mt-1 text-sm text-ink/55">
+                {formatPrice(item.price)} / {unitLabel(item.unit, locale)}
+              </p>
+            </div>
+            <p className="shrink-0 text-right text-sm font-semibold tabular-nums">
+              {formatPrice(lineTotal(item))}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-end gap-3 border-t border-ink/10 pt-4">
+        {item.unitLocked ? (
+          <div className="shrink-0">
+            <p className="mb-1 text-xs text-ink/55">{dict.product.unit}</p>
+            <span className="inline-flex rounded-full border border-ink/10 bg-surface px-3 py-2 text-sm font-medium">
+              {unitLabel(item.unit, locale)}
+            </span>
+          </div>
+        ) : (
+          <label className="shrink-0">
+            <span className="mb-1 block text-xs text-ink/55">{dict.product.unit}</span>
+            <select
+              value={item.unit}
+              onChange={(event) => onUnitChange(event.target.value as ProductUnit)}
+              className="rounded-full border border-ink/10 bg-surface px-3 py-2 text-sm font-medium outline-none focus:border-tech"
+            >
+              {PRODUCT_UNITS.map((unit) => (
+                <option key={unit} value={unit}>
+                  {unitLabel(unit, locale)}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <QuoteQuantityControl item={item} />
+      </div>
+    </article>
   );
 }

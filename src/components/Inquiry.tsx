@@ -14,6 +14,7 @@ import {
   quantityStep,
   type ProductUnit,
 } from "@/lib/units";
+import type { ProductNames } from "@/lib/product-names";
 import type { Source } from "@/lib/types";
 
 const STORAGE_KEY = "itsgroup-inquiry";
@@ -23,6 +24,7 @@ export type InquiryItem = {
   source: Source | "custom";
   id: number | string;
   name: string;
+  names?: ProductNames;
   price: number | null;
   image: string | null;
   quantity: number;
@@ -262,6 +264,7 @@ export function AddButton({
   source,
   id,
   name,
+  names,
   price,
   image,
   unit,
@@ -271,6 +274,7 @@ export function AddButton({
   source: Source;
   id: number | string;
   name: string;
+  names?: ProductNames;
   price: number | null;
   image: string | null;
   unit?: ProductUnit;
@@ -327,7 +331,7 @@ export function AddButton({
       <QuantityControl quantity={quantity} unit={productUnit} onChange={setQuantity} compact />
       <button
         type="button"
-        onClick={() => addItem({ source, id, name, price, image, unit: productUnit, unitLocked: locked }, quantity)}
+        onClick={() => addItem({ source, id, name, names, price, image, unit: productUnit, unitLocked: locked }, quantity)}
         className={
           detail
             ? "rounded-full bg-tech px-6 py-3 text-sm font-semibold text-cream transition hover:opacity-90 sm:flex-1"

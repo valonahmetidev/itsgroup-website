@@ -12,6 +12,7 @@ import { salePercent } from "@/lib/format";
 import { stockAvailabilityLabel } from "@/lib/stock-label";
 import { useCategoryLabel } from "@/lib/i18n/catalog-labels";
 import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
+import { useProductName } from "@/lib/use-product-name";
 import type { Category, Product } from "@/lib/types";
 
 export function ProductView({
@@ -25,6 +26,7 @@ export function ProductView({
 }) {
   const { dict, locale } = useLocale();
   const { formatPrice } = useCurrency();
+  const productName = useProductName(product);
   const categoryLabel = useCategoryLabel();
   const discount = product.onSale ? salePercent(product.price, product.regularPrice) : null;
   const divisionLabel = customerDivisionLabel(product.source, locale, dict);
@@ -47,7 +49,7 @@ export function ProductView({
       <div className="grid items-start gap-8 lg:grid-cols-[1.05fr_0.95fr]">
         <div className="rise flex min-h-[420px] items-center justify-center rounded-[2rem] border border-ink/10 bg-white p-8">
           {product.image ? (
-            <CatalogImage src={product.image} alt={product.name} className="max-h-[520px] w-full object-contain" />
+            <CatalogImage src={product.image} alt={productName} className="max-h-[520px] w-full object-contain" />
           ) : (
             <span className="font-display text-4xl text-ink/20">ITS</span>
           )}
@@ -56,7 +58,7 @@ export function ProductView({
           <p className={tone === "tech" ? "text-sm font-semibold text-tech" : "text-sm font-semibold text-home"}>
             {divisionLabel}
           </p>
-          <h1 className="mt-2 font-display text-4xl leading-tight">{product.name}</h1>
+          <h1 className="mt-2 font-display text-4xl leading-tight">{productName}</h1>
           {categoryMk && categorySq && (
             <p className="mt-2 text-sm text-ink/55">{categoryMk} · {categorySq}</p>
           )}
@@ -77,7 +79,8 @@ export function ProductView({
                 variant="detail"
                 source={product.source}
                 id={product.id}
-                name={product.name}
+                name={productName}
+                names={product.names}
                 price={product.price}
                 image={product.image}
                 unit={product.unit}

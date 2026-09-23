@@ -31,7 +31,7 @@ export function SearchBox({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { dict } = useLocale();
+  const { dict, locale } = useLocale();
   const { formatPrice } = useCurrency();
   const onAdmin = pathname.startsWith("/admin");
   const rootRef = useRef<HTMLDivElement>(null);
@@ -95,7 +95,7 @@ export function SearchBox({
     }, 220);
 
     return () => window.clearTimeout(handle);
-  }, [query]);
+  }, [query, locale]);
 
   useEffect(() => {
     if (!open && !expanded) return;

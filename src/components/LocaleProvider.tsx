@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { getDictionary, isLocale, LOCALE_COOKIE, type Dictionary, type Locale } from "@/lib/i18n";
 import { writePreferenceCookie } from "@/lib/cookies";
 
@@ -20,27 +21,35 @@ function readCookieLocale(): Locale {
 }
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [locale, setLocaleState] = useState<Locale>("mk");
-  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setLocaleState(readCookieLocale());
-    setReady(true);
+    const cookieLocale = readCookieLocale();
+    setLocaleState(cookieLocale);
+    document.documentElement.lang = cookieLocale;
   }, []);
 
-  useEffect(() => {
-    if (!ready) return;
-    document.documentElement.lang = locale;
-    writePreferenceCookie(LOCALE_COOKIE, locale);
-  }, [locale, ready]);
+  const setLocale = useCallback(
+    (next: Locale) => {
+      setLocaleState((current) => {
+        if (current === next) return current;
+        writePreferenceCookie(LOCALE_COOKIE, next);
+        document.documentElement.lang = next;
+        router.refresh();
+        return next;
+      });
+    },
+    [router],
+  );
 
   const value = useMemo(
     () => ({
       locale,
       dict: getDictionary(locale),
-      setLocale: setLocaleState,
+      setLocale,
     }),
-    [locale],
+    [locale, setLocale],
   );
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
