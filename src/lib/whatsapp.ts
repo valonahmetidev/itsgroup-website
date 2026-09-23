@@ -17,6 +17,8 @@ type WhatsAppProformaInput = {
   rates?: ExchangeRateSnapshot["rates"];
 };
 
+const WHATSAPP_URL_MESSAGE_LIMIT = 1500;
+
 export function buildWhatsAppProformaMessage({
   customer,
   items,
@@ -58,7 +60,11 @@ export function buildWhatsAppProformaMessage({
 export function buildWhatsAppProformaUrl(input: WhatsAppProformaInput) {
   const digits = input.phoneE164.replace(/\D/g, "");
   const message = buildWhatsAppProformaMessage(input);
-  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+  const trimmed =
+    message.length > WHATSAPP_URL_MESSAGE_LIMIT
+      ? `${message.slice(0, WHATSAPP_URL_MESSAGE_LIMIT - 1)}…`
+      : message;
+  return `https://wa.me/${digits}?text=${encodeURIComponent(trimmed)}`;
 }
 
 function downloadBlob(blob: Blob, filename: string) {
@@ -68,6 +74,20 @@ function downloadBlob(blob: Blob, filename: string) {
   link.download = filename;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+function isMobileWhatsAppDevice() {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+}
+
+function openWhatsAppChat(url: string) {
+  if (isMobileWhatsAppDevice()) {
+    window.location.assign(url);
+    return;
+  }
+
+  window.open(url, "_blank", "noopener,noreferrer");
 }
 
 export async function shareProformaViaWhatsApp({
@@ -85,7 +105,8 @@ export async function shareProformaViaWhatsApp({
   sitePhone: string;
   siteDomain: string;
 }) {
-  const message = buildWhatsAppProformaMessage({
+  const waUrl = buildWhatsAppProformaUrl({
+    phoneE164,
     customer,
     items,
     locale,
@@ -107,20 +128,6 @@ export async function shareProformaViaWhatsApp({
     rates,
   });
 
-  const file = new File([blob], filename, { type: "application/pdf" });
-  const shareData = { files: [file], text: message };
-
-  if (typeof navigator !== "undefined" && navigator.share) {
-    if (!navigator.canShare || navigator.canShare(shareData)) {
-      try {
-        await navigator.share(shareData);
-        return;
-      } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") return;
-      }
-    }
-  }
-
   downloadBlob(blob, filename);
-  window.open(buildWhatsAppProformaUrl({ phoneE164, customer, items, locale, dict, siteName, currency, rates }), "_blank", "noopener,noreferrer");
+  openWhatsAppChat(waUrl);
 }
