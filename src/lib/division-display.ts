@@ -5,7 +5,7 @@ import type { Source } from "@/lib/types";
 /** Customer-facing division label — never shows Treco/Tremark brand names. */
 export function customerDivisionLabel(source: Source, _locale: Locale, dict: Dictionary) {
   if (source === "its") return "ITS Group";
-  if (source === "alevado") return "Alevado Energy";
+  if (source === "alevado") return dict.catalog.alevadoProducts;
   if (source === "treco") return dict.nav.technology;
   return dict.nav.home;
 }

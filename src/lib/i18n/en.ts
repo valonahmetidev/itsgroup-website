@@ -33,7 +33,7 @@ const en: Dictionary = {
     trecoTitle: "From the network to the camera",
     tremarkTitle: "For everyday living",
     itsTitle: "Our products",
-    alevadoTitle: "Alevado Energy cables",
+    alevadoTitle: "Cables",
     allCategories: "All categories",
     statTech: "technology products",
     statHome: "home appliances",
@@ -73,7 +73,7 @@ const en: Dictionary = {
     priceMax: "To",
     applyFilters: "Apply",
     itsProducts: "ITS products",
-    alevadoProducts: "Alevado Energy",
+    alevadoProducts: "Cables",
   },
   customer: {
     loginTitle: "Sign in",

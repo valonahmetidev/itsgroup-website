@@ -33,7 +33,7 @@ const sq: Dictionary = {
     trecoTitle: "Nga rrjeti te kamera",
     tremarkTitle: "Për jetën e përditshme",
     itsTitle: "Produktet tona",
-    alevadoTitle: "Kabllot Alevado Energy",
+    alevadoTitle: "Kabllo",
     allCategories: "Të gjitha kategoritë",
     statTech: "produkte teknologjike",
     statHome: "pajisje shtëpiake",
@@ -73,7 +73,7 @@ const sq: Dictionary = {
     priceMax: "Deri",
     applyFilters: "Apliko",
     itsProducts: "Produkte ITS",
-    alevadoProducts: "Alevado Energy",
+    alevadoProducts: "Kabllo",
   },
   customer: {
     loginTitle: "Hyrje",

@@ -112,7 +112,7 @@ export function HomeSections({
         <section className="shell border-t border-ink/10 py-16">
           <div className="mb-8 flex items-end justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-tech">Alevado Energy</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-tech">{dict.catalog.alevadoProducts}</p>
               <h2 className="mt-2 font-display text-3xl md:text-5xl">{dict.home.alevadoTitle}</h2>
             </div>
             <Link href="/katalog?source=alevado" className="hidden text-sm font-semibold text-tech md:inline">

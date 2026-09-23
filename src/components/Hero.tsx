@@ -122,7 +122,7 @@ function HeroSlideshow({ shots, fromCatalog }: { shots: HeroShot[]; fromCatalog:
       : shot.source === "tremark"
         ? dict.nav.home
         : shot.source === "alevado"
-          ? "Alevado Energy"
+          ? dict.catalog.alevadoProducts
           : "ITS Group";
   const go = (step: number) => setIndex((current) => (current + step + deck.length) % deck.length);
 

@@ -23,9 +23,9 @@ const labels: Record<Source, SourceLabels> = {
     sq: "ITS Group",
   },
   alevado: {
-    brand: "Alevado Energy",
-    mk: "Alevado Energy",
-    sq: "Alevado Energy",
+    brand: "Cables",
+    mk: "Кабли",
+    sq: "Kabllo",
   },
 };
 
