@@ -240,6 +240,10 @@ export type Dictionary = {
     nameMk: string;
     nameEn: string;
     nameSq: string;
+    descriptionMk: string;
+    descriptionEn: string;
+    descriptionSq: string;
+    catalogDescription: string;
     imageUrl: string;
     uploadImage: string;
     uploadingImage: string;

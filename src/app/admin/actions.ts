@@ -350,6 +350,9 @@ export async function adminSaveProduct(input: {
   nameMk: string;
   nameEn: string;
   nameSq: string;
+  excerptMk: string;
+  excerptEn: string;
+  excerptSq: string;
   imageUrl: string;
   price: string;
   regularPrice: string;
@@ -379,6 +382,9 @@ export async function adminSaveProduct(input: {
   const nameMk = input.nameMk.trim() || null;
   const nameEn = input.nameEn.trim() || null;
   const nameSq = input.nameSq.trim() || null;
+  const excerptMk = input.excerptMk.trim() || null;
+  const excerptEn = input.excerptEn.trim() || null;
+  const excerptSq = input.excerptSq.trim() || null;
   const imageUrl = input.imageUrl.trim() || null;
 
   await upsertProductOverride(db, {
@@ -387,6 +393,9 @@ export async function adminSaveProduct(input: {
     nameMk,
     nameEn,
     nameSq,
+    excerptMk,
+    excerptEn,
+    excerptSq,
     imageUrl,
     price: Number.isFinite(price) ? price : null,
     regularPrice: Number.isFinite(regularPrice) ? regularPrice : null,

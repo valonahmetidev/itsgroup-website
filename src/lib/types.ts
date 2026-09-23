@@ -28,6 +28,7 @@ export type Product = {
   stockQuantity?: number | null;
   categories: { id: number; name: string; slug: string }[];
   excerpt: string;
+  excerpts?: ProductNames;
   permalink: string;
   customerDiscountPercent?: number;
   unit?: ProductUnit;

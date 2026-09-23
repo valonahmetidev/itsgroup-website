@@ -12,7 +12,7 @@ import { salePercent } from "@/lib/format";
 import { stockAvailabilityLabel } from "@/lib/stock-label";
 import { useCategoryLabel } from "@/lib/i18n/catalog-labels";
 import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
-import { useProductName } from "@/lib/use-product-name";
+import { useProductExcerpt, useProductName } from "@/lib/use-product-name";
 import type { Category, Product } from "@/lib/types";
 
 export function ProductView({
@@ -27,6 +27,7 @@ export function ProductView({
   const { dict, locale } = useLocale();
   const { formatPrice } = useCurrency();
   const productName = useProductName(product);
+  const productExcerpt = useProductExcerpt(product);
   const categoryLabel = useCategoryLabel();
   const discount = product.onSale ? salePercent(product.price, product.regularPrice) : null;
   const divisionLabel = customerDivisionLabel(product.source, locale, dict);
@@ -88,7 +89,7 @@ export function ProductView({
               />
             </div>
           </div>
-          {product.excerpt && <p className="mt-6 max-w-xl leading-7 text-ink/75">{product.excerpt}</p>}
+          {productExcerpt && <p className="mt-6 max-w-xl leading-7 text-ink/75">{productExcerpt}</p>}
           <div className="mt-6 flex flex-wrap gap-2">
             {product.categories.map((item) => (
               <Link key={item.id} href={categoryHref({ source: product.source, id: item.id })} className="rounded-full bg-surface px-3 py-1 text-sm hover:text-tech">

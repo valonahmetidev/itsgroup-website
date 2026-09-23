@@ -25,3 +25,15 @@ export function namesFromOverride(input: {
   if (!mk && !en && !sq) return undefined;
   return { mk: mk || en || sq || "", en, sq };
 }
+
+export function excerptsFromOverride(input: {
+  excerpt_mk?: string | null;
+  excerpt_en?: string | null;
+  excerpt_sq?: string | null;
+}) {
+  const mk = input.excerpt_mk?.trim() || "";
+  const en = input.excerpt_en?.trim() || null;
+  const sq = input.excerpt_sq?.trim() || null;
+  if (!mk && !en && !sq) return undefined;
+  return { mk: mk || en || sq || "", en, sq };
+}

@@ -32,6 +32,9 @@ export function ProductEditForm({
   const [nameMk, setNameMk] = useState(override?.name_mk ?? override?.name ?? product.names?.mk ?? product.name);
   const [nameEn, setNameEn] = useState(override?.name_en ?? product.names?.en ?? "");
   const [nameSq, setNameSq] = useState(override?.name_sq ?? product.names?.sq ?? "");
+  const [excerptMk, setExcerptMk] = useState(override?.excerpt_mk ?? product.excerpt ?? "");
+  const [excerptEn, setExcerptEn] = useState(override?.excerpt_en ?? "");
+  const [excerptSq, setExcerptSq] = useState(override?.excerpt_sq ?? "");
   const [imageUrl, setImageUrl] = useState(override?.image_url ?? product.image ?? "");
   const [price, setPrice] = useState(override?.price?.toString() ?? product.price?.toString() ?? "");
   const [regularPrice, setRegularPrice] = useState(
@@ -53,6 +56,9 @@ export function ProductEditForm({
       nameMk,
       nameEn,
       nameSq,
+      excerptMk,
+      excerptEn,
+      excerptSq,
       imageUrl,
       price,
       regularPrice,
@@ -126,6 +132,14 @@ export function ProductEditForm({
           <p className="mt-2 text-sm text-ink/60">
             {formatPrice(product.price, locale, dict)} · {stockAvailabilityLabel(product, dict)}
           </p>
+          {product.excerpt && (
+            <div className="mt-3 border-t border-ink/10 pt-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink/45">
+                {dict.admin.catalogDescription}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-ink/60">{product.excerpt}</p>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -150,6 +164,33 @@ export function ProductEditForm({
           <label className="grid gap-1 text-sm">
             <span>{dict.admin.nameSq}</span>
             <input value={nameSq} onChange={(event) => setNameSq(event.target.value)} className={fieldClass} />
+          </label>
+          <label className="grid gap-1 text-sm lg:col-span-2">
+            <span>{dict.admin.descriptionMk}</span>
+            <textarea
+              value={excerptMk}
+              onChange={(event) => setExcerptMk(event.target.value)}
+              rows={4}
+              className={`${fieldClass} resize-y`}
+            />
+          </label>
+          <label className="grid gap-1 text-sm lg:col-span-2">
+            <span>{dict.admin.descriptionEn}</span>
+            <textarea
+              value={excerptEn}
+              onChange={(event) => setExcerptEn(event.target.value)}
+              rows={4}
+              className={`${fieldClass} resize-y`}
+            />
+          </label>
+          <label className="grid gap-1 text-sm lg:col-span-2">
+            <span>{dict.admin.descriptionSq}</span>
+            <textarea
+              value={excerptSq}
+              onChange={(event) => setExcerptSq(event.target.value)}
+              rows={4}
+              className={`${fieldClass} resize-y`}
+            />
           </label>
           <div className="lg:col-span-2">
             <ImageUploadField value={imageUrl} onChange={setImageUrl} alt={nameMk || product.name} />

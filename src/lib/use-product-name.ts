@@ -17,3 +17,8 @@ export function useResolvedName(name: string, names?: ProductNames) {
   const { locale } = useLocale();
   return resolveProductName(names, name, locale);
 }
+
+export function useProductExcerpt(product: { excerpt: string; excerpts?: ProductNames }) {
+  const { locale } = useLocale();
+  return resolveProductName(product.excerpts, product.excerpt, locale);
+}

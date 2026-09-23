@@ -1,5 +1,5 @@
 import type { Locale } from "@/lib/i18n";
-import { namesFromOverride, resolveProductName } from "@/lib/product-names";
+import { excerptsFromOverride, namesFromOverride, resolveProductName } from "@/lib/product-names";
 import { normalizeProductUnit, type ProductUnit } from "@/lib/units";
 import type { Product, CatalogSource } from "@/lib/types";
 import type { D1Database } from "@/lib/db";
@@ -11,6 +11,9 @@ export type ProductOverrideRow = {
   name_mk: string | null;
   name_en: string | null;
   name_sq: string | null;
+  excerpt_mk: string | null;
+  excerpt_en: string | null;
+  excerpt_sq: string | null;
   image_url: string | null;
   price: number | null;
   regular_price: number | null;
@@ -21,22 +24,33 @@ export type ProductOverrideRow = {
 };
 
 const overrideColumns =
+  "source, product_id, name, name_mk, name_en, name_sq, excerpt_mk, excerpt_en, excerpt_sq, image_url, price, regular_price, in_stock, hidden, unit, updated_at";
+
+const mediaOverrideColumns =
   "source, product_id, name, name_mk, name_en, name_sq, image_url, price, regular_price, in_stock, hidden, unit, updated_at";
 
 const legacyOverrideColumns =
   "source, product_id, name, price, regular_price, in_stock, hidden, updated_at";
 
-type LegacyProductOverrideRow = Omit<ProductOverrideRow, "name_mk" | "name_en" | "name_sq" | "image_url">;
+type MediaProductOverrideRow = Omit<ProductOverrideRow, "excerpt_mk" | "excerpt_en" | "excerpt_sq">;
+type LegacyProductOverrideRow = Omit<MediaProductOverrideRow, "name_mk" | "name_en" | "name_sq" | "image_url" | "unit">;
 
-function toOverrideRow(row: LegacyProductOverrideRow): ProductOverrideRow {
+function withExcerptDefaults<T extends Partial<ProductOverrideRow>>(row: T): ProductOverrideRow {
   return {
-    ...row,
+    excerpt_mk: null,
+    excerpt_en: null,
+    excerpt_sq: null,
+    unit: null,
+    image_url: null,
     name_mk: null,
     name_en: null,
     name_sq: null,
-    image_url: null,
-    unit: null,
-  };
+    ...row,
+  } as ProductOverrideRow;
+}
+
+function toOverrideRow(row: LegacyProductOverrideRow | MediaProductOverrideRow): ProductOverrideRow {
+  return withExcerptDefaults(row);
 }
 
 async function queryAllOverrides(db: D1Database) {
@@ -47,11 +61,19 @@ async function queryAllOverrides(db: D1Database) {
       .all<ProductOverrideRow>();
     return results;
   } catch {
-    const { results } = await db
-      .prepare(`SELECT ${legacyOverrideColumns} FROM product_overrides ORDER BY updated_at DESC`)
-      .bind()
-      .all<LegacyProductOverrideRow>();
-    return results.map(toOverrideRow);
+    try {
+      const { results } = await db
+        .prepare(`SELECT ${mediaOverrideColumns} FROM product_overrides ORDER BY updated_at DESC`)
+        .bind()
+        .all<MediaProductOverrideRow>();
+      return results.map(toOverrideRow);
+    } catch {
+      const { results } = await db
+        .prepare(`SELECT ${legacyOverrideColumns} FROM product_overrides ORDER BY updated_at DESC`)
+        .bind()
+        .all<LegacyProductOverrideRow>();
+      return results.map(toOverrideRow);
+    }
   }
 }
 
@@ -62,11 +84,19 @@ async function queryOneOverride(db: D1Database, source: CatalogSource, productId
       .bind(source, productId)
       .first<ProductOverrideRow>();
   } catch {
-    const row = await db
-      .prepare(`SELECT ${legacyOverrideColumns} FROM product_overrides WHERE source = ? AND product_id = ?`)
-      .bind(source, productId)
-      .first<LegacyProductOverrideRow>();
-    return row ? toOverrideRow(row) : null;
+    try {
+      const row = await db
+        .prepare(`SELECT ${mediaOverrideColumns} FROM product_overrides WHERE source = ? AND product_id = ?`)
+        .bind(source, productId)
+        .first<MediaProductOverrideRow>();
+      return row ? toOverrideRow(row) : null;
+    } catch {
+      const row = await db
+        .prepare(`SELECT ${legacyOverrideColumns} FROM product_overrides WHERE source = ? AND product_id = ?`)
+        .bind(source, productId)
+        .first<LegacyProductOverrideRow>();
+      return row ? toOverrideRow(row) : null;
+    }
   }
 }
 
@@ -86,6 +116,9 @@ export async function upsertProductOverride(
     nameMk: string | null;
     nameEn: string | null;
     nameSq: string | null;
+    excerptMk: string | null;
+    excerptEn: string | null;
+    excerptSq: string | null;
     imageUrl: string | null;
     price: number | null;
     regularPrice: number | null;
@@ -97,13 +130,16 @@ export async function upsertProductOverride(
   const legacyName = input.nameMk;
   await db
     .prepare(
-      `INSERT INTO product_overrides (source, product_id, name, name_mk, name_en, name_sq, image_url, price, regular_price, in_stock, hidden, unit, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO product_overrides (source, product_id, name, name_mk, name_en, name_sq, excerpt_mk, excerpt_en, excerpt_sq, image_url, price, regular_price, in_stock, hidden, unit, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(source, product_id) DO UPDATE SET
          name = excluded.name,
          name_mk = excluded.name_mk,
          name_en = excluded.name_en,
          name_sq = excluded.name_sq,
+         excerpt_mk = excluded.excerpt_mk,
+         excerpt_en = excluded.excerpt_en,
+         excerpt_sq = excluded.excerpt_sq,
          image_url = excluded.image_url,
          price = excluded.price,
          regular_price = excluded.regular_price,
@@ -119,6 +155,9 @@ export async function upsertProductOverride(
       input.nameMk,
       input.nameEn,
       input.nameSq,
+      input.excerptMk,
+      input.excerptEn,
+      input.excerptSq,
       input.imageUrl,
       input.price,
       input.regularPrice,
@@ -148,6 +187,10 @@ export function applyProductOverride(
   const onSale = price != null && regularPrice != null && price < regularPrice;
   const names = namesFromOverride(override) ?? product.names;
   const name = locale ? resolveProductName(names, product.name, locale) : resolveProductName(names, product.name, "mk");
+  const excerpts = excerptsFromOverride(override) ?? product.excerpts;
+  const excerpt = locale
+    ? resolveProductName(excerpts, product.excerpt, locale)
+    : resolveProductName(excerpts, product.excerpt, "mk");
   const image = override.image_url?.trim() || product.image;
 
   const unit = override.unit ? normalizeProductUnit(override.unit) : undefined;
@@ -156,6 +199,8 @@ export function applyProductOverride(
     ...product,
     name,
     names,
+    excerpt,
+    excerpts,
     image,
     price,
     regularPrice,
