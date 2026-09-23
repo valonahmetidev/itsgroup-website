@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, ClipboardList, Menu, MoreHorizontal, X } from "lucide-react";
+import { ChevronDown, ClipboardList, LogOut, Menu, MoreHorizontal, User, X } from "lucide-react";
+import { customerLogout } from "@/app/customer/actions";
 import { CustomerNav } from "@/components/CustomerNav";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -42,19 +44,20 @@ export function Header({
   }, [pathname]);
 
   useEffect(() => {
-    if (!mobile) return;
+    if (!mobile) {
+      document.body.style.removeProperty("overflow");
+      return;
+    }
+
+    document.body.style.overflow = "hidden";
 
     function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") setMobile(false);
     }
-    function onPointer(event: PointerEvent) {
-      if (!headerRef.current?.contains(event.target as Node)) setMobile(false);
-    }
     document.addEventListener("keydown", onKey);
-    document.addEventListener("pointerdown", onPointer);
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.removeEventListener("pointerdown", onPointer);
+      document.body.style.removeProperty("overflow");
     };
   }, [mobile]);
 
@@ -132,48 +135,142 @@ export function Header({
         </div>
       </div>
 
-      {mobile && (
-        <div className="max-h-[calc(100vh-3.5rem)] overflow-y-auto border-t border-ink/10 bg-card px-5 py-4 lg:hidden">
-          <div className="flex items-center gap-2">
-            <LanguageSwitcher compact />
-            <ThemeToggle />
-          </div>
-
-          <nav className="mt-4 flex flex-col border-t border-ink/10">
-            {allLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobile(false)}
-                className="border-b border-ink/10 py-3 text-lg font-medium"
-              >
-                {link.label}
-              </Link>
-            ))}
-            {!customer && (
-              <Link href="/najava" onClick={() => setMobile(false)} className="border-b border-ink/10 py-3 text-lg font-medium">
-                {dict.customer.loginButton}
-              </Link>
-            )}
-          </nav>
-
-          <MobileCategorySection
-            title={dict.nav.technology}
-            href="/tehnologija"
-            categories={techCategories}
-            label={categoryLabel}
-            onNavigate={() => setMobile(false)}
-          />
-          <MobileCategorySection
-            title={dict.nav.home}
-            href="/dom"
-            categories={homeCategories}
-            label={categoryLabel}
-            onNavigate={() => setMobile(false)}
-          />
-        </div>
-      )}
+      {mobile &&
+        createPortal(
+          <MobileMenu
+            customer={customer}
+            allLinks={allLinks}
+            techCategories={techCategories}
+            homeCategories={homeCategories}
+            categoryLabel={categoryLabel}
+            quoteCount={items.length}
+            onClose={() => setMobile(false)}
+          />,
+          document.body,
+        )}
     </header>
+  );
+}
+
+function MobileMenu({
+  customer,
+  allLinks,
+  techCategories,
+  homeCategories,
+  categoryLabel,
+  quoteCount,
+  onClose,
+}: {
+  customer: { name: string; discountPercent: number | null } | null;
+  allLinks: { href: string; label: string }[];
+  techCategories: MenuColumn[];
+  homeCategories: MenuColumn[];
+  categoryLabel: (category: MenuColumn) => string;
+  quoteCount: number;
+  onClose: () => void;
+}) {
+  const { dict } = useLocale();
+
+  return (
+    <div className="fixed inset-0 z-[70] flex flex-col bg-card lg:hidden">
+      <div className="shell flex h-16 shrink-0 items-center justify-between border-b border-ink/10">
+        <Logo href="/" variant="header" />
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-surface"
+          aria-label={dict.nav.menu}
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4">
+        {customer ? (
+          <div className="mb-4 rounded-2xl border border-ink/10 bg-surface p-4">
+            <div className="flex items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-tech/15 text-tech">
+                <User className="h-5 w-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold leading-snug">{customer.name}</p>
+                {customer.discountPercent != null && (
+                  <p className="mt-1 text-sm text-tech">
+                    {dict.customer.yourDiscount}: -{customer.discountPercent}%
+                  </p>
+                )}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => void customerLogout()}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-ink/10 px-4 py-2.5 text-sm font-semibold transition hover:border-home hover:text-home"
+            >
+              <LogOut className="h-4 w-4" />
+              {dict.customer.logout}
+            </button>
+          </div>
+        ) : (
+          <Link
+            href="/najava"
+            onClick={onClose}
+            className="mb-4 flex items-center gap-3 rounded-2xl border border-ink/10 bg-surface p-4 transition hover:border-tech"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-tech/15 text-tech">
+              <User className="h-5 w-5" />
+            </span>
+            <span className="font-semibold">{dict.customer.loginButton}</span>
+          </Link>
+        )}
+
+        <Link
+          href="/ponuda"
+          onClick={onClose}
+          className="mb-4 flex items-center justify-between rounded-2xl border border-ink/10 bg-surface px-4 py-3 font-semibold transition hover:border-tech"
+        >
+          <span className="flex items-center gap-2">
+            <ClipboardList className="h-5 w-5 text-tech" />
+            {dict.nav.quote}
+          </span>
+          {quoteCount > 0 && (
+            <span className="rounded-full bg-home px-2 py-0.5 text-xs font-bold text-white">{quoteCount}</span>
+          )}
+        </Link>
+
+        <div className="mb-4 flex items-center gap-2">
+          <LanguageSwitcher compact />
+          <ThemeToggle />
+        </div>
+
+        <nav className="flex flex-col border-t border-ink/10">
+          {allLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={onClose}
+              className="border-b border-ink/10 py-3 text-lg font-medium"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+
+        <MobileCategorySection
+          title={dict.nav.technology}
+          href="/tehnologija"
+          categories={techCategories}
+          label={categoryLabel}
+          onNavigate={onClose}
+        />
+        <MobileCategorySection
+          title={dict.nav.home}
+          href="/dom"
+          categories={homeCategories}
+          label={categoryLabel}
+          onNavigate={onClose}
+        />
+      </div>
+    </div>
   );
 }
 
