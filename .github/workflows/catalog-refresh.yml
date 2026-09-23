@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Fetch Treco and Tremark catalog
+      - name: Fetch Treco, Tremark, and Alevado catalogs
         run: npm run catalog:refresh
 
       - name: Reconcile orphaned D1 rows
@@ -42,8 +42,8 @@ jobs:
         id: commit
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: refresh catalog from Treco and Tremark"
-          file_pattern: data/catalog.json src/lib/i18n/category-names.ts
+          commit_message: "chore: refresh catalog from Treco, Tremark, and Alevado"
+          file_pattern: data/catalog.json data/alevado-catalog.json src/lib/i18n/category-names.ts
 
       - name: Deploy to Cloudflare
         if: steps.commit.outputs.changes_detected == 'true'

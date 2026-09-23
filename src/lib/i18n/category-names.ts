@@ -1254,69 +1254,69 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "sq": "Fshesa me korrent"
   },
   "alevado:lan-cables": {
-    "mk": "Lan Cables",
-    "en": "Lan Cables",
-    "sq": "Lan Cables"
+    "mk": "LAN Кабли",
+    "en": "LAN Кабли",
+    "sq": "LAN Кабли"
   },
   "alevado:data-transmission-cables": {
-    "mk": "Data Transmission Cables",
-    "en": "Data Transmission Cables",
-    "sq": "Data Transmission Cables"
+    "mk": "Кабли за Пренос на Податоци",
+    "en": "Кабли За Пренос На Податоци",
+    "sq": "Кабли За Пренос На Податоци"
   },
   "alevado:profinet-cables": {
-    "mk": "Profinet Cables",
-    "en": "Profinet Cables",
-    "sq": "Profinet Cables"
+    "mk": "Profinet Кабли",
+    "en": "Profinet Кабли",
+    "sq": "Profinet Кабли"
   },
   "alevado:control-cables": {
-    "mk": "Control Cables",
-    "en": "Control Cables",
-    "sq": "Control Cables"
+    "mk": "Контролни Кабли",
+    "en": "Контролни Кабли",
+    "sq": "Контролни Кабли"
   },
   "alevado:alarm-cables": {
-    "mk": "Alarm Cables",
-    "en": "Alarm Cables",
-    "sq": "Alarm Cables"
+    "mk": "Алармни Кабли",
+    "en": "Алармни Кабли",
+    "sq": "Алармни Кабли"
   },
   "alevado:fire-alarm-cables": {
-    "mk": "Fire Alarm Cables",
-    "en": "Fire Alarm Cables",
-    "sq": "Fire Alarm Cables"
+    "mk": "Пожарно дојавни Кабли",
+    "en": "Пожарно Дојавни Кабли",
+    "sq": "Пожарно Дојавни Кабли"
   },
   "alevado:communication-cables": {
-    "mk": "Communication Cables",
-    "en": "Communication Cables",
-    "sq": "Communication Cables"
+    "mk": "Телекомуникациски Кабли",
+    "en": "Телекомуникациски Кабли",
+    "sq": "Телекомуникациски Кабли"
   },
   "alevado:video-signal-cables": {
-    "mk": "Video Signal Cables",
-    "en": "Video Signal Cables",
-    "sq": "Video Signal Cables"
+    "mk": "Видео Сигнални Кабли",
+    "en": "Видео Сигнални Кабли",
+    "sq": "Видео Сигнални Кабли"
   },
   "alevado:power-chain-cables": {
-    "mk": "Power Chain Cables",
-    "en": "Power Chain Cables",
-    "sq": "Power Chain Cables"
+    "mk": "Високо Флексибилни Контролни Кабли (Drag chain cable)",
+    "en": "Високо Флексибилни Контролни Кабли (drag Chain Cable)",
+    "sq": "Високо Флексибилни Контролни Кабли (drag Chain Cable)"
   },
   "alevado:signal-cables": {
-    "mk": "Signal Cables",
-    "en": "Signal Cables",
-    "sq": "Signal Cables"
+    "mk": "Сигнално / Контролни Кабли",
+    "en": "Сигнално / Контролни Кабли",
+    "sq": "Сигнално / Контролни Кабли"
   },
   "alevado:telephone-cables": {
-    "mk": "Telephone Cables",
-    "en": "Telephone Cables",
-    "sq": "Telephone Cables"
+    "mk": "Телефонски Кабли",
+    "en": "Телефонски Кабли",
+    "sq": "Телефонски Кабли"
   },
   "alevado:audio-speaker-cables": {
-    "mk": "Audio Speaker Cables",
-    "en": "Audio Speaker Cables",
-    "sq": "Audio Speaker Cables"
+    "mk": "Аудио Кабли",
+    "en": "Аудио Кабли",
+    "sq": "Аудио Кабли"
   },
   "alevado:servomotor-cables": {
-    "mk": "Servomotor Cables",
-    "en": "Servomotor Cables",
-    "sq": "Servomotor Cables"
+    "mk": "Сервомотор Кабли",
+    "en": "Сервомотор Кабли",
+    "sq": "Сервомотор Кабли"
   }
 };
 

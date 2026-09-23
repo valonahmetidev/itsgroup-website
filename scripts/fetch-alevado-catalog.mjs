@@ -57,17 +57,48 @@ function extractImage(html) {
   return match ? `${BASE}${match[1]}` : null;
 }
 
+function extractHeading(html) {
+  const match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+  return match ? decodeHtml(match[1]) : "";
+}
+
+function slugify(value) {
+  return value
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 80);
+}
+
+/** Each product page lists cable configurations in a spec table. Those rows are the full type list. */
+function extractConfigurations(html) {
+  const names = [];
+  for (const table of html.matchAll(/<tbody[\s\S]*?<\/tbody>/gi)) {
+    for (const row of table[0].matchAll(/<tr[\s\S]*?<\/tr>/gi)) {
+      const cell = row[0].match(/<td[^>]*>([^<]+)<\/td>/i);
+      const name = cell ? decodeHtml(cell[1]) : "";
+      if (name.length < 2) continue;
+      if (!/[a-zA-Z\u0400-\u04FF]/.test(name)) continue;
+      names.push(name);
+    }
+  }
+  return [...new Set(names)];
+}
+
 const productsIndexHtml = await fetchText(`${BASE}/${LOCALE}/products`);
 const categorySlugs = extractCategorySlugs(productsIndexHtml);
 console.log(`categories: ${categorySlugs.length}`);
 
+const categoryPages = new Map();
+for (const slug of categorySlugs) {
+  categoryPages.set(slug, await fetchText(`${BASE}/${LOCALE}/products/${slug}`));
+}
+
 const categories = categorySlugs.map((slug, index) => ({
   id: index + 1,
   source: "alevado",
-  name: slug
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" "),
+  name: extractHeading(categoryPages.get(slug)) || slug,
   slug,
   parent: 0,
   count: 0,
@@ -77,7 +108,7 @@ const categoryBySlug = new Map(categories.map((category) => [category.slug, cate
 const productPaths = [];
 
 for (const categorySlug of categorySlugs) {
-  const html = await fetchText(`${BASE}/${LOCALE}/products/${categorySlug}`);
+  const html = categoryPages.get(categorySlug);
   const paths = extractProductPaths(html);
   productPaths.push(...paths);
   const category = categoryBySlug.get(categorySlug);
@@ -89,30 +120,52 @@ const uniquePaths = [...new Map(productPaths.map((entry) => [`${entry.categorySl
 console.log(`products to fetch: ${uniquePaths.length}`);
 
 const products = [];
+let configurationCount = 0;
 for (const [index, entry] of uniquePaths.entries()) {
   const html = await fetchText(`${BASE}/${LOCALE}/products/${entry.categorySlug}/${entry.productId}`);
   const category = categoryBySlug.get(entry.categorySlug);
-  const name = extractTitle(html);
+  const name = extractTitle(html) || extractHeading(html);
   const excerpt = extractExcerpt(html).slice(0, 420);
   const image = extractImage(html);
-  products.push({
-    id: entry.productId,
+  const permalink = `${BASE}/${LOCALE}/products/${entry.categorySlug}/${entry.productId}`;
+  const categoryRef = category ? [{ id: category.id, name: category.name, slug: category.slug }] : [];
+  const configurations = extractConfigurations(html);
+
+  const base = {
     source: "alevado",
-    name,
-    slug: entry.productId,
     price: null,
     regularPrice: null,
     onSale: false,
     currency: "MKD",
     image,
     inStock: true,
-    categories: category
-      ? [{ id: category.id, name: category.name, slug: category.slug }]
-      : [],
+    categories: categoryRef,
     excerpt,
-    permalink: `${BASE}/${LOCALE}/products/${entry.categorySlug}/${entry.productId}`,
-  });
+    permalink,
+  };
+
+  if (configurations.length === 0) {
+    products.push({ ...base, id: entry.productId, name, slug: entry.productId });
+  } else {
+    configurationCount += configurations.length;
+    for (const configuration of configurations) {
+      const suffix = slugify(configuration) || String(products.length);
+      products.push({
+        ...base,
+        id: `${entry.productId}--${suffix}`,
+        name: configuration,
+        slug: `${entry.productId}--${suffix}`,
+      });
+    }
+  }
+
   if ((index + 1) % 25 === 0) console.log(`fetched ${index + 1}/${uniquePaths.length}`);
+}
+
+console.log(`configurations: ${configurationCount}`);
+
+for (const category of categories) {
+  category.count = products.filter((product) => product.categories.some((item) => item.slug === category.slug)).length;
 }
 
 const payload = {
