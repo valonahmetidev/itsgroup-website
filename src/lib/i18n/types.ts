@@ -33,6 +33,7 @@ export type Dictionary = {
     trecoTitle: string;
     tremarkTitle: string;
     itsTitle: string;
+    alevadoTitle: string;
     allCategories: string;
     statTech: string;
     statHome: string;
@@ -83,6 +84,7 @@ export type Dictionary = {
     priceMax: string;
     applyFilters: string;
     itsProducts: string;
+    alevadoProducts: string;
   };
   product: {
     inStock: string;

@@ -1,7 +1,7 @@
 import rawCatalog from "../../data/catalog.json";
 import { categoryHref } from "@/lib/paths";
 import { searchAndRankProducts } from "@/lib/product-search";
-import type { Category, MenuColumn, MenuGroup, MenuLink, Product, Source } from "@/lib/types";
+import type { Category, CatalogSource, MenuColumn, MenuGroup, MenuLink, Product, Source } from "@/lib/types";
 
 export { categoryHref, productHref } from "@/lib/paths";
 
@@ -107,11 +107,11 @@ for (const product of products) {
 }
 
 export function isSource(value: string): value is Source {
-  return value === "treco" || value === "tremark" || value === "its";
+  return value === "treco" || value === "tremark" || value === "its" || value === "alevado";
 }
 
-export function isCatalogSource(value: string): value is "treco" | "tremark" {
-  return value === "treco" || value === "tremark";
+export function isCatalogSource(value: string): value is CatalogSource {
+  return value === "treco" || value === "tremark" || value === "alevado";
 }
 
 function childrenOf(source: Source, parentId: number) {
@@ -131,9 +131,9 @@ export function getCategory(source: string, id: number) {
   return categories.find((category) => category.source === source && category.id === id);
 }
 
-export function getProduct(source: string, id: number) {
+export function getProduct(source: string, id: number | string) {
   if (!isSource(source)) return undefined;
-  return products.find((product) => product.source === source && product.id === id);
+  return products.find((product) => product.source === source && String(product.id) === String(id));
 }
 
 export function categoryTrail(category: Category) {
@@ -184,6 +184,7 @@ export function featuredProducts(source: Source, limit: number) {
 const catalogCounts = {
   treco: products.filter((product) => product.source === "treco").length,
   tremark: products.filter((product) => product.source === "tremark").length,
+  alevado: products.filter((product) => product.source === "alevado").length,
   categories: categories.filter(categoryHasProducts).length,
 };
 

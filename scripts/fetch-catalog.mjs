@@ -1,5 +1,6 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { spawn } from "node:child_process";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -106,15 +107,27 @@ const [trecoCategories, tremarkCategories, trecoProducts, tremarkProducts] = awa
   fetchAll("https://tremark.mk/wp-json/wc/store/v1/products"),
 ]);
 
+await new Promise((resolve, reject) => {
+  const child = spawn(process.execPath, ["scripts/fetch-alevado-catalog.mjs"], {
+    cwd: ROOT,
+    stdio: "inherit",
+  });
+  child.on("exit", (code) => (code === 0 ? resolve() : reject(new Error(`fetch-alevado-catalog exited ${code}`))));
+});
+
+const alevadoCatalog = JSON.parse(await readFile(path.join(ROOT, "data", "alevado-catalog.json"), "utf8"));
+
 const catalog = {
   fetchedAt: new Date().toISOString(),
   categories: [
     ...trecoCategories.map((category) => mapCategory("treco", category)),
     ...tremarkCategories.map((category) => mapCategory("tremark", category)),
+    ...alevadoCatalog.categories,
   ],
   products: [
     ...trecoProducts.map((product) => mapProduct("treco", product)),
     ...tremarkProducts.map((product) => mapProduct("tremark", product)),
+    ...alevadoCatalog.products,
   ].filter((product) => product.name),
 };
 
@@ -124,5 +137,5 @@ await writeFile(path.join(dataDir, "catalog.json"), JSON.stringify(catalog));
 
 const bySource = (source) => catalog.products.filter((product) => product.source === source).length;
 console.log(
-  `Saved ${catalog.categories.length} categories, treco ${bySource("treco")}, tremark ${bySource("tremark")}`,
+  `Saved ${catalog.categories.length} categories, treco ${bySource("treco")}, tremark ${bySource("tremark")}, alevado ${bySource("alevado")}`,
 );

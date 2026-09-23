@@ -82,6 +82,7 @@ function CatalogFilterFields({
             { value: "treco", label: dict.nav.technology },
             { value: "tremark", label: dict.nav.home },
             { value: "its", label: dict.catalog.itsProducts },
+            { value: "alevado", label: dict.catalog.alevadoProducts },
           ]}
           hrefFor={(source) => hrefFor({ source, page: 1 })}
         />
@@ -178,6 +179,7 @@ function activeFilterLabel(id: string, query: ParsedCatalogQuery, dict: Dictiona
       if (query.source === "treco") return dict.nav.technology;
       if (query.source === "tremark") return dict.nav.home;
       if (query.source === "its") return dict.catalog.itsProducts;
+      if (query.source === "alevado") return dict.catalog.alevadoProducts;
       return dict.catalog.all;
     case "stock":
       return query.stock === "in" ? dict.catalog.stockIn : dict.catalog.stockOut;

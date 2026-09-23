@@ -90,17 +90,6 @@ export function Hero({
   );
 }
 
-function shuffle<T>(items: readonly T[]) {
-  const copy = [...items];
-  for (let index = copy.length - 1; index > 0; index -= 1) {
-    const swap = Math.floor(Math.random() * (index + 1));
-    const current = copy[index];
-    copy[index] = copy[swap] as T;
-    copy[swap] = current as T;
-  }
-  return copy;
-}
-
 function HeroSlideshow({ shots, fromCatalog }: { shots: HeroShot[]; fromCatalog: string }) {
   const { dict, locale } = useLocale();
   const { formatPrice } = useCurrency();
@@ -110,7 +99,7 @@ function HeroSlideshow({ shots, fromCatalog }: { shots: HeroShot[]; fromCatalog:
   const shot = deck[index];
 
   useEffect(() => {
-    setDeck(shuffle(shots).slice(0, 8));
+    setDeck(shots.slice(0, 24));
     setIndex(0);
   }, [shots]);
 
@@ -127,7 +116,14 @@ function HeroSlideshow({ shots, fromCatalog }: { shots: HeroShot[]; fromCatalog:
   }
 
   const meta = sourceMeta[shot.source];
-  const division = shot.source === "treco" ? dict.nav.technology : dict.nav.home;
+  const division =
+    shot.source === "treco"
+      ? dict.nav.technology
+      : shot.source === "tremark"
+        ? dict.nav.home
+        : shot.source === "alevado"
+          ? "Alevado Energy"
+          : "ITS Group";
   const go = (step: number) => setIndex((current) => (current + step + deck.length) % deck.length);
 
   return (

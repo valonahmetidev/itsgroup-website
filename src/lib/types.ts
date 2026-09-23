@@ -1,8 +1,8 @@
 import type { ProductNames } from "@/lib/product-names";
 import type { ProductUnit } from "@/lib/units";
 
-export type Source = "treco" | "tremark" | "its";
-export type CatalogSource = "treco" | "tremark";
+export type Source = "treco" | "tremark" | "its" | "alevado";
+export type CatalogSource = "treco" | "tremark" | "alevado";
 
 export type Category = {
   id: number;

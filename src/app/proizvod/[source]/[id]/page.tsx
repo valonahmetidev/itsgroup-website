@@ -32,7 +32,7 @@ export default async function ProductPage({
 }) {
   const { locale } = await getServerI18n();
   const { source, id } = await params;
-  const base = getProduct(source, Number(id));
+  const base = getProduct(source, id);
   if (!base) notFound();
 
   const product = await liveGetProduct(source, id, locale);

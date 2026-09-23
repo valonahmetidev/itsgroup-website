@@ -22,6 +22,7 @@ export function HomeSections({
   techFeatured,
   homeFeatured,
   itsFeatured,
+  alevadoFeatured,
   techCategories,
   homeCategories,
   totals,
@@ -29,9 +30,10 @@ export function HomeSections({
   techFeatured: Product[];
   homeFeatured: Product[];
   itsFeatured: Product[];
+  alevadoFeatured: Product[];
   techCategories: CategoryCard[];
   homeCategories: CategoryCard[];
-  totals: { treco: number; tremark: number; categories: number };
+  totals: { treco: number; tremark: number; alevado: number; categories: number };
 }) {
   const { dict } = useLocale();
   const categoryLabel = useCategoryLabel();
@@ -103,6 +105,21 @@ export function HomeSections({
             </Link>
           </div>
           <ProductGrid products={itsFeatured} />
+        </section>
+      )}
+
+      {alevadoFeatured.length > 0 && (
+        <section className="shell border-t border-ink/10 py-16">
+          <div className="mb-8 flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-tech">Alevado Energy</p>
+              <h2 className="mt-2 font-display text-3xl md:text-5xl">{dict.home.alevadoTitle}</h2>
+            </div>
+            <Link href="/katalog?source=alevado" className="hidden text-sm font-semibold text-tech md:inline">
+              {dict.home.allCategories}
+            </Link>
+          </div>
+          <ProductGrid products={alevadoFeatured} />
         </section>
       )}
     </>

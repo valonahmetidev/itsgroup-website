@@ -1252,6 +1252,71 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "mk": "Правосмукалки",
     "en": "Vacuum cleaners",
     "sq": "Fshesa me korrent"
+  },
+  "alevado:lan-cables": {
+    "mk": "Lan Cables",
+    "en": "Lan Cables",
+    "sq": "Lan Cables"
+  },
+  "alevado:data-transmission-cables": {
+    "mk": "Data Transmission Cables",
+    "en": "Data Transmission Cables",
+    "sq": "Data Transmission Cables"
+  },
+  "alevado:profinet-cables": {
+    "mk": "Profinet Cables",
+    "en": "Profinet Cables",
+    "sq": "Profinet Cables"
+  },
+  "alevado:control-cables": {
+    "mk": "Control Cables",
+    "en": "Control Cables",
+    "sq": "Control Cables"
+  },
+  "alevado:alarm-cables": {
+    "mk": "Alarm Cables",
+    "en": "Alarm Cables",
+    "sq": "Alarm Cables"
+  },
+  "alevado:fire-alarm-cables": {
+    "mk": "Fire Alarm Cables",
+    "en": "Fire Alarm Cables",
+    "sq": "Fire Alarm Cables"
+  },
+  "alevado:communication-cables": {
+    "mk": "Communication Cables",
+    "en": "Communication Cables",
+    "sq": "Communication Cables"
+  },
+  "alevado:video-signal-cables": {
+    "mk": "Video Signal Cables",
+    "en": "Video Signal Cables",
+    "sq": "Video Signal Cables"
+  },
+  "alevado:power-chain-cables": {
+    "mk": "Power Chain Cables",
+    "en": "Power Chain Cables",
+    "sq": "Power Chain Cables"
+  },
+  "alevado:signal-cables": {
+    "mk": "Signal Cables",
+    "en": "Signal Cables",
+    "sq": "Signal Cables"
+  },
+  "alevado:telephone-cables": {
+    "mk": "Telephone Cables",
+    "en": "Telephone Cables",
+    "sq": "Telephone Cables"
+  },
+  "alevado:audio-speaker-cables": {
+    "mk": "Audio Speaker Cables",
+    "en": "Audio Speaker Cables",
+    "sq": "Audio Speaker Cables"
+  },
+  "alevado:servomotor-cables": {
+    "mk": "Servomotor Cables",
+    "en": "Servomotor Cables",
+    "sq": "Servomotor Cables"
   }
 };
 

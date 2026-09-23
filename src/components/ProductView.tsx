@@ -35,7 +35,14 @@ export function ProductView({
   const tone = customerDivisionTone(product.source);
   const categoryMk = category ? categoryDisplayName(category, "mk") : null;
   const categorySq = category ? categoryDisplayName(category, "sq") : null;
-  const divisionHref = product.source === "tremark" ? "/dom" : product.source === "its" ? "/katalog?source=its" : "/tehnologija";
+  const divisionHref =
+    product.source === "tremark"
+      ? "/dom"
+      : product.source === "its"
+        ? "/katalog?source=its"
+        : product.source === "alevado"
+          ? "/katalog?source=alevado"
+          : "/tehnologija";
 
   return (
     <div className="shell py-10">

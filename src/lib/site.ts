@@ -32,4 +32,11 @@ export const sourceMeta = {
     origin: "https://itsgroup.mk",
     tone: "tech" as const,
   },
+  alevado: {
+    label: "Alevado Energy",
+    brand: "Alevado Energy",
+    href: "/katalog?source=alevado",
+    origin: "https://alevadoenergy.com",
+    tone: "tech" as const,
+  },
 };

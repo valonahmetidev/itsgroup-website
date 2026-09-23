@@ -37,7 +37,7 @@ async function applyOverrides(list: Product[], locale: Locale) {
     const next = applyProductOverride(product, override, locale);
     if (!next) continue;
     const image = next.image || override?.image_url;
-    if (!image && product.source !== "its") continue;
+    if (!image && product.source !== "its" && product.source !== "alevado") continue;
     result.push({ ...next, image });
   }
   return result;
@@ -119,15 +119,15 @@ export async function liveGetProduct(source: string, id: string | number, locale
     return product ? applyCustomerPricing(product, pricing) : undefined;
   }
 
-  const product = baseGetProduct(source, Number(id));
+  const product = baseGetProduct(source, id);
   if (!product) return undefined;
 
   const db = await getDbAsync();
-  if (!db) {
+  if (!db || typeof product.id !== "number") {
     return product.image ? applyCustomerPricing(product, pricing) : undefined;
   }
 
-  const override = await getProductOverride(db, product.source as CatalogSource, product.id as number);
+  const override = await getProductOverride(db, product.source as CatalogSource, product.id);
   const next = applyProductOverride(product, override, locale);
   if (!next) return undefined;
   const image = next.image || override?.image_url;

@@ -22,6 +22,11 @@ const labels: Record<Source, SourceLabels> = {
     mk: "ITS Group",
     sq: "ITS Group",
   },
+  alevado: {
+    brand: "Alevado Energy",
+    mk: "Alevado Energy",
+    sq: "Alevado Energy",
+  },
 };
 
 export function sourceLabels(source: Source): SourceLabels {
@@ -32,5 +37,6 @@ export function sourceLabels(source: Source): SourceLabels {
 export function catalogSourceName(source: Source): string {
   if (source === "treco") return "Treco";
   if (source === "tremark") return "Tremark";
+  if (source === "alevado") return "Alevado";
   return "ITS";
 }

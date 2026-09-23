@@ -37,7 +37,12 @@ function parseNumber(value?: string) {
 
 export function parseCatalogSearchParams(search: SearchParams): ParsedCatalogQuery {
   const source: ParsedCatalogQuery["source"] =
-    search.source === "treco" || search.source === "tremark" || search.source === "its" ? search.source : "all";
+    search.source === "treco" ||
+    search.source === "tremark" ||
+    search.source === "its" ||
+    search.source === "alevado"
+      ? search.source
+      : "all";
   const sort: ParsedCatalogQuery["sort"] =
     search.sort === "price-asc" || search.sort === "price-desc" ? search.sort : "name";
   const stock: StockFilter = search.stock === "in" || search.stock === "out" ? search.stock : "all";

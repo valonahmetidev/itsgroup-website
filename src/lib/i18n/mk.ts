@@ -33,6 +33,7 @@ const mk: Dictionary = {
     trecoTitle: "Од мрежата до камерата",
     tremarkTitle: "За секојдневниот дом",
     itsTitle: "Наши производи",
+    alevadoTitle: "Alevado Energy кабли",
     allCategories: "Сите категории",
     statTech: "технолошки производи",
     statHome: "апарати за дом",
@@ -72,6 +73,7 @@ const mk: Dictionary = {
     priceMax: "До",
     applyFilters: "Примени",
     itsProducts: "ITS производи",
+    alevadoProducts: "Alevado Energy",
   },
   customer: {
     loginTitle: "Најава",

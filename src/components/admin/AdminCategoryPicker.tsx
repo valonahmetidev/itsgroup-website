@@ -80,7 +80,7 @@ export function AdminCategoryPicker({
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, []);
 
-  const sources: Source[] = source === "all" ? ["treco", "tremark", "its"] : [source];
+  const sources: Source[] = source === "all" ? ["treco", "tremark", "its", "alevado"] : [source];
 
   return (
     <div ref={rootRef} className="relative">

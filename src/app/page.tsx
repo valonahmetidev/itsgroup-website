@@ -1,11 +1,10 @@
 import { Hero } from "@/components/Hero";
 import { HomeSections } from "@/components/HomeSections";
 import { HomeTicker } from "@/components/HomeTicker";
-import { counts, divisionCategories, menuGroups, productHref, products } from "@/lib/catalog";
+import { counts, divisionCategories, menuGroups, products } from "@/lib/catalog";
 import { liveFeaturedProducts, liveStoreProducts } from "@/lib/catalog-live";
+import { buildBalancedHeroShots } from "@/lib/hero-shots";
 import { getServerI18n } from "@/lib/i18n/server";
-import type { HeroShot } from "@/components/Hero";
-import type { Product } from "@/lib/types";
 
 export default async function HomePage() {
   const { locale } = await getServerI18n();
@@ -13,6 +12,8 @@ export default async function HomePage() {
   const techFeatured = await liveFeaturedProducts("treco", 8, locale);
   const homeFeatured = await liveFeaturedProducts("tremark", 8, locale);
   const itsFeatured = await liveStoreProducts(locale, 8);
+  const alevadoFeatured = await liveFeaturedProducts("alevado", 8, locale);
+  const storeProducts = await liveStoreProducts(locale, 24);
   const techCategories = divisionCategories("treco").slice(0, 8);
   const homeCategories = divisionCategories("tremark");
   const ticker = menuGroups("treco")
@@ -33,10 +34,17 @@ export default async function HomePage() {
       })),
     );
 
+  const heroShots = buildBalancedHeroShots({
+    treco: products.filter((product) => product.source === "treco"),
+    tremark: products.filter((product) => product.source === "tremark"),
+    its: storeProducts,
+    alevado: products.filter((product) => product.source === "alevado"),
+  });
+
   return (
     <>
       <div className="flex flex-col lg:h-[calc(100dvh-4rem)] lg:overflow-hidden">
-        <Hero techCount={totals.treco} homeCount={totals.tremark} shots={heroPool()} />
+        <Hero techCount={totals.treco} homeCount={totals.tremark} shots={heroShots} />
         <HomeTicker items={ticker} />
       </div>
 
@@ -44,6 +52,7 @@ export default async function HomePage() {
         techFeatured={techFeatured}
         homeFeatured={homeFeatured}
         itsFeatured={itsFeatured}
+        alevadoFeatured={alevadoFeatured}
         techCategories={techCategories}
         homeCategories={homeCategories}
         totals={totals}
@@ -51,29 +60,3 @@ export default async function HomePage() {
     </>
   );
 }
-
-function heroPool(): HeroShot[] {
-  const tech = products.filter((product) => product.source === "treco" && product.image && (product.price ?? 0) > 0);
-  const home = products.filter((product) => product.source === "tremark" && product.image && (product.price ?? 0) > 0);
-  return [...sample(tech, 36), ...sample(home, 24)].map(toShot);
-}
-
-function sample(items: Product[], count: number) {
-  if (items.length <= count) return items;
-  const step = items.length / count;
-  return Array.from({ length: count }, (_, index) => items[Math.floor(index * step)]).filter(
-    (item): item is Product => item != null,
-  );
-}
-
-function toShot(product: Product): HeroShot {
-  return {
-    src: product.image ?? "",
-    alt: product.name,
-    href: productHref(product),
-    label: product.name,
-    price: product.price,
-    source: product.source,
-  };
-}
-
