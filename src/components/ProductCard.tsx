@@ -25,12 +25,16 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
 
   return (
     <article
-      className="group rise flex h-full min-w-0 flex-col overflow-hidden rounded-3xl border border-ink/10 bg-card p-3 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lift"
+      className="group rise flex h-full min-w-0 flex-col rounded-3xl border border-ink/10 bg-card p-3 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lift"
       style={{ animationDelay: `${(index % 8) * 40}ms` }}
     >
-      <Link href={href} className="relative flex h-48 items-center justify-center overflow-hidden rounded-2xl bg-white">
+      <Link href={href} className="relative flex aspect-[5/4] items-center justify-center overflow-hidden rounded-2xl bg-white">
         {product.image ? (
-          <CatalogImage src={product.image} alt={productName} className="h-full w-full object-contain p-4 transition duration-500 group-hover:scale-105" />
+          <CatalogImage
+            src={product.image}
+            alt={productName}
+            className="max-h-[88%] max-w-[88%] object-contain transition duration-500 group-hover:scale-[1.03]"
+          />
         ) : (
           <span className="font-display text-ink/30">{dict.product.placeholderInitials}</span>
         )}

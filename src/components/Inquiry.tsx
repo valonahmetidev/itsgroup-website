@@ -328,26 +328,52 @@ export function AddButton({
     );
   }
 
+  if (detail) {
+    return (
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+        {!locked && (
+          <UnitSelect
+            value={selectedUnit}
+            onChange={setSelectedUnit}
+            label={dict.product.unit}
+            shape="pill"
+            className="shrink-0"
+          />
+        )}
+        <QuantityControl quantity={quantity} unit={productUnit} onChange={setQuantity} compact />
+        <button
+          type="button"
+          onClick={() => addItem({ source, id, name, names, price, image, unit: productUnit, unitLocked: locked }, quantity)}
+          className="rounded-full bg-tech px-6 py-3 text-sm font-semibold text-cream transition hover:opacity-90 sm:flex-1"
+        >
+          {dict.product.addToQuote}
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className={detail ? "flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end" : "mt-3 flex flex-col gap-2"}>
-      {!locked && (
-        <UnitSelect
-          value={selectedUnit}
-          onChange={setSelectedUnit}
-          label={dict.product.unit}
-          shape="pill"
-          className={detail ? "shrink-0" : "w-full"}
-        />
-      )}
-      <QuantityControl quantity={quantity} unit={productUnit} onChange={setQuantity} compact />
+    <div className="mt-3 space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        {!locked && (
+          <UnitSelect
+            value={selectedUnit}
+            onChange={setSelectedUnit}
+            label={dict.product.unit}
+            shape="pill"
+            size="compact"
+            placement="top"
+            fullWidth={false}
+            hideLabel
+            className="shrink-0"
+          />
+        )}
+        <QuantityControl quantity={quantity} unit={productUnit} onChange={setQuantity} compact />
+      </div>
       <button
         type="button"
         onClick={() => addItem({ source, id, name, names, price, image, unit: productUnit, unitLocked: locked }, quantity)}
-        className={
-          detail
-            ? "rounded-full bg-tech px-6 py-3 text-sm font-semibold text-cream transition hover:opacity-90 sm:flex-1"
-            : "w-full rounded-full border border-ink/10 px-3 py-2 text-sm font-semibold transition hover:border-tech hover:text-tech"
-        }
+        className="w-full rounded-full border border-ink/10 px-3 py-2 text-sm font-semibold transition hover:border-tech hover:text-tech"
       >
         {dict.product.addToQuote}
       </button>
