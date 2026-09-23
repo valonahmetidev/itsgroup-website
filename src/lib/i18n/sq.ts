@@ -163,6 +163,7 @@ const sq: Dictionary = {
     tremarkTitle: "Pajisje për një jetë më të mirë",
     tremarkText:
       "Gatim, kafe, përgatitje ushqimi, pastrim, hekurim dhe kujdes personal.",
+    seeAllProducts: "Shiko të gjitha produktet",
   },
   footer: {
     text:

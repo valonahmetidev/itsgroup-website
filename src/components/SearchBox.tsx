@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Loader2, Search, X } from "lucide-react";
@@ -193,18 +194,18 @@ export function SearchBox({
   const modalSearch = expandable && expanded;
 
   if (modalSearch) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-5">
+    return createPortal(
+      <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto px-4 pb-8 pt-[12vh] sm:px-5 sm:pt-[14vh]">
         <button
           type="button"
-          className="search-backdrop absolute inset-0 bg-ink/45"
+          className="search-backdrop fixed inset-0 bg-ink/55"
           aria-label="Close"
           onClick={collapse}
         />
-        <div ref={rootRef} className="search-modal relative z-10 w-full max-w-2xl">
+        <div ref={rootRef} className="search-modal relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl border border-ink/10 bg-card shadow-lift">
           <form onSubmit={submitSearch}>
             <label className="sr-only" htmlFor="catalog-search-expand">{dict.search.label}</label>
-            <div className="flex items-center gap-2 rounded-2xl border border-ink/10 bg-card px-3 py-2.5 shadow-lift">
+            <div className="flex items-center gap-2 border-b border-ink/10 px-3 py-3">
               <Search className="h-4 w-4 shrink-0 text-ink/40" />
               <input
                 ref={inputRef}
@@ -222,7 +223,7 @@ export function SearchBox({
                 placeholder={dict.search.placeholder}
                 autoComplete="off"
                 spellCheck={false}
-                className="min-w-0 flex-1 border-0 bg-transparent py-2 text-sm outline-none"
+                className="min-w-0 flex-1 border-0 bg-transparent py-2 text-base outline-none sm:text-sm"
               />
               {loading && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-ink/35" />}
               <button
@@ -236,10 +237,10 @@ export function SearchBox({
             </div>
           </form>
 
-          {showPanel && (
+          {cleaned.length >= 2 && (
             <div
               ref={listRef}
-              className="search-panel mt-3 max-h-[min(60vh,24rem)] overflow-x-hidden overflow-y-auto rounded-2xl border border-ink/10 bg-card shadow-lift"
+              className="search-panel max-h-[min(58vh,26rem)] overflow-x-hidden overflow-y-auto"
             >
               {loading && !hasResults && (
                 <p className="px-4 py-4 text-sm text-ink/55">{dict.search.loading}</p>
@@ -256,11 +257,11 @@ export function SearchBox({
                     onClick={navigate}
                     onMouseEnter={() => setActiveIndex(index)}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 transition",
+                      "flex items-center gap-3 border-b border-ink/5 px-3 py-2.5 transition last:border-b-0",
                       index === activeIndex ? "bg-paper" : "hover:bg-paper",
                     )}
                   >
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-paper">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-surface">
                       {result.image ? (
                         <CatalogImage src={result.image} alt="" className="h-full w-full object-contain" />
                       ) : (
@@ -276,7 +277,7 @@ export function SearchBox({
                     </span>
                   </Link>
                 ))}
-              {!loading && cleaned.length >= 2 && (
+              {!loading && (
                 <Link
                   href={catalogHref({ q: cleaned })}
                   onClick={navigate}
@@ -288,7 +289,8 @@ export function SearchBox({
             </div>
           )}
         </div>
-      </div>
+      </div>,
+      document.body,
     );
   }
 

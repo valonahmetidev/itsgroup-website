@@ -163,6 +163,7 @@ const mk: Dictionary = {
     tremarkTitle: "Апарати за подобар живот",
     tremarkText:
       "Готвење, кафе, подготовка на храна, чистење, пеглање и нега.",
+    seeAllProducts: "Види ги сите производи",
   },
   footer: {
     text:

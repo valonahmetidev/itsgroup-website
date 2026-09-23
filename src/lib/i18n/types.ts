@@ -158,6 +158,7 @@ export type Dictionary = {
     trecoText: string;
     tremarkTitle: string;
     tremarkText: string;
+    seeAllProducts: string;
   };
   footer: {
     text: string;

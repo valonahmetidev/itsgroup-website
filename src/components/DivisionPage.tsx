@@ -4,7 +4,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { useLocale } from "@/components/LocaleProvider";
 import { menuGroups, products } from "@/lib/catalog";
-import { countProducts } from "@/lib/format";
+import { catalogHref, countProducts } from "@/lib/format";
 import { useCategoryLabel } from "@/lib/i18n/catalog-labels";
 import { menuGroupTitle } from "@/lib/i18n/menu";
 import type { Source } from "@/lib/types";
@@ -22,7 +22,15 @@ export function DivisionPage({ source }: { source: Source }) {
   return (
     <>
       <PageHeader eyebrow={content.eyebrow} title={content.title} text={content.text} />
-      <div className="shell pb-6 text-sm text-ink/60">{countProducts(total, dict)}</div>
+      <div className="shell flex flex-wrap items-center justify-between gap-4 pb-6">
+        <p className="text-sm text-ink/60">{countProducts(total, dict)}</p>
+        <Link
+          href={catalogHref({ source })}
+          className="rounded-full bg-tech px-5 py-2.5 text-sm font-semibold text-cream transition hover:opacity-90"
+        >
+          {dict.division.seeAllProducts}
+        </Link>
+      </div>
       <div className="shell space-y-12 pb-8">
         {groups.map((group) => (
           <section key={group.key}>

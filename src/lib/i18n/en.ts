@@ -163,6 +163,7 @@ const en: Dictionary = {
     tremarkTitle: "Appliances for better living",
     tremarkText:
       "Cooking, coffee, food prep, cleaning, ironing, and personal care.",
+    seeAllProducts: "See all products",
   },
   footer: {
     text:

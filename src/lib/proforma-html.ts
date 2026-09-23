@@ -6,7 +6,6 @@ import type { ProformaCustomer } from "@/lib/proforma-types";
 
 /** A4 at 96dpi — matches jsPDF portrait page when margins are 0. */
 const PDF_WIDTH_PX = 794;
-const PDF_HEIGHT_PX = 1123;
 
 /** Intrinsic /logo.png dimensions (verified from asset). */
 const LOGO_NATURAL_WIDTH = 1774;
@@ -113,19 +112,16 @@ export function buildProformaHtml({
         .proforma {
           width: ${PDF_WIDTH_PX}px;
           max-width: ${PDF_WIDTH_PX}px;
-          min-height: ${PDF_HEIGHT_PX}px;
           color: #15181d;
           font-family: "Noto Sans PDF", "Noto Sans", system-ui, sans-serif;
           font-size: 11px;
           line-height: 1.5;
           background: #ffffff;
           overflow: hidden;
-          display: flex;
-          flex-direction: column;
         }
         .proforma * { box-sizing: border-box; }
-        .page-body { flex: 1 1 auto; display: flex; flex-direction: column; }
-        .page-main { flex: 1 1 auto; }
+        .page-body { display: block; }
+        .page-main { display: block; }
         .header {
           background: linear-gradient(135deg, #0b0d11 0%, #12161c 55%, #0f1a17 100%);
           color: #fff;
@@ -197,15 +193,14 @@ export function buildProformaHtml({
         .cards {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 16px;
-          padding: 24px 32px 8px;
+          gap: 14px;
+          padding: 20px 32px 6px;
         }
         .card {
           background: #f7f8fa;
           border: 1px solid #e6e9ee;
           border-radius: 14px;
-          padding: 16px 18px;
-          min-height: 96px;
+          padding: 14px 16px;
           min-width: 0;
           border-left: 3px solid #0f6e56;
         }
@@ -219,7 +214,7 @@ export function buildProformaHtml({
         }
         .card p { margin: 0 0 5px; word-break: break-word; color: #4a515c; }
         .card p.primary { font-size: 13px; font-weight: 700; color: #15181d; }
-        .content { padding: 8px 32px 28px; }
+        .content { padding: 6px 32px 16px; }
         .content h2 {
           margin: 0 0 14px;
           font-size: 13px;
@@ -255,8 +250,8 @@ export function buildProformaHtml({
         thead th.qty { width: 12%; padding-left: 4px; padding-right: 8px; }
         thead th.price { width: 26%; }
         tbody td {
-          padding: 10px 8px;
-          vertical-align: top;
+          padding: 8px 8px;
+          vertical-align: middle;
           font-size: 10px;
           border-bottom: 1px solid #eceef2;
         }
@@ -296,22 +291,21 @@ export function buildProformaHtml({
         .total-wrap {
           display: flex;
           justify-content: flex-end;
-          margin-top: 20px;
+          margin-top: 14px;
         }
         .total {
-          background: linear-gradient(135deg, #0b0d11 0%, #12161c 100%);
-          color: #fff;
+          background: linear-gradient(135deg, #0f6e56 0%, #18a07c 100%);
+          color: #ffffff;
           border-radius: 14px;
-          padding: 16px 20px;
+          padding: 14px 18px;
           width: 260px;
           max-width: 100%;
-          border: 1px solid rgba(255, 255, 255, 0.06);
         }
         .total .label {
           font-size: 8px;
           text-transform: uppercase;
           letter-spacing: 0.12em;
-          color: #18a07c;
+          color: rgba(255, 255, 255, 0.88);
           font-weight: 700;
         }
         .total .value {
@@ -320,10 +314,10 @@ export function buildProformaHtml({
           font-weight: 700;
           text-align: right;
           word-break: break-word;
-          color: #18a07c;
+          color: #ffffff;
         }
         .note {
-          margin-top: 18px;
+          margin-top: 12px;
           background: #f7f8fa;
           border: 1px solid #e6e9ee;
           border-radius: 12px;
@@ -333,8 +327,8 @@ export function buildProformaHtml({
           line-height: 1.55;
         }
         .footer {
-          margin-top: auto;
-          padding: 16px 32px 24px;
+          margin-top: 12px;
+          padding: 12px 32px 18px;
           border-top: 1px solid #e6e9ee;
           display: flex;
           justify-content: space-between;

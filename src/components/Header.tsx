@@ -101,12 +101,7 @@ export function Header({
         </nav>
 
         <div className="ml-auto flex items-center gap-1">
-          <div className="relative hidden lg:block 2xl:hidden">
-            <SearchBox expandable />
-          </div>
-          <div className="relative hidden w-44 shrink-0 2xl:block 2xl:w-52">
-            <SearchBox />
-          </div>
+          <SearchBox expandable onNavigate={() => setMobile(false)} />
 
           <CustomerNav profile={customer} />
           <LanguageSwitcher className="hidden shrink-0 lg:flex" />
@@ -139,9 +134,7 @@ export function Header({
 
       {mobile && (
         <div className="max-h-[calc(100vh-3.5rem)] overflow-y-auto border-t border-ink/10 bg-card px-5 py-4 lg:hidden">
-          <SearchBox onNavigate={() => setMobile(false)} />
-
-          <div className="mt-4 flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <LanguageSwitcher compact />
             <ThemeToggle />
           </div>
