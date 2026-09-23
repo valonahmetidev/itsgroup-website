@@ -4,16 +4,15 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import { cn } from "@/lib/cn";
+import { UnitSelect } from "@/components/UnitSelect";
 import {
   clampQuantity,
   minQuantity,
   normalizeProductUnit,
   parseQuantityInput,
-  PRODUCT_UNITS,
   quantityFieldValue,
   quantityInputStep,
   quantityStep,
-  unitLabel,
   type ProductUnit,
 } from "@/lib/units";
 import type { ProductNames } from "@/lib/product-names";
@@ -284,7 +283,7 @@ export function AddButton({
   variant?: "card" | "detail";
 }) {
   const { items, addItem, setItemQuantity, removeItem } = useInquiry();
-  const { dict, locale } = useLocale();
+  const { dict } = useLocale();
   const key = itemKey(source, id);
   const saved = items.find((item) => item.key === key);
   const [quantity, setQuantity] = useState(1);
@@ -332,20 +331,13 @@ export function AddButton({
   return (
     <div className={detail ? "flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end" : "mt-3 flex flex-col gap-2"}>
       {!locked && (
-        <label className={detail ? "shrink-0" : "w-full"}>
-          <span className="mb-1 block text-xs text-ink/55">{dict.product.unit}</span>
-          <select
-            value={selectedUnit}
-            onChange={(event) => setSelectedUnit(event.target.value as ProductUnit)}
-            className="w-full rounded-full border border-ink/10 bg-surface px-3 py-2 text-sm font-medium outline-none focus:border-tech"
-          >
-            {PRODUCT_UNITS.map((entry) => (
-              <option key={entry} value={entry}>
-                {unitLabel(entry, locale)}
-              </option>
-            ))}
-          </select>
-        </label>
+        <UnitSelect
+          value={selectedUnit}
+          onChange={setSelectedUnit}
+          label={dict.product.unit}
+          shape="pill"
+          className={detail ? "shrink-0" : "w-full"}
+        />
       )}
       <QuantityControl quantity={quantity} unit={productUnit} onChange={setQuantity} compact />
       <button

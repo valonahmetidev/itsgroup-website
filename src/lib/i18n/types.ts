@@ -222,6 +222,9 @@ export type Dictionary = {
     unitDefault: string;
     tags: string;
     tagsHint: string;
+    tagsPlaceholder: string;
+    tagsAddMore: string;
+    removeTag: string;
     hideProduct: string;
     save: string;
     resetOverride: string;

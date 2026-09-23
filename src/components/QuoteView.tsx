@@ -7,7 +7,8 @@ import { CatalogImage } from "@/components/CatalogImage";
 import { lineTotal, QuoteQuantityControl, useInquiry, type InquiryItem } from "@/components/Inquiry";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { useLocale } from "@/components/LocaleProvider";
-import { PRODUCT_UNITS, type ProductUnit, unitLabel } from "@/lib/units";
+import { UnitSelect } from "@/components/UnitSelect";
+import { type ProductUnit, unitLabel } from "@/lib/units";
 import type { ProformaCustomer } from "@/lib/proforma";
 import { productHref } from "@/lib/paths";
 import { site } from "@/lib/site";
@@ -243,20 +244,13 @@ function QuoteItemRow({
             </span>
           </div>
         ) : (
-          <label className="shrink-0">
-            <span className="mb-1 block text-xs text-ink/55">{dict.product.unit}</span>
-            <select
-              value={item.unit}
-              onChange={(event) => onUnitChange(event.target.value as ProductUnit)}
-              className="rounded-full border border-ink/10 bg-surface px-3 py-2 text-sm font-medium outline-none focus:border-tech"
-            >
-              {PRODUCT_UNITS.map((unit) => (
-                <option key={unit} value={unit}>
-                  {unitLabel(unit, locale)}
-                </option>
-              ))}
-            </select>
-          </label>
+          <UnitSelect
+            value={item.unit}
+            onChange={onUnitChange}
+            label={dict.product.unit}
+            shape="pill"
+            className="shrink-0"
+          />
         )}
         <QuoteQuantityControl item={item} />
       </div>

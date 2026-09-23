@@ -12,6 +12,7 @@ import { salePercent } from "@/lib/format";
 import { stockAvailabilityLabel } from "@/lib/stock-label";
 import { useCategoryLabel } from "@/lib/i18n/catalog-labels";
 import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
+import { ProductTags } from "@/components/ui/ProductTags";
 import { useProductExcerpt, useProductName } from "@/lib/use-product-name";
 import type { Category, Product } from "@/lib/types";
 
@@ -90,15 +91,7 @@ export function ProductView({
             </div>
           </div>
           {productExcerpt && <p className="mt-6 max-w-xl leading-7 text-ink/75">{productExcerpt}</p>}
-          {product.tags && product.tags.length > 0 && (
-            <div className="mt-6 flex flex-wrap gap-2">
-              {product.tags.map((tag) => (
-                <span key={tag} className="rounded-full border border-ink/10 bg-surface px-3 py-1 text-sm text-ink/70">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
+          {product.tags && product.tags.length > 0 && <ProductTags tags={product.tags} className="mt-6" />}
           <div className="mt-6 flex flex-wrap gap-2">
             {product.categories.map((item) => (
               <Link key={item.id} href={categoryHref({ source: product.source, id: item.id })} className="rounded-full bg-surface px-3 py-1 text-sm hover:text-tech">

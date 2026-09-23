@@ -12,6 +12,7 @@ import { useLocale } from "@/components/LocaleProvider";
 import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
 import { formatPrice } from "@/lib/format";
 import { productHref } from "@/lib/paths";
+import { TagsInputField } from "@/components/admin/TagsInputField";
 import { formatTagsInput, parseProductTags } from "@/lib/product-tags";
 import { stockAvailabilityLabel } from "@/lib/stock-label";
 import { catalogSourceName, sourceLabels } from "@/lib/source-labels";
@@ -232,16 +233,7 @@ export function ProductEditForm({
             <span className="text-xs text-ink/50">{dict.admin.stockHint}</span>
           </label>
           <UnitSelectField value={unit} onChange={setUnit} />
-          <label className="grid gap-1 text-sm lg:col-span-2">
-            <span>{dict.admin.tags}</span>
-            <input
-              value={tags}
-              onChange={(event) => setTags(event.target.value)}
-              placeholder={dict.admin.tagsHint}
-              className={fieldClass}
-            />
-            <span className="text-xs text-ink/50">{dict.admin.tagsHint}</span>
-          </label>
+          <TagsInputField value={tags} onChange={setTags} className="lg:col-span-2" />
           <label className="flex items-center gap-2 text-sm lg:col-span-2">
             <input type="checkbox" checked={hidden} onChange={(event) => setHidden(event.target.checked)} />
             <span>{dict.admin.hideProduct}</span>

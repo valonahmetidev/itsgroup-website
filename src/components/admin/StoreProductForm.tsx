@@ -9,6 +9,7 @@ import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import { UnitSelectField } from "@/components/admin/UnitSelectField";
 import { useLocale } from "@/components/LocaleProvider";
 import type { StoreProductRow } from "@/lib/db";
+import { TagsInputField } from "@/components/admin/TagsInputField";
 import { formatTagsInput, parseProductTags } from "@/lib/product-tags";
 import { productHref } from "@/lib/paths";
 
@@ -137,16 +138,7 @@ export function StoreProductForm({ row }: { row?: StoreProductRow }) {
           </label>
         </div>
         <UnitSelectField value={unit} onChange={setUnit} />
-        <label className="grid gap-1 text-sm">
-          <span>{dict.admin.tags}</span>
-          <input
-            value={tags}
-            onChange={(event) => setTags(event.target.value)}
-            placeholder={dict.admin.tagsHint}
-            className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech"
-          />
-          <span className="text-xs text-ink/50">{dict.admin.tagsHint}</span>
-        </label>
+        <TagsInputField value={tags} onChange={setTags} />
         <label className="grid gap-1 text-sm">
           <span>{dict.quote.productNote}</span>
           <input

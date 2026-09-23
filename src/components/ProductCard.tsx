@@ -10,6 +10,7 @@ import { salePercent } from "@/lib/format";
 import { stockAvailabilityLabel } from "@/lib/stock-label";
 import { productHref } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
+import { ProductTags } from "@/components/ui/ProductTags";
 import { useProductName } from "@/lib/use-product-name";
 import type { Product } from "@/lib/types";
 
@@ -49,6 +50,9 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
         <Link href={href} className="mt-1 line-clamp-2 min-h-12 font-medium leading-6 hover:text-tech">
           {productName}
         </Link>
+        {product.tags && product.tags.length > 0 && (
+          <ProductTags tags={product.tags} limit={3} size="sm" className="mt-2" />
+        )}
         <div className="mt-auto min-w-0 space-y-2 pt-3">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
             <p className="font-display text-lg leading-none">{formatPrice(product.price)}</p>
