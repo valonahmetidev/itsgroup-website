@@ -101,7 +101,7 @@ const en: Dictionary = {
   quote: {
     title: "Quote",
     heading: "Your quote list",
-    text: "Products are saved on this device. Open the original product page if you want to continue to the store.",
+    text: "Add products from our catalog to build your quote. Download a PDF or send the list via WhatsApp and we will confirm the price and availability.",
     empty: "Your quote list is empty.",
     openCatalog: "Browse catalog",
     remove: "Remove",
@@ -156,7 +156,7 @@ const en: Dictionary = {
       "The catalog was last updated on {date}. Prices, discounts, and availability are refreshed regularly.",
     quoteTitle: "Quote",
     quoteBody:
-      "You can add products to a quote list. The list stays in your browser. Checkout remains on the original stores until we connect it here.",
+      "You can add products to a quote list, download a PDF, or send the list via WhatsApp. Our team will confirm the final price and availability.",
   },
   division: {
     trecoTitle: "Technology for business, network, and home",

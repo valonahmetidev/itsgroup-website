@@ -101,7 +101,7 @@ const sq: Dictionary = {
   quote: {
     title: "Ofertë",
     heading: "Lista juaj e ofertës",
-    text: "Produktet ruhen në këtë pajisje. Hapni faqen origjinale të produktit nëse doni të vazhdoni te dyqani.",
+    text: "Shtoni produkte nga katalogu ynë në listën e ofertës. Shkarkoni PDF ose dërgoni listën përmes WhatsApp dhe ne do të konfirmojmë çmimin dhe disponueshmërinë.",
     empty: "Lista e ofertës është bosh.",
     openCatalog: "Shfleto katalogun",
     remove: "Hiq",
@@ -156,7 +156,7 @@ const sq: Dictionary = {
       "Katalogu u përditësua së fundmi më {date}. Çmimet, zbritjet dhe disponueshmëria përditësohen rregullisht.",
     quoteTitle: "Ofertë",
     quoteBody:
-      "Mund të shtoni produkte në listën e ofertës. Lista mbetet në shfletuesin tuaj. Pagesa mbetet në dyqanet origjinale derisa ta lidhim këtu.",
+      "Mund të shtoni produkte në listën e ofertës, të shkarkoni PDF ose ta dërgoni listën përmes WhatsApp. Ekipi ynë do të konfirmojë çmimin final dhe disponueshmërinë.",
   },
   division: {
     trecoTitle: "Teknologji për biznes, rrjet dhe shtëpi",

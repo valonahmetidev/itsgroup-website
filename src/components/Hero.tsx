@@ -44,7 +44,7 @@ export function Hero({
         width={1774}
         height={887}
         priority
-        className="pointer-events-none absolute -left-6 top-1/2 w-[min(760px,80vw)] max-w-none -translate-y-1/2 select-none opacity-[0.68] blur-[5px] dark:opacity-[0.55]"
+        className="pointer-events-none absolute -left-6 top-1/2 w-[min(760px,80vw)] max-w-none -translate-y-1/2 select-none opacity-[0.12] blur-[8px] dark:opacity-[0.5] dark:blur-[5px]"
       />
       <div className="shell relative z-10 grid min-h-0 flex-1 items-center gap-4 overflow-y-auto py-4 sm:gap-6 sm:py-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12 lg:overflow-visible lg:py-6">
         <div>
