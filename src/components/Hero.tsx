@@ -156,24 +156,34 @@ function HeroSlideshow({ shots, fromCatalog }: { shots: HeroShot[]; fromCatalog:
         </p>
       </Link>
 
-      <div className="mt-2 flex items-center justify-between gap-4 sm:mt-4">
-        <div className="flex gap-2">
-          {deck.map((item, itemIndex) => (
-            <button
-              key={item.href}
-              type="button"
-              aria-label={item.label}
-              aria-current={itemIndex === index ? "true" : undefined}
-              onClick={() => setIndex(itemIndex)}
-              className={itemIndex === index ? "h-2 w-6 rounded-full bg-tech" : "h-2 w-2 rounded-full bg-ink/20"}
-            />
-          ))}
-        </div>
-        <div className="flex gap-2">
+      <div className="mt-2 flex min-w-0 items-center gap-3 sm:mt-4">
+        {deck.length <= 10 ? (
+          <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {deck.map((item, itemIndex) => (
+              <button
+                key={item.href}
+                type="button"
+                aria-label={item.label}
+                aria-current={itemIndex === index ? "true" : undefined}
+                onClick={() => setIndex(itemIndex)}
+                className={
+                  itemIndex === index
+                    ? "h-2 w-6 shrink-0 rounded-full bg-tech"
+                    : "h-2 w-2 shrink-0 rounded-full bg-ink/20"
+                }
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="min-w-0 flex-1 text-xs tabular-nums text-ink/50">
+            {index + 1} / {deck.length}
+          </p>
+        )}
+        <div className="flex shrink-0 gap-1.5">
           <button
             type="button"
             onClick={() => go(-1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/10 transition hover:bg-paper"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-ink/10 transition hover:bg-paper sm:h-10 sm:w-10"
             aria-label={dict.hero.previous}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -181,7 +191,7 @@ function HeroSlideshow({ shots, fromCatalog }: { shots: HeroShot[]; fromCatalog:
           <button
             type="button"
             onClick={() => go(1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/10 transition hover:bg-paper"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-ink/10 transition hover:bg-paper sm:h-10 sm:w-10"
             aria-label={dict.hero.next}
           >
             <ChevronRight className="h-4 w-4" />
