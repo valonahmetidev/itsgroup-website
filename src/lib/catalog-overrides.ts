@@ -138,8 +138,9 @@ export function applyProductOverride(
   product: Product,
   override?: ProductOverrideRow | null,
   locale?: Locale,
+  options?: { forAdmin?: boolean },
 ): Product | null {
-  if (override?.hidden) return null;
+  if (override?.hidden && !options?.forAdmin) return null;
   if (!override) return product;
 
   const price = override.price ?? product.price;

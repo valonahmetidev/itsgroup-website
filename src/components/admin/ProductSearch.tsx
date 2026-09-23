@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2, Search } from "lucide-react";
 import { adminBrowseProducts, adminSearchProducts, type AdminCategoryFilter } from "@/app/admin/actions";
 import type { AdminProductListItem } from "@/app/admin/actions";
@@ -29,11 +30,19 @@ function toCategoryFilter(item: AdminCategoryOption | null): AdminCategoryFilter
   return item ? { source: item.source, slug: item.slug } : null;
 }
 
-export function ProductSearch({ categories }: { categories: AdminCategoryOption[] }) {
+export function ProductSearch({
+  categories,
+  initialEditedOnly = false,
+}: {
+  categories: AdminCategoryOption[];
+  initialEditedOnly?: boolean;
+}) {
+  const router = useRouter();
   const { dict } = useLocale();
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query, 320);
   const [source, setSource] = useState<SourceFilter>("all");
+  const [editedOnly, setEditedOnly] = useState(initialEditedOnly);
   const [category, setCategory] = useState<AdminCategoryOption | null>(null);
   const [results, setResults] = useState<AdminProductListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +53,12 @@ export function ProductSearch({ categories }: { categories: AdminCategoryOption[
   const activeQueryRef = useRef("");
   const activeSourceRef = useRef<SourceFilter>("all");
   const activeCategoryRef = useRef<AdminCategoryFilter>(null);
+  const activeEditedOnlyRef = useRef(initialEditedOnly);
   const requestRef = useRef(0);
+
+  useEffect(() => {
+    setEditedOnly(initialEditedOnly);
+  }, [initialEditedOnly]);
 
   const selectedCategoryKey = categoryKey(category);
   const typing = query.trim() !== debouncedQuery.trim();
@@ -54,6 +68,7 @@ export function ProductSearch({ categories }: { categories: AdminCategoryOption[
       nextQuery: string,
       nextSource: SourceFilter,
       nextCategory: AdminCategoryFilter,
+      nextEditedOnly: boolean,
       offset: number,
       append: boolean,
     ) => {
@@ -62,8 +77,8 @@ export function ProductSearch({ categories }: { categories: AdminCategoryOption[
 
       const requestId = ++requestRef.current;
       const response = nextQuery.trim().length >= 2
-        ? await adminSearchProducts(nextQuery, nextSource, offset, PAGE_SIZE, nextCategory)
-        : await adminBrowseProducts(nextSource, offset, PAGE_SIZE, nextCategory);
+        ? await adminSearchProducts(nextQuery, nextSource, offset, PAGE_SIZE, nextCategory, nextEditedOnly)
+        : await adminBrowseProducts(nextSource, offset, PAGE_SIZE, nextCategory, nextEditedOnly);
 
       if (requestId !== requestRef.current) return;
 
@@ -81,8 +96,16 @@ export function ProductSearch({ categories }: { categories: AdminCategoryOption[
     activeQueryRef.current = debouncedQuery;
     activeSourceRef.current = source;
     activeCategoryRef.current = nextCategory;
-    void loadPage(debouncedQuery, source, nextCategory, 0, false);
-  }, [source, selectedCategoryKey, debouncedQuery, loadPage, category]);
+    activeEditedOnlyRef.current = editedOnly;
+    void loadPage(debouncedQuery, source, nextCategory, editedOnly, 0, false);
+  }, [source, selectedCategoryKey, debouncedQuery, loadPage, category, editedOnly]);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (editedOnly) params.set("edited", "1");
+    const next = params.toString();
+    router.replace(next ? `/admin/products?${next}` : "/admin/products", { scroll: false });
+  }, [editedOnly, router]);
 
   useEffect(() => {
     const node = sentinelRef.current;
@@ -95,6 +118,7 @@ export function ProductSearch({ categories }: { categories: AdminCategoryOption[
           activeQueryRef.current,
           activeSourceRef.current,
           activeCategoryRef.current,
+          activeEditedOnlyRef.current,
           results.length,
           true,
         );
@@ -130,6 +154,19 @@ export function ProductSearch({ categories }: { categories: AdminCategoryOption[
           className="w-full rounded-2xl border border-ink/10 bg-surface py-3 pl-11 pr-11 text-sm outline-none transition focus:border-tech"
         />
       </label>
+
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => setEditedOnly((current) => !current)}
+          className={cn(
+            "shrink-0 rounded-full px-4 py-2 text-sm font-medium",
+            editedOnly ? "bg-home text-white" : "bg-surface hover:bg-ink/5",
+          )}
+        >
+          {dict.admin.overrides}
+        </button>
+      </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {filters.map((filter) => (

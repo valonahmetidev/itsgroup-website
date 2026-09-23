@@ -7,6 +7,7 @@ import {
   getOverrideMap,
   getProductOverride,
   upsertProductOverride,
+  type ProductOverrideRow,
 } from "@/lib/catalog-overrides";
 import { getProduct, products, searchProducts } from "@/lib/catalog";
 import { getDb } from "@/lib/cloudflare";
@@ -142,6 +143,40 @@ function filterByCategory(items: AdminProductListItem[], category: AdminCategory
   return items.filter((item) => matchesCategory(item, category));
 }
 
+function parseOverrideKey(key: string) {
+  const match = key.match(/^(treco|tremark)-(\d+)$/);
+  if (!match) return null;
+  return { source: match[1] as CatalogSource, productId: Number(match[2]) };
+}
+
+async function listEditedCatalogItems(
+  source: Source | "all",
+  category: AdminCategoryFilter,
+  map: Map<string, ProductOverrideRow>,
+) {
+  const items: AdminProductListItem[] = [];
+
+  for (const [key, override] of map) {
+    const parsed = parseOverrideKey(key);
+    if (!parsed) continue;
+    if (source !== "all" && parsed.source !== source) continue;
+
+    const product = getProduct(parsed.source, parsed.productId);
+    if (!product) continue;
+
+    const effective = applyProductOverride(product, override, "mk", { forAdmin: true });
+    const item = toAdminCatalogItem(product, effective);
+    if (!matchesCategory(item, category)) continue;
+    items.push(item);
+  }
+
+  return items.sort((a, b) => a.name.localeCompare(b.name, "mk"));
+}
+
+function filterEditedOnly(items: AdminProductListItem[], map: Map<string, unknown>) {
+  return items.filter((item) => item.source !== "its" && map.has(`${item.source}-${item.id}`));
+}
+
 function toAdminCatalogItem(product: Product, effective?: Product | null): AdminProductListItem {
   const display = effective ?? product;
   const category = product.categories[0];
@@ -183,11 +218,23 @@ export async function adminBrowseProducts(
   offset = 0,
   limit = BROWSE_PAGE_SIZE,
   category: AdminCategoryFilter = null,
+  editedOnly = false,
 ): Promise<AdminBrowseResult> {
   await requireAdmin();
+  const db = getDb();
+  const map = db ? await getOverrideMap(db) : new Map();
+
+  if (editedOnly) {
+    const merged = db ? await listEditedCatalogItems(source, category, map) : [];
+    const items = merged.slice(offset, offset + limit);
+    return {
+      items,
+      hasMore: offset + limit < merged.length,
+      total: merged.length,
+    };
+  }
 
   if (source === "its") {
-    const db = getDb();
     if (!db) return { items: [], hasMore: false, total: 0 };
     const all = filterByCategory((await listAllStoreProducts(db, 1000)).map(toAdminStoreItem), category);
     const slice = all.slice(offset, offset + limit);
@@ -199,8 +246,6 @@ export async function adminBrowseProducts(
   }
 
   const pool = source === "all" ? products : products.filter((product) => product.source === source);
-  const db = getDb();
-  const map = db ? await getOverrideMap(db) : new Map();
 
   const catalogItems = pool.map((product) => {
     const override = map.get(`${product.source}-${product.id}`);
@@ -225,6 +270,7 @@ export async function adminSearchProducts(
   offset = 0,
   limit = 40,
   category: AdminCategoryFilter = null,
+  editedOnly = false,
 ): Promise<AdminBrowseResult> {
   await requireAdmin();
   const cleaned = query.trim();
@@ -232,10 +278,15 @@ export async function adminSearchProducts(
     return { items: [], hasMore: false, total: 0 };
   }
 
+  const db = getDb();
+  const map = db ? await getOverrideMap(db) : new Map();
+
   if (source === "its") {
-    const db = getDb();
     if (!db) return { items: [], hasMore: false, total: 0 };
-    const all = filterByCategory(await searchAdminStoreProducts(db, cleaned), category);
+    let all = filterByCategory(await searchAdminStoreProducts(db, cleaned), category);
+    if (editedOnly) {
+      all = [];
+    }
     const slice = all.slice(offset, offset + limit);
     return {
       items: slice,
@@ -246,8 +297,6 @@ export async function adminSearchProducts(
 
   const scopedSource = source === "all" ? undefined : source;
   const pool = searchProducts(cleaned, scopedSource);
-  const db = getDb();
-  const map = db ? await getOverrideMap(db) : new Map();
   const catalogItems = pool.map((product) => {
     const override = map.get(`${product.source}-${product.id}`);
     const effective = applyProductOverride(product, override);
@@ -255,7 +304,10 @@ export async function adminSearchProducts(
   });
 
   const storeItems = source === "all" && db ? await searchAdminStoreProducts(db, cleaned) : [];
-  const merged = filterByCategory(mergeAdminProductItems(storeItems, catalogItems), category);
+  let merged = filterByCategory(mergeAdminProductItems(storeItems, catalogItems), category);
+  if (editedOnly) {
+    merged = filterEditedOnly(merged, map);
+  }
   const items = merged.slice(offset, offset + limit);
 
   return {

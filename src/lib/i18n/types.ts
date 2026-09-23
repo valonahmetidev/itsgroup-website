@@ -273,6 +273,7 @@ export type Dictionary = {
     tabDiscounts: string;
     quickActions: string;
     viewProducts: string;
+    viewOnSite: string;
     viewCustomers: string;
     storeProducts: string;
     customersCount: string;

@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ExternalLink } from "lucide-react";
 import { adminSaveProduct } from "@/app/admin/actions";
 import { CatalogImage } from "@/components/CatalogImage";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
@@ -9,6 +11,7 @@ import { UnitSelectField } from "@/components/admin/UnitSelectField";
 import { useLocale } from "@/components/LocaleProvider";
 import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
 import { formatPrice } from "@/lib/format";
+import { productHref } from "@/lib/paths";
 import { stockAvailabilityLabel } from "@/lib/stock-label";
 import { catalogSourceName, sourceLabels } from "@/lib/source-labels";
 import type { ProductOverrideRow } from "@/lib/catalog-overrides";
@@ -80,6 +83,15 @@ export function ProductEditForm({
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] xl:items-start">
       <aside className="space-y-4 xl:sticky xl:top-20">
+        <Link
+          href={productHref(product)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-full border border-ink/10 bg-surface px-4 py-2 text-sm font-semibold transition hover:border-tech hover:text-tech"
+        >
+          {dict.admin.viewOnSite}
+          <ExternalLink className="h-4 w-4" />
+        </Link>
         <div className="rounded-3xl border border-ink/10 bg-card p-5">
           <div className="flex h-44 items-center justify-center overflow-hidden rounded-2xl bg-white">
             {previewImage ? (

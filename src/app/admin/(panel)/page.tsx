@@ -22,7 +22,7 @@ export default async function AdminDashboardPage() {
       tone: "text-tech",
     },
     {
-      href: "/admin/products",
+      href: "/admin/products?edited=1",
       label: dict.admin.overrides,
       value: stats.overrideCount,
       icon: Pencil,

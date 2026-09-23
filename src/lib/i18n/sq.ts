@@ -286,6 +286,7 @@ const sq: Dictionary = {
     tabDiscounts: "Zbritje për produkte",
     quickActions: "Veprime të shpejta",
     viewProducts: "Shfleto produktet",
+    viewOnSite: "Shiko në faqe",
     viewCustomers: "Menaxho klientët",
     storeProducts: "Produkte të dyqanit",
     customersCount: "Klientë",

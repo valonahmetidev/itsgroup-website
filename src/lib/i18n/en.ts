@@ -286,6 +286,7 @@ const en: Dictionary = {
     tabDiscounts: "Product discounts",
     quickActions: "Quick actions",
     viewProducts: "Browse products",
+    viewOnSite: "View on site",
     viewCustomers: "Manage customers",
     storeProducts: "Store products",
     customersCount: "Customers",

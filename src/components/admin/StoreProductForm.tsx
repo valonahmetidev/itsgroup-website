@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ExternalLink } from "lucide-react";
 import { adminDeleteStoreProduct, adminSaveStoreProduct } from "@/app/admin/actions";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import { UnitSelectField } from "@/components/admin/UnitSelectField";
 import { useLocale } from "@/components/LocaleProvider";
 import type { StoreProductRow } from "@/lib/db";
+import { productHref } from "@/lib/paths";
 
 export function StoreProductForm({ row }: { row?: StoreProductRow }) {
   const router = useRouter();
@@ -64,6 +66,17 @@ export function StoreProductForm({ row }: { row?: StoreProductRow }) {
 
   return (
     <div className="max-w-2xl space-y-6">
+      {row?.id && (
+        <Link
+          href={productHref({ source: "its", id: row.id })}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-full border border-ink/10 bg-surface px-4 py-2 text-sm font-semibold transition hover:border-tech hover:text-tech"
+        >
+          {dict.admin.viewOnSite}
+          <ExternalLink className="h-4 w-4" />
+        </Link>
+      )}
       <form
         className="space-y-4 rounded-3xl border border-ink/10 bg-card p-6"
         onSubmit={(event) => {

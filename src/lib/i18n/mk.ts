@@ -286,6 +286,7 @@ const mk: Dictionary = {
     tabDiscounts: "Попусти по производ",
     quickActions: "Брзи акции",
     viewProducts: "Преглед на производи",
+    viewOnSite: "Види на сајтот",
     viewCustomers: "Управување со корисници",
     storeProducts: "Продавнички производи",
     customersCount: "Корисници",

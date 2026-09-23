@@ -8,7 +8,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function AdminProductsPage() {
+export default async function AdminProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ edited?: string }>;
+}) {
+  const { edited } = await searchParams;
+  const editedOnly = edited === "1" || edited === "true";
   const { dict } = await getServerI18n();
   const adminCategories = categories
     .filter((category) => productsInCategory(category.source, category.id).length > 0)
@@ -25,7 +31,7 @@ export default async function AdminProductsPage() {
         <h2 className="font-display text-3xl">{dict.admin.products}</h2>
         <p className="mt-2 text-ink/60">{dict.admin.productsText}</p>
       </div>
-      <ProductSearch categories={adminCategories} />
+      <ProductSearch categories={adminCategories} initialEditedOnly={editedOnly} />
     </div>
   );
 }
