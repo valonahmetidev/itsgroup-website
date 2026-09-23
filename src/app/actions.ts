@@ -6,7 +6,6 @@ import { productHref } from "@/lib/catalog";
 import { liveSearchProducts } from "@/lib/catalog-live";
 import { customerDivisionLabel } from "@/lib/division-display";
 import { deleteCustomProduct, insertCustomProduct, listCustomProducts, type D1Database } from "@/lib/db";
-import { formatPrice } from "@/lib/format";
 import { getServerI18n } from "@/lib/i18n/server";
 
 function getDb(): D1Database | null {
@@ -32,7 +31,7 @@ export async function findProducts(query: string) {
       key: `${product.source}-${product.id}`,
       href: productHref(product),
       name: product.name,
-      price: formatPrice(product.price, locale, dict),
+      priceMkd: product.price,
       division: customerDivisionLabel(product.source, locale, dict),
       image: product.image,
       inStock: product.inStock,

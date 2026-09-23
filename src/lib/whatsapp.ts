@@ -1,5 +1,6 @@
 import { lineTotal, type InquiryItem } from "@/components/Inquiry";
 import type { Dictionary, Locale } from "@/lib/i18n";
+import type { DisplayCurrency, ExchangeRateSnapshot } from "@/lib/currency";
 import { formatPrice } from "@/lib/format";
 import { formatQuantity } from "@/lib/units";
 import type { ProformaCustomer } from "@/lib/proforma-types";
@@ -11,6 +12,8 @@ export function buildWhatsAppProformaUrl({
   locale,
   dict,
   siteName,
+  currency = "MKD",
+  rates,
 }: {
   phoneE164: string;
   customer: ProformaCustomer;
@@ -18,7 +21,10 @@ export function buildWhatsAppProformaUrl({
   locale: Locale;
   dict: Dictionary;
   siteName: string;
+  currency?: DisplayCurrency;
+  rates?: ExchangeRateSnapshot["rates"];
 }) {
+  const priceLabel = (amount: number | null) => formatPrice(amount, locale, dict, currency, rates);
   const lines = [
     `*${dict.quote.whatsAppInquiryTitle}*`,
     siteName,
@@ -36,13 +42,13 @@ export function buildWhatsAppProformaUrl({
   let total = 0;
   items.forEach((item, index) => {
     const line = lineTotal(item);
-    const unitLabel = formatPrice(item.price, locale, dict);
-    const lineLabel = formatPrice(line, locale, dict);
+    const unitLabel = priceLabel(item.price);
+    const lineLabel = priceLabel(line);
     if (line != null && line > 0) total += line;
     const qty = ` × ${formatQuantity(item.quantity, item.unit, locale)}`;
     lines.push(`${index + 1}. ${item.name}${qty} — ${unitLabel} = ${lineLabel}`);
   });
-  lines.push("", `*${dict.quote.total}:* ${formatPrice(total > 0 ? total : null, locale, dict)}`);
+  lines.push("", `*${dict.quote.total}:* ${priceLabel(total > 0 ? total : null)}`);
   lines.push("", dict.quote.whatsAppProformaNote);
 
   const digits = phoneE164.replace(/\D/g, "");

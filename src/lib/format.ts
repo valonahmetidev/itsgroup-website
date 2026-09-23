@@ -1,6 +1,7 @@
 import type { CatalogQuery, Source } from "@/lib/types";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import { fill } from "@/lib/i18n";
+import { formatPriceWithCurrency, type DisplayCurrency, type ExchangeRateSnapshot } from "@/lib/currency";
 
 export function formatCount(value: number) {
   return Math.round(value)
@@ -17,7 +18,7 @@ export function countProducts(count: number, dict?: Dictionary) {
   return `${formatCount(count)} products`;
 }
 
-function formatAmount(amount: number, locale: Locale) {
+export function formatAmount(amount: number, locale: Locale) {
   const value = Math.round(amount).toString();
   const separator = locale === "en" ? "," : ".";
   return value.replace(/\B(?=(\d{3})+(?!\d))/g, separator);
@@ -29,7 +30,16 @@ const onRequestFallback: Record<Locale, string> = {
   en: "On request",
 };
 
-export function formatPrice(amount: number | null, locale: Locale = "mk", dict?: Dictionary) {
+export function formatPrice(
+  amount: number | null,
+  locale: Locale = "mk",
+  dict?: Dictionary,
+  currency: DisplayCurrency = "MKD",
+  rates?: ExchangeRateSnapshot["rates"],
+) {
+  if (currency !== "MKD" && rates) {
+    return formatPriceWithCurrency(amount, locale, currency, rates, dict);
+  }
   if (amount == null || Number.isNaN(amount) || amount <= 0) {
     return dict?.product.onRequest ?? onRequestFallback[locale];
   }

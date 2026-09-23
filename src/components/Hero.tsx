@@ -6,9 +6,10 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { CatalogImage } from "@/components/CatalogImage";
+import { useCurrency } from "@/components/CurrencyProvider";
 import { useLocale } from "@/components/LocaleProvider";
 import { fill } from "@/lib/i18n";
-import { countProducts, formatCount, formatPrice } from "@/lib/format";
+import { countProducts, formatCount } from "@/lib/format";
 import { sourceMeta } from "@/lib/site";
 import type { Source } from "@/lib/types";
 
@@ -102,6 +103,7 @@ function shuffle<T>(items: readonly T[]) {
 
 function HeroSlideshow({ shots, fromCatalog }: { shots: HeroShot[]; fromCatalog: string }) {
   const { dict, locale } = useLocale();
+  const { formatPrice } = useCurrency();
   const [deck, setDeck] = useState<HeroShot[]>([]);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -154,7 +156,7 @@ function HeroSlideshow({ shots, fromCatalog }: { shots: HeroShot[]; fromCatalog:
           {shot.label}
         </p>
         <p className="mt-1 font-display text-base sm:text-lg">
-          {formatPrice(shot.price, locale, dict)}
+          {formatPrice(shot.price)}
         </p>
       </Link>
 

@@ -5,8 +5,8 @@ import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { CatalogImage } from "@/components/CatalogImage";
 import { lineTotal, QuoteQuantityControl, useInquiry } from "@/components/Inquiry";
+import { useCurrency } from "@/components/CurrencyProvider";
 import { useLocale } from "@/components/LocaleProvider";
-import { formatPrice } from "@/lib/format";
 import { PRODUCT_UNITS, type ProductUnit, unitLabel } from "@/lib/units";
 import type { ProformaCustomer } from "@/lib/proforma";
 import { productHref } from "@/lib/paths";
@@ -21,6 +21,7 @@ import { buildWhatsAppProformaUrl } from "@/lib/whatsapp";
 export function QuoteView() {
   const { items, messages, removeItem, clearItems, setItemUnit } = useInquiry();
   const { dict, locale } = useLocale();
+  const { currency, rates, formatPrice } = useCurrency();
   const [customer, setCustomer] = useState<ProformaCustomer>({ name: "", phone: "", email: "", company: "" });
 
   const total = items.reduce((sum, item) => sum + (lineTotal(item) ?? 0), 0);
@@ -36,6 +37,8 @@ export function QuoteView() {
       siteName: dict.meta.siteName,
       sitePhone: site.phone,
       siteDomain: site.domain,
+      currency,
+      rates: rates.rates,
     });
   }
 
@@ -48,6 +51,8 @@ export function QuoteView() {
       locale,
       dict,
       siteName: dict.meta.siteName,
+      currency,
+      rates: rates.rates,
     });
     window.open(url, "_blank", "noopener,noreferrer");
   }
@@ -139,11 +144,11 @@ export function QuoteView() {
                         </Link>
                       )}
                       <p className="mt-1 text-sm text-ink/55">
-                        {formatPrice(item.price, locale, dict)} / {unitLabel(item.unit, locale)}
+                        {formatPrice(item.price)} / {unitLabel(item.unit, locale)}
                       </p>
                     </div>
                     <p className="shrink-0 text-right text-sm font-semibold tabular-nums">
-                      {formatPrice(lineTotal(item), locale, dict)}
+                      {formatPrice(lineTotal(item))}
                     </p>
                   </div>
                 </div>
@@ -179,7 +184,7 @@ export function QuoteView() {
           ))}
           <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-ink/10 bg-card px-5 py-4">
             <p className="font-display text-xl">{dict.quote.total}</p>
-            <p className="font-display text-2xl">{formatPrice(total > 0 ? total : null, locale, dict)}</p>
+            <p className="font-display text-2xl">{formatPrice(total > 0 ? total : null)}</p>
           </div>
           <div className="flex flex-wrap gap-3">
             <button

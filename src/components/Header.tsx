@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { ChevronDown, ClipboardList, LogOut, Menu, MoreHorizontal, User, X } from "lucide-react";
 import { customerLogout } from "@/app/customer/actions";
 import { CustomerNav } from "@/components/CustomerNav";
+import { CurrencySwitcher } from "@/components/CurrencySwitcher";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Logo } from "@/components/Logo";
@@ -107,6 +108,7 @@ export function Header({
           <SearchBox expandable onNavigate={() => setMobile(false)} />
 
           <CustomerNav profile={customer} />
+          <CurrencySwitcher className="hidden shrink-0 lg:flex" compact />
           <LanguageSwitcher className="hidden shrink-0 lg:flex" />
           <ThemeToggle className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-surface lg:inline-flex" />
 
@@ -237,7 +239,8 @@ function MobileMenu({
           )}
         </Link>
 
-        <div className="mb-4 flex items-center gap-2">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <CurrencySwitcher compact />
           <LanguageSwitcher compact />
           <ThemeToggle />
         </div>

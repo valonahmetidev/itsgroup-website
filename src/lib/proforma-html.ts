@@ -1,5 +1,6 @@
 import { lineTotal, type InquiryItem } from "@/components/Inquiry";
 import type { Dictionary, Locale } from "@/lib/i18n";
+import type { DisplayCurrency, ExchangeRateSnapshot } from "@/lib/currency";
 import { formatPrice } from "@/lib/format";
 import { formatQuantity } from "@/lib/units";
 import type { ProformaCustomer } from "@/lib/proforma-types";
@@ -74,6 +75,8 @@ export function buildProformaHtml({
   siteDomain,
   logoUrl,
   assetOrigin,
+  currency = "MKD",
+  rates,
 }: {
   customer: ProformaCustomer;
   items: InquiryItem[];
@@ -84,7 +87,10 @@ export function buildProformaHtml({
   siteDomain: string;
   logoUrl: string;
   assetOrigin: string;
+  currency?: DisplayCurrency;
+  rates?: ExchangeRateSnapshot["rates"];
 }) {
+  const priceLabel = (amount: number | null) => formatPrice(amount, locale, dict, currency, rates);
   const labels = pdfLabels[locale];
   const documentNo = createDocumentNumber();
   const dateValue = formatDocumentDate(locale);
@@ -100,7 +106,7 @@ export function buildProformaHtml({
           <td class="num">${String(index + 1).padStart(2, "0")}</td>
           <td class="name">${escapeHtml(item.name)}</td>
           <td class="qty">${escapeHtml(formatQuantity(item.quantity, item.unit, locale))}</td>
-          <td class="price">${escapeHtml(formatPrice(line ?? item.price, locale, dict))}</td>
+          <td class="price">${escapeHtml(priceLabel(line ?? item.price))}</td>
         </tr>`;
     })
     .join("");
@@ -239,16 +245,15 @@ export function buildProformaHtml({
           font-size: 8px;
           text-transform: uppercase;
           letter-spacing: 0.08em;
-          text-align: center;
           vertical-align: middle;
           font-weight: 700;
         }
         thead th:first-child { border-radius: 10px 0 0 10px; }
         thead th:last-child { border-radius: 0 10px 10px 0; }
-        thead th.num { width: 4%; padding-left: 8px; padding-right: 4px; }
-        thead th.name { width: 58%; }
-        thead th.qty { width: 12%; padding-left: 4px; padding-right: 8px; }
-        thead th.price { width: 26%; }
+        thead th.num { width: 4%; padding-left: 8px; padding-right: 4px; text-align: left; }
+        thead th.name { width: 58%; text-align: left; }
+        thead th.qty { width: 12%; padding-left: 4px; padding-right: 8px; text-align: right; }
+        thead th.price { width: 26%; text-align: right; }
         tbody td {
           padding: 8px 8px;
           vertical-align: middle;
@@ -400,7 +405,7 @@ export function buildProformaHtml({
             <div class="total-wrap">
               <div class="total">
                 <div class="label">${escapeHtml(dict.quote.total)}</div>
-                <div class="value">${escapeHtml(formatPrice(total > 0 ? total : null, locale, dict))}</div>
+                <div class="value">${escapeHtml(priceLabel(total > 0 ? total : null))}</div>
               </div>
             </div>
 
@@ -442,6 +447,8 @@ export async function downloadProformaPdf({
   siteName,
   sitePhone,
   siteDomain,
+  currency = "MKD",
+  rates,
 }: {
   customer: ProformaCustomer;
   items: InquiryItem[];
@@ -450,6 +457,8 @@ export async function downloadProformaPdf({
   siteName: string;
   sitePhone: string;
   siteDomain: string;
+  currency?: DisplayCurrency;
+  rates?: ExchangeRateSnapshot["rates"];
 }) {
   const origin = window.location.origin;
   const logoUrl = `${origin}/logo.png`;
@@ -463,6 +472,8 @@ export async function downloadProformaPdf({
     siteDomain,
     logoUrl,
     assetOrigin: origin,
+    currency,
+    rates,
   });
 
   const host = document.createElement("div");

@@ -4,10 +4,11 @@ import Link from "next/link";
 import { CatalogImage } from "@/components/CatalogImage";
 import { AddButton } from "@/components/Inquiry";
 import { ProductGrid } from "@/components/ProductCard";
+import { useCurrency } from "@/components/CurrencyProvider";
 import { useLocale } from "@/components/LocaleProvider";
 import { categoryHref } from "@/lib/catalog";
 import { customerDivisionLabel, customerDivisionTone } from "@/lib/division-display";
-import { formatPrice, salePercent } from "@/lib/format";
+import { salePercent } from "@/lib/format";
 import { useCategoryLabel } from "@/lib/i18n/catalog-labels";
 import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
 import type { Category, Product } from "@/lib/types";
@@ -22,6 +23,7 @@ export function ProductView({
   related: Product[];
 }) {
   const { dict, locale } = useLocale();
+  const { formatPrice } = useCurrency();
   const categoryLabel = useCategoryLabel();
   const discount = product.onSale ? salePercent(product.price, product.regularPrice) : null;
   const divisionLabel = customerDivisionLabel(product.source, locale, dict);
@@ -59,9 +61,9 @@ export function ProductView({
           )}
           <div className="mt-6 rounded-3xl border border-ink/10 bg-surface/60 p-5">
             <div className="flex flex-wrap items-end gap-3">
-              <p className="font-display text-4xl leading-none">{formatPrice(product.price, locale, dict)}</p>
+              <p className="font-display text-4xl leading-none">{formatPrice(product.price)}</p>
               {discount && product.regularPrice != null && (
-                <p className="pb-1 text-ink/40 line-through">{formatPrice(product.regularPrice, locale, dict)}</p>
+                <p className="pb-1 text-ink/40 line-through">{formatPrice(product.regularPrice)}</p>
               )}
               {discount && <span className="mb-1 rounded-full bg-home px-2 py-1 text-xs font-bold text-white">-{discount}%</span>}
             </div>

@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Loader2, Search, X } from "lucide-react";
 import { findProducts } from "@/app/actions";
 import { CatalogImage } from "@/components/CatalogImage";
+import { useCurrency } from "@/components/CurrencyProvider";
 import { useLocale } from "@/components/LocaleProvider";
 import { cn } from "@/lib/cn";
 import { catalogHref } from "@/lib/format";
@@ -15,7 +16,7 @@ type Result = {
   key: string;
   href: string;
   name: string;
-  price: string;
+  priceMkd: number | null;
   division: string;
   image: string | null;
   inStock: boolean;
@@ -31,6 +32,7 @@ export function SearchBox({
   const router = useRouter();
   const pathname = usePathname();
   const { dict } = useLocale();
+  const { formatPrice } = useCurrency();
   const onAdmin = pathname.startsWith("/admin");
   const rootRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -271,7 +273,7 @@ export function SearchBox({
                     <span className="min-w-0 flex-1 overflow-hidden">
                       <span className="block truncate text-sm font-medium leading-snug">{result.name}</span>
                       <span className="mt-0.5 block truncate text-xs text-ink/50">
-                        {result.division} · {result.price}
+                        {result.division} · {formatPrice(result.priceMkd)}
                         {!result.inStock ? ` · ${dict.product.checkStock}` : ""}
                       </span>
                     </span>
@@ -368,7 +370,7 @@ export function SearchBox({
                 <span className="min-w-0 flex-1 overflow-hidden">
                   <span className="block truncate text-sm font-medium leading-snug">{result.name}</span>
                   <span className="mt-0.5 block truncate text-xs text-ink/50">
-                    {result.division} · {result.price}
+                    {result.division} · {formatPrice(result.priceMkd)}
                     {!result.inStock ? ` · ${dict.product.checkStock}` : ""}
                   </span>
                 </span>
