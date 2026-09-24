@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CategoryView } from "@/components/CategoryView";
-import { categories, categoryTrail, getCategory, productsInCategory } from "@/lib/catalog";
+import { categories, categoryTrail, getCategory, listedProductsInCategory } from "@/lib/catalog";
 import { liveProductsInCategory } from "@/lib/catalog-live";
 import {
   applyCatalogFilters,
@@ -17,7 +17,7 @@ const PAGE_SIZE = 24;
 
 export function generateStaticParams() {
   return categories
-    .filter((category) => productsInCategory(category.source, category.id).length > 0)
+    .filter((category) => listedProductsInCategory(category.source, category.id).length > 0)
     .map((category) => ({
       division: sourceToCatalogDivision(category.source),
       id: String(category.id),
@@ -69,7 +69,7 @@ export default async function CategoryPage({
     (item) =>
       item.source === category.source &&
       item.parent === category.id &&
-      productsInCategory(item.source, item.id).length > 0,
+      listedProductsInCategory(item.source, item.id).length > 0,
   );
 
   return (

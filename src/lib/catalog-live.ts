@@ -1,5 +1,6 @@
 import { unstable_noStore as noStore } from "next/cache";
 import {
+  categorySubtreeIds,
   counts as staticCounts,
   featuredProducts as baseFeaturedProducts,
   getProduct as baseGetProduct,
@@ -132,8 +133,12 @@ export async function liveCatalogTotals(locale: Locale = "mk"): Promise<CatalogT
 export async function liveProductsInCategory(source: CatalogSource, id: number, locale: Locale = "mk") {
   noStore();
   const pricing = await getCustomerPricing();
+  const subtree = categorySubtreeIds(source, id);
   const products = (await liveProducts(locale)).filter(
-    (product) => product.source === source && product.categories[0]?.id === id,
+    (product) =>
+      product.source === source &&
+      product.categories[0]?.id != null &&
+      subtree.has(product.categories[0].id),
   );
   return finalizeProducts(products, pricing);
 }

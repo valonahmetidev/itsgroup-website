@@ -22,6 +22,7 @@ import {
 } from "@/lib/catalog-category-overrides";
 import {
   categories,
+  categorySubtreeIds,
   getProduct,
   menuGroups as catalogMenuGroups,
   products,
@@ -178,7 +179,14 @@ async function resolveDiscountProductDetails(db: D1Database, row: CustomerProduc
 
 function matchesCategory(item: AdminProductListItem, category: AdminCategoryFilter) {
   if (!category) return true;
-  return item.category?.source === category.source && item.category?.slug === category.slug;
+  if (item.category?.source !== category.source) return false;
+  const selected = categories.find((c) => c.source === category.source && c.slug === category.slug);
+  if (!selected) return false;
+  const itemCategory = categories.find(
+    (c) => c.source === category.source && c.slug === item.category?.slug,
+  );
+  if (!itemCategory) return false;
+  return categorySubtreeIds(category.source, selected.id).has(itemCategory.id);
 }
 
 function filterByCategory(items: AdminProductListItem[], category: AdminCategoryFilter) {
@@ -257,7 +265,7 @@ function filterEditedOnly(items: AdminProductListItem[], map: Map<string, unknow
 
 function toAdminCatalogItem(product: Product, effective?: Product | null): AdminProductListItem {
   const display = effective ?? product;
-  const category = product.categories[0];
+  const category = display.categories[0];
   return {
     source: product.source,
     id: product.id,
