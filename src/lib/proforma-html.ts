@@ -3,6 +3,7 @@ import type { Dictionary, Locale } from "@/lib/i18n";
 import type { DisplayCurrency, ExchangeRateSnapshot } from "@/lib/currency";
 import { formatPrice } from "@/lib/format";
 import { formatQuantity } from "@/lib/units";
+import { defaultProformaRenderOptions, type ProformaRenderOptions } from "@/lib/proforma-document";
 import type { ProformaCustomer } from "@/lib/proforma-types";
 
 /** A4 at 96dpi — matches jsPDF portrait page when margins are 0. */
@@ -14,10 +15,53 @@ const LOGO_NATURAL_HEIGHT = 887;
 const LOGO_DISPLAY_HEIGHT = 44;
 const LOGO_DISPLAY_WIDTH = Math.round((LOGO_DISPLAY_HEIGHT * LOGO_NATURAL_WIDTH) / LOGO_NATURAL_HEIGHT);
 
-const pdfLabels: Record<Locale, { documentNo: string; date: string; billTo: string; contact: string }> = {
-  mk: { documentNo: "Број на документ", date: "Датум", billTo: "Клиент", contact: "Контакт" },
-  sq: { documentNo: "Nr. dokumenti", date: "Data", billTo: "Klienti", contact: "Kontakt" },
-  en: { documentNo: "Document no.", date: "Date", billTo: "Client", contact: "Contact" },
+const pdfLabels: Record<
+  Locale,
+  {
+    documentNo: string;
+    date: string;
+    billTo: string;
+    contact: string;
+    signatureCustomer: string;
+    signatureCompany: string;
+    validUntil: string;
+    poReference: string;
+    bankDetails: string;
+  }
+> = {
+  mk: {
+    documentNo: "Број на документ",
+    date: "Датум",
+    billTo: "Клиент",
+    contact: "Контакт",
+    signatureCustomer: "Потпис на клиент",
+    signatureCompany: "Овластено лице",
+    validUntil: "Валидна до",
+    poReference: "Референца / PO",
+    bankDetails: "Платежни податоци",
+  },
+  sq: {
+    documentNo: "Nr. dokumenti",
+    date: "Data",
+    billTo: "Klienti",
+    contact: "Kontakt",
+    signatureCustomer: "Nënshkrimi i klientit",
+    signatureCompany: "Personi i autorizuar",
+    validUntil: "E vlefshme deri",
+    poReference: "Referenca / PO",
+    bankDetails: "Të dhënat bankare",
+  },
+  en: {
+    documentNo: "Document no.",
+    date: "Date",
+    billTo: "Client",
+    contact: "Contact",
+    signatureCustomer: "Client signature",
+    signatureCompany: "Authorized signatory",
+    validUntil: "Valid until",
+    poReference: "Reference / PO",
+    bankDetails: "Bank details",
+  },
 };
 
 function escapeHtml(value: string) {
@@ -56,9 +100,11 @@ function createDocumentNumber() {
   return `PF-${y}${m}${d}-${suffix}`;
 }
 
-function formatDocumentDate(locale: Locale) {
+function formatDocumentDate(locale: Locale, value?: string) {
   const tag = locale === "mk" ? "mk-MK" : locale === "sq" ? "sq-AL" : "en-GB";
-  return new Intl.DateTimeFormat(tag, { day: "numeric", month: "long", year: "numeric" }).format(new Date());
+  const date = value ? new Date(value) : new Date();
+  if (value && Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat(tag, { day: "numeric", month: "long", year: "numeric" }).format(date);
 }
 
 function customerLines(customer: ProformaCustomer) {
@@ -77,6 +123,9 @@ export function buildProformaHtml({
   assetOrigin,
   currency = "MKD",
   rates,
+  documentNo,
+  documentDate,
+  options,
 }: {
   customer: ProformaCustomer;
   items: InquiryItem[];
@@ -89,11 +138,15 @@ export function buildProformaHtml({
   assetOrigin: string;
   currency?: DisplayCurrency;
   rates?: ExchangeRateSnapshot["rates"];
+  documentNo?: string;
+  documentDate?: string;
+  options?: ProformaRenderOptions;
 }) {
   const priceLabel = (amount: number | null) => formatPrice(amount, locale, dict, currency, rates);
   const labels = pdfLabels[locale];
-  const documentNo = createDocumentNumber();
-  const dateValue = formatDocumentDate(locale);
+  const renderOptions = { ...defaultProformaRenderOptions(), ...options };
+  const resolvedDocumentNo = documentNo?.trim() || createDocumentNumber();
+  const dateValue = formatDocumentDate(locale, documentDate);
   const total = items.reduce((sum, item) => sum + (lineTotal(item) ?? 0), 0);
   const clientLines = customerLines(customer);
   const contactLines = [siteName, sitePhone, siteDomain].filter(Boolean);
@@ -110,6 +163,51 @@ export function buildProformaHtml({
         </tr>`;
     })
     .join("");
+
+  const metaExtras: string[] = [];
+  if (renderOptions.showValidUntil && renderOptions.validUntil.trim()) {
+    metaExtras.push(`
+      <div>
+        <div class="label">${escapeHtml(labels.validUntil)}</div>
+        <div class="value">${escapeHtml(formatDocumentDate(locale, renderOptions.validUntil))}</div>
+      </div>`);
+  }
+  if (renderOptions.poReference.trim()) {
+    metaExtras.push(`
+      <div>
+        <div class="label">${escapeHtml(labels.poReference)}</div>
+        <div class="value">${escapeHtml(renderOptions.poReference.trim())}</div>
+      </div>`);
+  }
+
+  const signatureBlocks: string[] = [];
+  if (renderOptions.showCustomerSignature) {
+    const caption = renderOptions.customerSignatureLabel.trim() || labels.signatureCustomer;
+    signatureBlocks.push(`
+      <div class="signature">
+        <div class="signature-line"></div>
+        <p class="signature-label">${escapeHtml(caption)}</p>
+      </div>`);
+  }
+  if (renderOptions.showCompanySignature) {
+    const caption = renderOptions.companySignatureLabel.trim() || labels.signatureCompany;
+    signatureBlocks.push(`
+      <div class="signature">
+        <div class="signature-line"></div>
+        <p class="signature-label">${escapeHtml(caption)}</p>
+      </div>`);
+  }
+  const signaturesHtml =
+    signatureBlocks.length > 0 ? `<div class="signatures">${signatureBlocks.join("")}</div>` : "";
+
+  const bankHtml =
+    renderOptions.showBankDetails && renderOptions.bankDetails.trim()
+      ? `<section class="bank"><h2>${escapeHtml(labels.bankDetails)}</h2><p>${escapeHtml(renderOptions.bankDetails.trim())}</p></section>`
+      : "";
+
+  const noteHtml = renderOptions.showProformaNote
+    ? `<p class="note">${escapeHtml(dict.quote.proformaNote)}</p>`
+    : "";
 
   return `
     <div class="proforma">
@@ -342,6 +440,45 @@ export function buildProformaHtml({
           font-size: 8px;
         }
         .footer span { min-width: 0; word-break: break-word; }
+        .meta-grid.extra { margin-top: 10px; }
+        .bank {
+          margin-top: 12px;
+          background: #f7f8fa;
+          border: 1px solid #e6e9ee;
+          border-radius: 12px;
+          padding: 12px 14px;
+        }
+        .bank h2 {
+          margin: 0 0 6px;
+          font-size: 9px;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: #6e737d;
+        }
+        .bank p {
+          margin: 0;
+          font-size: 9px;
+          line-height: 1.5;
+          color: #3d424a;
+          white-space: pre-wrap;
+        }
+        .signatures {
+          margin-top: 18px;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 24px;
+        }
+        .signature-line {
+          border-bottom: 1px solid #1a1d21;
+          height: 28px;
+        }
+        .signature-label {
+          margin: 6px 0 0;
+          font-size: 8px;
+          color: #6e737d;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+        }
       </style>
 
       <header class="header">
@@ -354,13 +491,14 @@ export function buildProformaHtml({
           <div class="meta-grid">
             <div>
               <div class="label">${escapeHtml(labels.documentNo)}</div>
-              <div class="value">${escapeHtml(documentNo)}</div>
+              <div class="value">${escapeHtml(resolvedDocumentNo)}</div>
             </div>
             <div>
               <div class="label">${escapeHtml(labels.date)}</div>
               <div class="value">${escapeHtml(dateValue)}</div>
             </div>
           </div>
+          ${metaExtras.length > 0 ? `<div class="meta-grid extra">${metaExtras.join("")}</div>` : ""}
         </div>
       </header>
       <div class="accent-bar" aria-hidden="true"></div>
@@ -409,7 +547,9 @@ export function buildProformaHtml({
               </div>
             </div>
 
-            <p class="note">${escapeHtml(dict.quote.proformaNote)}</p>
+            ${noteHtml}
+            ${bankHtml}
+            ${signaturesHtml}
           </section>
         </div>
 
@@ -439,7 +579,7 @@ async function waitForLogo(url: string) {
   });
 }
 
-type ProformaPdfInput = {
+export type ProformaPdfInput = {
   customer: ProformaCustomer;
   items: InquiryItem[];
   locale: Locale;
@@ -449,9 +589,16 @@ type ProformaPdfInput = {
   siteDomain: string;
   currency?: DisplayCurrency;
   rates?: ExchangeRateSnapshot["rates"];
+  documentNo?: string;
+  documentDate?: string;
+  options?: ProformaRenderOptions;
 };
 
-function proformaFilename(customer: ProformaCustomer) {
+function proformaFilename(customer: ProformaCustomer, documentNo?: string) {
+  if (documentNo?.trim()) {
+    const safe = documentNo.trim().replace(/[^\w-]/g, "-");
+    return `${safe}.pdf`;
+  }
   const safeName = customer.name.trim().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-") || "proforma";
   return `ITS-proforma-${safeName}.pdf`;
 }
@@ -501,7 +648,7 @@ async function renderProformaPdfElement(input: ProformaPdfInput) {
 }
 
 export async function generateProformaPdfBlob(input: ProformaPdfInput) {
-  const filename = proformaFilename(input.customer);
+  const filename = proformaFilename(input.customer, input.documentNo);
   const { host, element } = await renderProformaPdfElement(input);
   const captureWidth = element.scrollWidth;
   const captureHeight = element.scrollHeight;

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { adminGetCustomer } from "@/app/admin/actions";
+import { adminGetCustomer, adminListCustomerProformas } from "@/app/admin/actions";
 import { CustomerEditForm } from "@/components/admin/CustomerEditForm";
 
 export const metadata: Metadata = {
@@ -16,6 +16,7 @@ export default async function AdminCustomerEditPage({
   const { id } = await params;
   const data = await adminGetCustomer(id);
   if (!data) notFound();
+  const proformas = await adminListCustomerProformas(id);
 
-  return <CustomerEditForm customer={data.customer} discounts={data.discounts} />;
+  return <CustomerEditForm customer={data.customer} discounts={data.discounts} proformas={proformas} />;
 }

@@ -21,6 +21,15 @@ export function countProducts(count: number, dict?: Dictionary) {
   return `${formatCount(count)} products`;
 }
 
+export function formatTypesCount(count: number, dict?: Dictionary) {
+  if (dict) {
+    if (count === 1) return dict.product.typesCountOne;
+    return fill(dict.product.typesCount, { count: formatCount(count) });
+  }
+  if (count === 1) return "1 type";
+  return `${formatCount(count)} types`;
+}
+
 export function formatAmount(amount: number, locale: Locale) {
   const value = Math.round(amount).toString();
   const separator = locale === "en" ? "," : ".";

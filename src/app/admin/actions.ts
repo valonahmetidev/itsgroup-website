@@ -37,6 +37,24 @@ import { getAuthSecret, hashPassword } from "@/lib/password";
 import { normalizeSearchText, parseSearchTerms } from "@/lib/product-search";
 import { storeRowToProduct } from "@/lib/store-products";
 import { parseAdminUnit } from "@/lib/units";
+import { applyCustomerPricing } from "@/lib/customer-pricing";
+import { loadCustomerPricing } from "@/lib/customers";
+import type { Locale } from "@/lib/i18n";
+import {
+  type ProformaDocumentPayload,
+  type ProformaStatus,
+  proformaLineFromProduct,
+} from "@/lib/proforma-document";
+import {
+  buildProformaDocumentNumber,
+  deleteProforma,
+  getProformaById,
+  insertProforma,
+  listProformas,
+  listProformasForCustomer,
+  updateProforma,
+} from "@/lib/proformas";
+import { normalizeProductUnit } from "@/lib/units";
 import type { Product, CatalogSource, Source } from "@/lib/types";
 import type { D1Database } from "@/lib/db";
 
@@ -691,6 +709,201 @@ export async function adminRemoveCustomerProductDiscount(input: {
   if (!db) return { ok: false as const, error: "database_unavailable" };
   await deleteCustomerProductDiscount(db, input.customerId, input.source, input.productId);
   return { ok: true as const };
+}
+
+export type AdminProformaSummary = {
+  id: string;
+  documentNo: string;
+  customerId: string | null;
+  customerName: string;
+  status: ProformaStatus;
+  locale: Locale;
+  currency: string;
+  createdAt: string;
+  updatedAt: string;
+  itemCount: number;
+  total: number | null;
+};
+
+function proformaSummaryFromRow(row: NonNullable<Awaited<ReturnType<typeof getProformaById>>>): AdminProformaSummary {
+  const total = row.items.reduce((sum, item) => {
+    if (item.price == null || item.price <= 0) return sum;
+    return sum + item.price * item.quantity;
+  }, 0);
+  return {
+    id: row.id,
+    documentNo: row.documentNo,
+    customerId: row.customerId,
+    customerName: row.customer.company.trim() || row.customer.name.trim() || "—",
+    status: row.status,
+    locale: row.locale,
+    currency: row.currency,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    itemCount: row.items.length,
+    total: total > 0 ? total : null,
+  };
+}
+
+async function resolveProductForProforma(
+  db: D1Database,
+  source: Source,
+  productId: string,
+  locale: Locale,
+  customerId: string | null,
+) {
+  let pricing = customerId ? await loadCustomerPricing(db, customerId) : null;
+
+  if (source === "its") {
+    const store = await getStoreProduct(db, productId);
+    if (!store) return null;
+    const product = storeRowToProduct(store, locale);
+    const priced = applyCustomerPricing(product, pricing);
+    return proformaLineFromProduct({
+      source: "its",
+      id: store.id,
+      name: priced.name,
+      price: priced.price,
+      image: priced.image,
+      unit: normalizeProductUnit(store.unit),
+      unitLocked: Boolean(store.unit),
+    });
+  }
+
+  const base = getProduct(source, productId);
+  if (!base) return null;
+  const override = await getProductOverride(db, base.source as CatalogSource, base.id as number);
+  const effective = applyProductOverride(base, override, locale) ?? base;
+  const priced = applyCustomerPricing(effective, pricing);
+  return proformaLineFromProduct({
+    source: priced.source,
+    id: priced.id,
+    name: priced.name,
+    price: priced.price,
+    image: priced.image,
+    unit: normalizeProductUnit(priced.unit),
+    unitLocked: Boolean(priced.unit),
+  });
+}
+
+export async function adminListProformas(limit = 100) {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return [] as AdminProformaSummary[];
+  try {
+    const rows = await listProformas(db, limit);
+    return rows.map((row) => proformaSummaryFromRow(row));
+  } catch {
+    return [];
+  }
+}
+
+export async function adminListCustomerProformas(customerId: string) {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return [] as AdminProformaSummary[];
+  try {
+    const rows = await listProformasForCustomer(db, customerId);
+    return rows.map((row) => proformaSummaryFromRow(row));
+  } catch {
+    return [];
+  }
+}
+
+export async function adminGetProforma(id: string) {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return null;
+  try {
+    return await getProformaById(db, id);
+  } catch {
+    return null;
+  }
+}
+
+export async function adminBuildProformaLineItem(input: {
+  customerId: string | null;
+  source: Source;
+  productId: string;
+  locale: Locale;
+}) {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return null;
+  try {
+    return await resolveProductForProforma(db, input.source, input.productId, input.locale, input.customerId);
+  } catch {
+    return null;
+  }
+}
+
+export async function adminCreateProforma(input: {
+  customerId: string | null;
+  status: ProformaStatus;
+  payload: ProformaDocumentPayload;
+}) {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return { ok: false as const, error: "database_unavailable" };
+
+  const name = input.payload.customer.name.trim();
+  if (!name) return { ok: false as const, error: "invalid_customer" };
+
+  try {
+    const id = crypto.randomUUID();
+    const createdAt = new Date().toISOString();
+    const documentNo = await buildProformaDocumentNumber(db, input.payload.customer);
+    await insertProforma(db, {
+      id,
+      documentNo,
+      customerId: input.customerId,
+      status: input.status,
+      payload: input.payload,
+      createdAt,
+    });
+    return { ok: true as const, id, documentNo };
+  } catch {
+    return { ok: false as const, error: "save_failed" };
+  }
+}
+
+export async function adminUpdateProforma(input: {
+  id: string;
+  customerId: string | null;
+  status: ProformaStatus;
+  payload: ProformaDocumentPayload;
+}) {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return { ok: false as const, error: "database_unavailable" };
+  if (!input.payload.customer.name.trim()) return { ok: false as const, error: "invalid_customer" };
+
+  try {
+    const existing = await getProformaById(db, input.id);
+    if (!existing) return { ok: false as const, error: "not_found" };
+    await updateProforma(db, {
+      id: input.id,
+      customerId: input.customerId,
+      status: input.status,
+      payload: input.payload,
+      updatedAt: new Date().toISOString(),
+    });
+    return { ok: true as const, id: input.id, documentNo: existing.documentNo };
+  } catch {
+    return { ok: false as const, error: "save_failed" };
+  }
+}
+
+export async function adminDeleteProforma(id: string) {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return { ok: false as const, error: "database_unavailable" };
+  try {
+    await deleteProforma(db, id);
+    return { ok: true as const };
+  } catch {
+    return { ok: false as const, error: "delete_failed" };
+  }
 }
 
 export type { CustomerProductDiscountRow, CustomerRow };

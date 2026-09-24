@@ -13,6 +13,7 @@ const links = [
   { href: "/admin/products", labelKey: "products" as const },
   { href: "/admin/custom", labelKey: "custom" as const },
   { href: "/admin/customers", labelKey: "customers" as const },
+  { href: "/admin/proformas", labelKey: "proformas" as const },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {

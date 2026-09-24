@@ -12,7 +12,8 @@ import {
   adminSearchProducts,
   type AdminProductListItem,
 } from "@/app/admin/actions";
-import type { CustomerDiscountView, CustomerRow } from "@/app/admin/actions";
+import type { AdminProformaSummary, CustomerDiscountView, CustomerRow } from "@/app/admin/actions";
+import { ProformaAdminList } from "@/components/admin/ProformaAdminList";
 import { CatalogImage } from "@/components/CatalogImage";
 import { useLocale } from "@/components/LocaleProvider";
 import { cn } from "@/lib/cn";
@@ -25,14 +26,16 @@ function productKey(source: Source, id: string | number) {
   return `${source}-${id}`;
 }
 
-type Tab = "details" | "discounts";
+type Tab = "details" | "discounts" | "proformas";
 
 export function CustomerEditForm({
   customer,
   discounts,
+  proformas = [],
 }: {
   customer: CustomerRow;
   discounts: CustomerDiscountView[];
+  proformas?: AdminProformaSummary[];
 }) {
   const router = useRouter();
   const { dict, locale } = useLocale();
@@ -164,6 +167,7 @@ export function CustomerEditForm({
   const tabs: { id: Tab; label: string }[] = [
     { id: "details", label: dict.admin.tabDetails },
     { id: "discounts", label: dict.admin.tabDiscounts },
+    { id: "proformas", label: dict.admin.tabProformas },
   ];
 
   return (
@@ -192,6 +196,9 @@ export function CustomerEditForm({
             {item.label}
             {item.id === "discounts" && discounts.length > 0 && (
               <span className="ml-2 rounded-full bg-tech/20 px-2 py-0.5 text-xs text-tech">{discounts.length}</span>
+            )}
+            {item.id === "proformas" && proformas.length > 0 && (
+              <span className="ml-2 rounded-full bg-tech/20 px-2 py-0.5 text-xs text-tech">{proformas.length}</span>
             )}
           </button>
         ))}
@@ -464,6 +471,21 @@ export function CustomerEditForm({
               </div>
             )}
           </div>
+        </section>
+      )}
+
+      {tab === "proformas" && (
+        <section className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-ink/60">{dict.admin.proformasText}</p>
+            <Link
+              href={`/admin/proformas/new?customer=${customer.id}`}
+              className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-paper"
+            >
+              {dict.admin.newProforma}
+            </Link>
+          </div>
+          <ProformaAdminList items={proformas} />
         </section>
       )}
     </div>

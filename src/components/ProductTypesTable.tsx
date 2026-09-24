@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale } from "@/components/LocaleProvider";
-import { fill } from "@/lib/i18n";
+import { formatTypesCount } from "@/lib/format";
 import type { ProductType } from "@/lib/types";
 
 export function ProductTypesTable({ types }: { types: ProductType[] }) {
@@ -11,7 +11,7 @@ export function ProductTypesTable({ types }: { types: ProductType[] }) {
     <section className="mt-8">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <h2 className="font-display text-2xl">{dict.product.typesHeading}</h2>
-        <p className="text-sm text-ink/50">{fill(dict.product.typesCount, { count: String(types.length) })}</p>
+        <p className="text-sm text-ink/50">{formatTypesCount(types.length, dict)}</p>
       </div>
       <div className="overflow-x-auto rounded-3xl border border-ink/10">
         <table className="min-w-full text-left text-sm">

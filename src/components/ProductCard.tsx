@@ -6,7 +6,7 @@ import { AddButton } from "@/components/Inquiry";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { useLocale } from "@/components/LocaleProvider";
 import { customerDivisionLabel, customerDivisionTone } from "@/lib/division-display";
-import { fill } from "@/lib/i18n";
+import { formatTypesCount } from "@/lib/format";
 import { salePercent } from "@/lib/format";
 import { stockAvailabilityLabel } from "@/lib/stock-label";
 import { productHref } from "@/lib/catalog";
@@ -73,7 +73,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
               href={href}
               className="block w-full rounded-full border border-ink/10 px-3 py-2 text-center text-sm font-semibold transition hover:border-tech hover:text-tech"
             >
-              {fill(dict.product.typesCount, { count: String(product.types.length) })} · {dict.product.chooseType}
+              {formatTypesCount(product.types.length, dict)} · {dict.product.chooseType}
             </Link>
           ) : (
             <AddButton
