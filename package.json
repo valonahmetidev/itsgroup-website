@@ -20,6 +20,7 @@
     "db:migrate:tags": "wrangler d1 execute itsgroup-db --remote --file=./migrations/0008_product_tags.sql"
   },
   "dependencies": {
+    "@next/third-parties": "^16.3.6",
     "@opennextjs/cloudflare": "^1.20.6",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.12",

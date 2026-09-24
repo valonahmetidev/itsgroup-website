@@ -1,92 +1,44 @@
 "use client";
 
+import { GoogleAnalytics } from "@next/third-parties/google";
 import Script from "next/script";
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { CONSENT_COOKIE, type ConsentChoice } from "@/lib/consent";
 import { getCookie } from "@/lib/cookies-client";
-
-function readGaId() {
-  return process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim() ?? "";
-}
 
 function readConsentChoice(): ConsentChoice | null {
   const value = getCookie(CONSENT_COOKIE);
   return value === "accepted" || value === "rejected" ? value : null;
 }
 
-function gtagReady() {
-  return typeof window !== "undefined" && typeof window.gtag === "function";
+function grantAnalyticsStorage() {
+  if (typeof window.gtag !== "function") return false;
+  window.gtag("consent", "update", { analytics_storage: "granted" });
+  return true;
 }
 
-function grantAnalytics(gaId: string) {
-  window.gtag!("consent", "update", {
-    analytics_storage: "granted",
-  });
-  window.gtag!("config", gaId, {
-    anonymize_ip: true,
-    send_page_view: true,
-    page_location: window.location.href,
-    page_title: document.title,
-  });
-}
-
-function denyAnalytics() {
-  window.gtag!("consent", "update", {
-    analytics_storage: "denied",
-  });
-}
-
-export function Analytics() {
-  const gaId = readGaId();
-  const appliedChoiceRef = useRef<ConsentChoice | null>(null);
-
-  const syncConsent = useCallback(() => {
-    if (!gaId || !gtagReady()) return false;
-
-    const choice = readConsentChoice();
-    if (choice === appliedChoiceRef.current) return true;
-
-    if (choice === "accepted") {
-      grantAnalytics(gaId);
-      appliedChoiceRef.current = "accepted";
-      return true;
-    }
-
-    if (choice === "rejected") {
-      denyAnalytics();
-      appliedChoiceRef.current = "rejected";
-      return true;
-    }
-
-    return true;
-  }, [gaId]);
+export function Analytics({ gaId }: { gaId: string }) {
+  const [consent, setConsent] = useState<ConsentChoice | null>(null);
 
   useEffect(() => {
-    if (!gaId) return;
-
-    function onConsentChange() {
-      appliedChoiceRef.current = null;
-      syncConsent();
+    function sync() {
+      setConsent(readConsentChoice());
     }
+    sync();
+    window.addEventListener("its-consent-change", sync);
+    return () => window.removeEventListener("its-consent-change", sync);
+  }, []);
 
-    if (syncConsent()) {
-      window.addEventListener("its-consent-change", onConsentChange);
-      return () => window.removeEventListener("its-consent-change", onConsentChange);
-    }
+  useEffect(() => {
+    if (consent !== "accepted") return;
+
+    if (grantAnalyticsStorage()) return;
 
     const interval = window.setInterval(() => {
-      if (syncConsent()) window.clearInterval(interval);
-    }, 100);
-    const timeout = window.setTimeout(() => window.clearInterval(interval), 15_000);
-
-    window.addEventListener("its-consent-change", onConsentChange);
-
-    return () => {
-      window.clearInterval(interval);
-      window.clearTimeout(timeout);
-      window.removeEventListener("its-consent-change", onConsentChange);
-    };
-  }, [gaId, syncConsent]);
+      if (grantAnalyticsStorage()) window.clearInterval(interval);
+    }, 50);
+    return () => window.clearInterval(interval);
+  }, [consent]);
 
   if (!gaId) return null;
 
@@ -105,28 +57,13 @@ export function Analytics() {
           });
         `}
       </Script>
-      <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-        strategy="afterInteractive"
-        onLoad={() => {
-          appliedChoiceRef.current = null;
-          syncConsent();
-        }}
-      />
-      <Script id="ga-init" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-        `}
-      </Script>
+      {consent === "accepted" ? <GoogleAnalytics gaId={gaId} /> : null}
     </>
   );
 }
 
 declare global {
   interface Window {
-    dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
   }
 }

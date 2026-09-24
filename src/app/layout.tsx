@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope, Unbounded } from "next/font/google";
 import { Analytics } from "@/components/Analytics";
+import { publicGaId } from "@/lib/ga";
 import { CookieConsent } from "@/components/CookieConsent";
 import { Footer } from "@/components/Footer";
 import { InquiryProvider } from "@/components/Inquiry";
@@ -32,6 +33,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const { currency, rates } = await getServerCurrencyContext();
+  const gaId = publicGaId();
 
   return (
     <html lang="mk" className={`${sans.variable} ${display.variable}`} suppressHydrationWarning>
@@ -48,10 +50,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <main>{children}</main>
               <Footer />
               <CookieConsent />
-              <Analytics />
             </InquiryProvider>
           </CurrencyProvider>
         </LocaleProvider>
+        <Analytics gaId={gaId} />
       </body>
     </html>
   );
