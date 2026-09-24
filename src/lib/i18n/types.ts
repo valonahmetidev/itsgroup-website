@@ -337,5 +337,16 @@ export type Dictionary = {
     tabProformas: string;
     proformaCreated: string;
     proformaMarkSent: string;
+    categories: string;
+    categoriesTitle: string;
+    categoriesText: string;
+    editCategory: string;
+    categoryProducts: string;
+    moveToCategory: string;
+    categoryParent: string;
+    categorySlug: string;
+    categoryHidden: string;
+    categoryMoved: string;
+    productCategory: string;
   };
 };

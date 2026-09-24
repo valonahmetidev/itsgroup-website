@@ -11,6 +11,7 @@ import { cn } from "@/lib/cn";
 const links = [
   { href: "/admin", labelKey: "dashboard" as const },
   { href: "/admin/products", labelKey: "products" as const },
+  { href: "/admin/categories", labelKey: "categories" as const },
   { href: "/admin/custom", labelKey: "custom" as const },
   { href: "/admin/customers", labelKey: "customers" as const },
   { href: "/admin/proformas", labelKey: "proformas" as const },

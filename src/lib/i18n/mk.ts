@@ -351,6 +351,17 @@ const mk: Dictionary = {
     tabProformas: "Проформи",
     proformaCreated: "Проформата е зачувана.",
     proformaMarkSent: "Означи како испратена",
+    categories: "Категории",
+    categoriesTitle: "Категории",
+    categoriesText: "Преименувајте категории и преместувајте производи. Промените се зачувуваат во базата.",
+    editCategory: "Уреди категорија",
+    categoryProducts: "Производи во категоријата",
+    moveToCategory: "Премести во…",
+    categoryParent: "ID на родител категорија",
+    categorySlug: "URL slug",
+    categoryHidden: "Сокриј категорија од менија",
+    categoryMoved: "Производот е преместен.",
+    productCategory: "Категорија",
   },
 };
 

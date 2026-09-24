@@ -9,7 +9,18 @@ import {
   upsertProductOverride,
   type ProductOverrideRow,
 } from "@/lib/catalog-overrides";
-import { getProduct, products, searchProducts } from "@/lib/catalog";
+import {
+  applyCategoryOverridesToList,
+  applyProductCategoryAssignment,
+  deleteCategoryOverride,
+  deleteProductCategoryOverride,
+  getCategoryOverrideMap,
+  getProductCategoryOverrideMap,
+  upsertCategoryOverride,
+  upsertProductCategoryOverride,
+  type CategoryOverrideRow,
+} from "@/lib/catalog-category-overrides";
+import { categories, getProduct, products, searchProducts } from "@/lib/catalog";
 import { parseTagsInput, serializeProductTags } from "@/lib/product-tags";
 import { getDb } from "@/lib/cloudflare";
 import {
@@ -163,9 +174,44 @@ function filterByCategory(items: AdminProductListItem[], category: AdminCategory
 }
 
 function parseOverrideKey(key: string) {
-  const match = key.match(/^(treco|tremark)-(\d+)$/);
+  const match = key.match(/^(treco|tremark|alevado)-(\d+)$/);
   if (!match) return null;
   return { source: match[1] as CatalogSource, productId: Number(match[2]) };
+}
+
+async function loadAdminCatalogMaps(db: D1Database | null) {
+  if (!db) {
+    return {
+      productOverrides: new Map<string, ProductOverrideRow>(),
+      categoryOverrides: new Map<string, CategoryOverrideRow>(),
+      productCategories: new Map(),
+    };
+  }
+  const [productOverrides, categoryOverrides, productCategories] = await Promise.all([
+    getOverrideMap(db),
+    getCategoryOverrideMap(db),
+    getProductCategoryOverrideMap(db),
+  ]);
+  return { productOverrides, categoryOverrides, productCategories };
+}
+
+function applyAdminCatalogLayers(
+  product: Product,
+  maps: Awaited<ReturnType<typeof loadAdminCatalogMaps>>,
+  locale: Locale = "mk",
+) {
+  const override = maps.productOverrides.get(`${product.source}-${product.id}`);
+  let next = applyProductOverride(product, override, locale, { forAdmin: true }) ?? product;
+  const assignment =
+    typeof product.id === "number"
+      ? maps.productCategories.get(`${product.source}-${product.id}`)
+      : undefined;
+  return applyProductCategoryAssignment(next, assignment, maps.categoryOverrides);
+}
+
+function toAdminCatalogItemFromProduct(product: Product, maps: Awaited<ReturnType<typeof loadAdminCatalogMaps>>) {
+  const display = applyAdminCatalogLayers(product, maps);
+  return toAdminCatalogItem(product, display);
 }
 
 async function listEditedCatalogItems(
@@ -241,7 +287,8 @@ export async function adminBrowseProducts(
 ): Promise<AdminBrowseResult> {
   await requireAdmin();
   const db = getDb();
-  const map = db ? await getOverrideMap(db) : new Map();
+  const maps = await loadAdminCatalogMaps(db);
+  const map = maps.productOverrides;
 
   if (editedOnly) {
     const merged = db ? await listEditedCatalogItems(source, category, map) : [];
@@ -266,11 +313,7 @@ export async function adminBrowseProducts(
 
   const pool = source === "all" ? products : products.filter((product) => product.source === source);
 
-  const catalogItems = pool.map((product) => {
-    const override = map.get(`${product.source}-${product.id}`);
-    const effective = applyProductOverride(product, override);
-    return toAdminCatalogItem(product, effective);
-  });
+  const catalogItems = pool.map((product) => toAdminCatalogItemFromProduct(product, maps));
 
   const storeItems = source === "all" && db ? (await listAllStoreProducts(db, 1000)).map(toAdminStoreItem) : [];
   const merged = filterByCategory(mergeAdminProductItems(storeItems, catalogItems), category);
@@ -298,7 +341,8 @@ export async function adminSearchProducts(
   }
 
   const db = getDb();
-  const map = db ? await getOverrideMap(db) : new Map();
+  const maps = await loadAdminCatalogMaps(db);
+  const map = maps.productOverrides;
 
   if (source === "its") {
     if (!db) return { items: [], hasMore: false, total: 0 };
@@ -316,11 +360,7 @@ export async function adminSearchProducts(
 
   const scopedSource = source === "all" ? undefined : source;
   const pool = searchProducts(cleaned, scopedSource);
-  const catalogItems = pool.map((product) => {
-    const override = map.get(`${product.source}-${product.id}`);
-    const effective = applyProductOverride(product, override);
-    return toAdminCatalogItem(product, effective);
-  });
+  const catalogItems = pool.map((product) => toAdminCatalogItemFromProduct(product, maps));
 
   const storeItems = source === "all" && db ? await searchAdminStoreProducts(db, cleaned) : [];
   let merged = filterByCategory(mergeAdminProductItems(storeItems, catalogItems), category);
@@ -340,17 +380,23 @@ export async function adminGetProduct(source: string, id: string) {
   await requireAdmin();
   if (source === "its") return null;
 
-  const product = getProduct(source, Number(id));
+  const product = getProduct(source, id);
   if (!product) return null;
   const db = getDb();
+  const maps = await loadAdminCatalogMaps(db);
   const override = db
     ? await getProductOverride(db, product.source as CatalogSource, product.id as number)
     : null;
-  const effective = applyProductOverride(product, override);
+  const effective = applyAdminCatalogLayers(product, maps);
+  const categoryAssignment =
+    typeof product.id === "number"
+      ? maps.productCategories.get(`${product.source}-${product.id}`)?.category_id ?? null
+      : null;
   return {
     product,
     override,
     effective,
+    categoryAssignment,
   };
 }
 
@@ -904,6 +950,92 @@ export async function adminDeleteProforma(id: string) {
   } catch {
     return { ok: false as const, error: "delete_failed" };
   }
+}
+
+export type AdminCategoryRow = {
+  id: number;
+  source: CatalogSource;
+  name: string;
+  slug: string;
+  parent: number;
+  productCount: number;
+  override: CategoryOverrideRow | null;
+};
+
+export async function adminListCategories(source: CatalogSource) {
+  await requireAdmin();
+  const db = getDb();
+  const maps = await loadAdminCatalogMaps(db);
+  const merged = applyCategoryOverridesToList(
+    categories.filter((category) => category.source === source),
+    maps.categoryOverrides,
+  );
+  const pool = products.filter((product) => product.source === source);
+  return merged
+    .map((category) => ({
+      id: category.id,
+      source: category.source as CatalogSource,
+      name: category.name,
+      slug: category.slug,
+      parent: category.parent,
+      productCount: pool.filter((product) => applyAdminCatalogLayers(product, maps).categories[0]?.id === category.id)
+        .length,
+      override: maps.categoryOverrides.get(`${category.source}:${category.id}`) ?? null,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name, "mk"));
+}
+
+export async function adminSaveCategoryOverride(input: {
+  source: CatalogSource;
+  categoryId: number;
+  nameMk: string;
+  nameEn: string;
+  nameSq: string;
+  slug: string;
+  parentId: string;
+  hidden: boolean;
+  reset: boolean;
+}) {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return { ok: false as const, error: "database_unavailable" };
+  if (input.reset) {
+    await deleteCategoryOverride(db, input.source, input.categoryId);
+    return { ok: true as const };
+  }
+  const parentTrimmed = input.parentId.trim();
+  const parentId = parentTrimmed ? Math.max(0, Math.round(Number(parentTrimmed))) : null;
+  await upsertCategoryOverride(db, {
+    source: input.source,
+    categoryId: input.categoryId,
+    nameMk: input.nameMk.trim() || null,
+    nameEn: input.nameEn.trim() || null,
+    nameSq: input.nameSq.trim() || null,
+    slug: input.slug.trim() || null,
+    parentId: parentId != null && Number.isFinite(parentId) ? parentId : null,
+    hidden: input.hidden,
+  });
+  return { ok: true as const };
+}
+
+export async function adminAssignProductCategory(input: {
+  source: CatalogSource;
+  productId: number;
+  categoryId: number | null;
+}) {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return { ok: false as const, error: "database_unavailable" };
+  if (input.categoryId == null) {
+    await deleteProductCategoryOverride(db, input.source, input.productId);
+    return { ok: true as const };
+  }
+  await upsertProductCategoryOverride(db, {
+    source: input.source,
+    productId: input.productId,
+    categoryId: input.categoryId,
+  });
+  return { ok: true as const };
 }
 
 export type { CustomerProductDiscountRow, CustomerRow };

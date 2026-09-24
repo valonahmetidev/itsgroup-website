@@ -136,6 +136,7 @@ export function ProductSearch({
     { value: "all", label: dict.catalog.all },
     { value: "treco", label: "Treco" },
     { value: "tremark", label: "Tremark" },
+    { value: "alevado", label: dict.catalog.alevadoProducts },
     { value: "its", label: "ITS" },
   ];
 

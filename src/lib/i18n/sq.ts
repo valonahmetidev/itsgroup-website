@@ -351,6 +351,17 @@ const sq: Dictionary = {
     tabProformas: "Profatura",
     proformaCreated: "Profatura u ruajt.",
     proformaMarkSent: "Shëno si të dërguar",
+    categories: "Kategoritë",
+    categoriesTitle: "Kategoritë",
+    categoriesText: "Riemërtoni kategoritë dhe zhvendosni produktet. Ndryshimet ruhen në bazën e të dhënave.",
+    editCategory: "Ndrysho kategorinë",
+    categoryProducts: "Produktet në këtë kategori",
+    moveToCategory: "Zhvendos te…",
+    categoryParent: "ID e kategorisë prind",
+    categorySlug: "URL slug",
+    categoryHidden: "Fshih kategorinë nga menytë",
+    categoryMoved: "Produkti u zhvendos.",
+    productCategory: "Kategoria",
   },
 };
 

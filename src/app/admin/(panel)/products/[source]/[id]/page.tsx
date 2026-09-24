@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { adminGetProduct, adminGetStoreProduct } from "@/app/admin/actions";
+import { adminGetProduct, adminGetStoreProduct, adminListCategories } from "@/app/admin/actions";
 import { ProductEditForm } from "@/components/admin/ProductEditForm";
 import { StoreProductForm } from "@/components/admin/StoreProductForm";
 import { isCatalogSource, isSource } from "@/lib/catalog";
@@ -32,5 +32,17 @@ export default async function AdminProductEditPage({
   const data = await adminGetProduct(source, id);
   if (!data) notFound();
 
-  return <ProductEditForm product={data.product} override={data.override} />;
+  const categoryOptions = (await adminListCategories(source)).map((category) => ({
+    id: category.id,
+    name: category.name,
+  }));
+
+  return (
+    <ProductEditForm
+      product={data.product}
+      override={data.override}
+      categoryOptions={categoryOptions}
+      assignedCategoryId={data.categoryAssignment ?? data.effective?.categories[0]?.id ?? null}
+    />
+  );
 }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ExternalLink } from "lucide-react";
-import { adminSaveProduct } from "@/app/admin/actions";
+import { adminAssignProductCategory, adminSaveProduct } from "@/app/admin/actions";
 import { CatalogImage } from "@/components/CatalogImage";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import { UnitSelectField } from "@/components/admin/UnitSelectField";
@@ -25,9 +25,13 @@ const fieldClass =
 export function ProductEditForm({
   product,
   override,
+  categoryOptions,
+  assignedCategoryId,
 }: {
   product: Product;
   override: ProductOverrideRow | null;
+  categoryOptions: { id: number; name: string }[];
+  assignedCategoryId: number | null;
 }) {
   const router = useRouter();
   const { dict, locale } = useLocale();
@@ -50,6 +54,10 @@ export function ProductEditForm({
   const [tags, setTags] = useState(formatTagsInput(parseProductTags(override?.tags)));
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const catalogCategoryId = product.categories[0]?.id ?? null;
+  const [categoryId, setCategoryId] = useState(
+    String(assignedCategoryId ?? catalogCategoryId ?? ""),
+  );
 
   async function save(reset = false) {
     setLoading(true);
@@ -71,11 +79,30 @@ export function ProductEditForm({
       tags,
       reset,
     });
-    setLoading(false);
     if (!result.ok) {
+      setLoading(false);
       setStatus(dict.admin.saveError);
       return;
     }
+
+    if (typeof product.id === "number") {
+      const selected = categoryId ? Number(categoryId) : catalogCategoryId;
+      if (selected === catalogCategoryId) {
+        await adminAssignProductCategory({
+          source: product.source as CatalogSource,
+          productId: product.id,
+          categoryId: null,
+        });
+      } else if (selected) {
+        await adminAssignProductCategory({
+          source: product.source as CatalogSource,
+          productId: product.id,
+          categoryId: selected,
+        });
+      }
+    }
+
+    setLoading(false);
     setStatus(reset ? dict.admin.resetDone : dict.admin.saveDone);
     router.refresh();
   }
@@ -155,6 +182,21 @@ export function ProductEditForm({
         }}
       >
         <h3 className="font-display text-lg">{dict.admin.editProduct}</h3>
+
+        {categoryOptions.length > 0 && (
+          <label className="mt-4 grid gap-1 text-sm">
+            <span>{dict.admin.productCategory}</span>
+            <select
+              value={categoryId}
+              onChange={(event) => setCategoryId(event.target.value)}
+              className={fieldClass}
+            >
+              {categoryOptions.map((option) => (
+                <option key={option.id} value={option.id}>{option.name}</option>
+              ))}
+            </select>
+          </label>
+        )}
 
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
           <label className="grid gap-1 text-sm lg:col-span-2">

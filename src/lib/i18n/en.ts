@@ -351,6 +351,17 @@ const en: Dictionary = {
     tabProformas: "Proformas",
     proformaCreated: "Proforma saved.",
     proformaMarkSent: "Mark as sent",
+    categories: "Categories",
+    categoriesTitle: "Categories",
+    categoriesText: "Rename categories and move products between them. Changes are stored in the database.",
+    editCategory: "Edit category",
+    categoryProducts: "Products in this category",
+    moveToCategory: "Move to…",
+    categoryParent: "Parent category ID",
+    categorySlug: "URL slug",
+    categoryHidden: "Hide category from menus",
+    categoryMoved: "Product moved.",
+    productCategory: "Category",
   },
 };
 

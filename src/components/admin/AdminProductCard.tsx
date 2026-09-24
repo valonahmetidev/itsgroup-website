@@ -38,7 +38,9 @@ export function AdminProductCard({ product }: { product: AdminProductListItem })
                   ? "rounded-full bg-tech/15 px-2 py-0.5 text-[11px] font-semibold text-tech"
                   : product.source === "tremark"
                     ? "rounded-full bg-home/15 px-2 py-0.5 text-[11px] font-semibold text-home"
-                    : "rounded-full bg-ink/10 px-2 py-0.5 text-[11px] font-semibold text-ink"
+                    : product.source === "alevado"
+                      ? "rounded-full bg-tech/10 px-2 py-0.5 text-[11px] font-semibold text-tech ring-1 ring-tech/20"
+                      : "rounded-full bg-ink/10 px-2 py-0.5 text-[11px] font-semibold text-ink"
               }
             >
               {catalogSourceName(product.source)}

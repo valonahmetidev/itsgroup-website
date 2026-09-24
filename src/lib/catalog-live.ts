@@ -4,11 +4,15 @@ import {
   featuredProducts as baseFeaturedProducts,
   getProduct as baseGetProduct,
   products as baseProducts,
-  productsInCategory as baseProductsInCategory,
 } from "@/lib/catalog";
 import { buildCatalogTotals, type CatalogTotals } from "@/lib/catalog-counts";
 import { filterCatalogByDivision } from "@/lib/catalog-filters";
 import type { CatalogDivision } from "@/lib/divisions";
+import {
+  applyProductCategoryAssignment,
+  getCategoryOverrideMap,
+  getProductCategoryOverrideMap,
+} from "@/lib/catalog-category-overrides";
 import { applyProductOverride, getOverrideMap, getProductOverride } from "@/lib/catalog-overrides";
 import { getDbAsync } from "@/lib/cloudflare";
 import { loadCustomerPricing, type CustomerPricing } from "@/lib/customers";
@@ -34,12 +38,19 @@ async function getCustomerPricing(): Promise<CustomerPricing | null> {
 async function applyOverrides(list: Product[], locale: Locale) {
   const db = await getDbAsync();
   const map = db ? await getOverrideMap(db) : new Map();
+  const categoryOverrides = db ? await getCategoryOverrideMap(db) : new Map();
+  const categoryAssignments = db ? await getProductCategoryOverrideMap(db) : new Map();
 
   const result: Product[] = [];
   for (const product of list) {
     const override = map.get(`${product.source}-${product.id}`);
-    const next = applyProductOverride(product, override, locale);
+    let next = applyProductOverride(product, override, locale);
     if (!next) continue;
+    const assignment =
+      typeof product.id === "number"
+        ? categoryAssignments.get(`${product.source}-${product.id}`)
+        : undefined;
+    next = applyProductCategoryAssignment(next, assignment, categoryOverrides);
     const image = next.image || override?.image_url;
     if (!image && product.source !== "its" && product.source !== "alevado") continue;
     result.push({ ...next, image });
@@ -121,7 +132,9 @@ export async function liveCatalogTotals(locale: Locale = "mk"): Promise<CatalogT
 export async function liveProductsInCategory(source: CatalogSource, id: number, locale: Locale = "mk") {
   noStore();
   const pricing = await getCustomerPricing();
-  const products = await applyOverrides(baseProductsInCategory(source, id), locale);
+  const products = (await liveProducts(locale)).filter(
+    (product) => product.source === source && product.categories[0]?.id === id,
+  );
   return finalizeProducts(products, pricing);
 }
 
@@ -143,10 +156,17 @@ export async function liveGetProduct(source: string, id: string | number, locale
   }
 
   const override = await getProductOverride(db, product.source as CatalogSource, product.id);
-  const next = applyProductOverride(product, override, locale);
+  let next = applyProductOverride(product, override, locale);
   if (!next) return undefined;
-  const image = next.image || override?.image_url;
-  if (!image) return undefined;
+  const categoryOverrides = await getCategoryOverrideMap(db);
+  const categoryAssignments = await getProductCategoryOverrideMap(db);
+  const assignment =
+    typeof product.id === "number"
+      ? categoryAssignments.get(`${product.source}-${product.id}`)
+      : undefined;
+  next = applyProductCategoryAssignment(next, assignment, categoryOverrides);
+  const image = next.image || override?.image_url || null;
+  if (!image && product.source !== "alevado") return undefined;
   return applyCustomerPricing({ ...next, image }, pricing);
 }
 
