@@ -270,12 +270,15 @@ export function CatalogFilters({
 
   function applyPriceRange(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const min = minValue.trim() ? Math.max(0, Math.round(Number(minValue))) : undefined;
-    const max = maxValue.trim() ? Math.max(0, Math.round(Number(maxValue))) : undefined;
+    const rawMin = minValue.trim() ? Math.max(0, Math.round(Number(minValue))) : undefined;
+    const rawMax = maxValue.trim() ? Math.max(0, Math.round(Number(maxValue))) : undefined;
+    const min = Number.isFinite(rawMin) ? rawMin : undefined;
+    const max = Number.isFinite(rawMax) ? rawMax : undefined;
+    const dropEmptyRange = min === 0 && max === 0;
     router.push(
       hrefFor({
-        min: Number.isFinite(min) ? min : undefined,
-        max: Number.isFinite(max) ? max : undefined,
+        min: dropEmptyRange ? undefined : min,
+        max: dropEmptyRange ? undefined : max,
         page: 1,
       }),
     );

@@ -38,6 +38,21 @@ function parseNumber(value?: string) {
   return Math.round(parsed);
 }
 
+/** 0–0 is not a meaningful range and hides every priced product. */
+function normalizePriceRange(min?: number, max?: number) {
+  if (min === undefined && max === undefined) return { min: undefined, max: undefined };
+  if (min === 0 && max === 0) return { min: undefined, max: undefined };
+  if (min !== undefined && max !== undefined && min > max) {
+    return { min: max, max: min };
+  }
+  return { min, max };
+}
+
+export function priceRangeFilterActive(query: Pick<ParsedCatalogQuery, "min" | "max">) {
+  const { min, max } = normalizePriceRange(query.min, query.max);
+  return min !== undefined || max !== undefined;
+}
+
 export function parseCatalogSearchParams(search: SearchParams): ParsedCatalogQuery {
   const division = parseCatalogDivisionParam(search.division ?? search.source);
   const sort: ParsedCatalogQuery["sort"] =
@@ -47,16 +62,15 @@ export function parseCatalogSearchParams(search: SearchParams): ParsedCatalogQue
   const priceType: PriceTypeFilter =
     search.priceType === "priced" || search.priceType === "on-request" ? search.priceType : "all";
 
-  const min = parseNumber(search.min);
-  const max = parseNumber(search.max);
+  const { min, max } = normalizePriceRange(parseNumber(search.min), parseNumber(search.max));
 
   return {
     q: search.q?.trim() ?? "",
     division,
     sort,
     page: Math.max(1, Number(search.page) || 1),
-    min: min !== undefined && max !== undefined && min > max ? max : min,
-    max: min !== undefined && max !== undefined && min > max ? min : max,
+    min,
+    max,
     stock,
     sale,
     priceType,
@@ -68,8 +82,7 @@ export function hasActiveFilters(query: ParsedCatalogQuery) {
     query.stock !== "all" ||
     query.sale !== "all" ||
     query.priceType !== "all" ||
-    query.min !== undefined ||
-    query.max !== undefined
+    priceRangeFilterActive(query)
   );
 }
 
@@ -97,7 +110,7 @@ export function getActiveCatalogFilterChips(
   if (query.priceType !== "all") {
     chips.push({ id: "priceType", patch: { priceType: "all", page: 1 } });
   }
-  if (query.min !== undefined || query.max !== undefined) {
+  if (priceRangeFilterActive(query)) {
     chips.push({ id: "priceRange", patch: { min: undefined, max: undefined, page: 1 } });
   }
   if (query.sort !== "name") {
@@ -134,10 +147,11 @@ export function applyCatalogFilters(products: Product[], query: ParsedCatalogQue
     if (query.priceType === "priced" && (product.price == null || product.price <= 0)) return false;
     if (query.priceType === "on-request" && product.price != null && product.price > 0) return false;
 
-    if (query.min !== undefined || query.max !== undefined) {
+    if (priceRangeFilterActive(query)) {
+      const { min, max } = normalizePriceRange(query.min, query.max);
       if (product.price == null || product.price <= 0) return false;
-      if (query.min !== undefined && product.price < query.min) return false;
-      if (query.max !== undefined && product.price > query.max) return false;
+      if (min !== undefined && product.price < min) return false;
+      if (max !== undefined && product.price > max) return false;
     }
 
     return true;
