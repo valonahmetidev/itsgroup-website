@@ -353,7 +353,7 @@ const sq: Dictionary = {
     proformaMarkSent: "Shëno si të dërguar",
     categories: "Kategoritë",
     categoriesTitle: "Kategoritë",
-    categoriesText: "Riemërtoni kategoritë dhe zhvendosni produktet. Ndryshimet ruhen në bazën e të dhënave.",
+    categoriesText: "I njëjti skemë si në faqen publike (kartat Dom dhe nënkategoritë). Klikoni një kategori për të redaktuar ose zhvendosur produkte.",
     editCategory: "Ndrysho kategorinë",
     categoryProducts: "Produktet në këtë kategori",
     moveToCategory: "Zhvendos te…",
@@ -362,6 +362,7 @@ const sq: Dictionary = {
     categoryHidden: "Fshih kategorinë nga menytë",
     categoryMoved: "Produkti u zhvendos.",
     productCategory: "Kategoria",
+    categorySelectHint: "Zgjidhni një kategori më sipër për të redaktuar ose zhvendosur produkte.",
   },
 };
 

@@ -353,7 +353,7 @@ const mk: Dictionary = {
     proformaMarkSent: "Означи како испратена",
     categories: "Категории",
     categoriesTitle: "Категории",
-    categoriesText: "Преименувајте категории и преместувајте производи. Промените се зачувуваат во базата.",
+    categoriesText: "Ист распоред како на сајтот (картички Дом и поткатегории). Кликнете категорија за уредување или преместување производи.",
     editCategory: "Уреди категорија",
     categoryProducts: "Производи во категоријата",
     moveToCategory: "Премести во…",
@@ -362,6 +362,7 @@ const mk: Dictionary = {
     categoryHidden: "Сокриј категорија од менија",
     categoryMoved: "Производот е преместен.",
     productCategory: "Категорија",
+    categorySelectHint: "Изберете категорија погоре за уредување или преместување производи.",
   },
 };
 

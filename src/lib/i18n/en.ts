@@ -353,7 +353,7 @@ const en: Dictionary = {
     proformaMarkSent: "Mark as sent",
     categories: "Categories",
     categoriesTitle: "Categories",
-    categoriesText: "Rename categories and move products between them. Changes are stored in the database.",
+    categoriesText: "Same layout as the public site (e.g. Home / Dom cards and subcategories). Click a category to edit or move products.",
     editCategory: "Edit category",
     categoryProducts: "Products in this category",
     moveToCategory: "Move to…",
@@ -362,6 +362,7 @@ const en: Dictionary = {
     categoryHidden: "Hide category from menus",
     categoryMoved: "Product moved.",
     productCategory: "Category",
+    categorySelectHint: "Select a category above to edit names or move products.",
   },
 };
 

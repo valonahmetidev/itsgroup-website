@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { adminGetProduct, adminGetStoreProduct, adminListCategories } from "@/app/admin/actions";
+import { adminGetCategoryMenu, adminGetProduct, adminGetStoreProduct } from "@/app/admin/actions";
+import { flattenAdminCategoryMenu } from "@/lib/admin-category-menu";
 import { ProductEditForm } from "@/components/admin/ProductEditForm";
 import { StoreProductForm } from "@/components/admin/StoreProductForm";
 import { isCatalogSource, isSource } from "@/lib/catalog";
@@ -32,7 +33,7 @@ export default async function AdminProductEditPage({
   const data = await adminGetProduct(source, id);
   if (!data) notFound();
 
-  const categoryOptions = (await adminListCategories(source)).map((category) => ({
+  const categoryOptions = flattenAdminCategoryMenu(await adminGetCategoryMenu(source)).map((category) => ({
     id: category.id,
     name: category.name,
   }));

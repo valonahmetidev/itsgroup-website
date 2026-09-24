@@ -20,7 +20,20 @@ import {
   upsertProductCategoryOverride,
   type CategoryOverrideRow,
 } from "@/lib/catalog-category-overrides";
-import { categories, getProduct, products, searchProducts } from "@/lib/catalog";
+import {
+  categories,
+  getProduct,
+  menuGroups as catalogMenuGroups,
+  products,
+  searchProducts,
+  technologyMenuGroups,
+} from "@/lib/catalog";
+import {
+  flattenAdminCategoryMenu,
+  type AdminMenuCategoryGroup,
+  type AdminMenuCategoryNode,
+} from "@/lib/admin-category-menu";
+import type { MenuColumn, MenuGroup, MenuLink } from "@/lib/types";
 import { parseTagsInput, serializeProductTags } from "@/lib/product-tags";
 import { getDb } from "@/lib/cloudflare";
 import {
@@ -962,27 +975,95 @@ export type AdminCategoryRow = {
   override: CategoryOverrideRow | null;
 };
 
-export async function adminListCategories(source: CatalogSource) {
+function catalogCategoryRecord(
+  source: CatalogSource,
+  slug: string,
+  maps: Awaited<ReturnType<typeof loadAdminCatalogMaps>>,
+  productCount: number,
+): Omit<AdminMenuCategoryNode, "children"> | null {
+  const category = categories.find((row) => row.source === source && row.slug === slug);
+  if (!category) return null;
+  const override = maps.categoryOverrides.get(`${category.source}:${category.id}`) ?? null;
+  const merged = applyCategoryOverridesToList([category], maps.categoryOverrides)[0];
+  return {
+    id: category.id,
+    source: category.source as CatalogSource,
+    slug: category.slug,
+    name: merged?.name ?? category.name,
+    parent: merged?.parent ?? category.parent,
+    productCount,
+    override,
+  };
+}
+
+function menuLinkToNode(
+  link: MenuLink,
+  maps: Awaited<ReturnType<typeof loadAdminCatalogMaps>>,
+): AdminMenuCategoryNode | null {
+  const base = catalogCategoryRecord(link.source as CatalogSource, link.slug, maps, link.count);
+  if (!base) return null;
+  const children = link.children
+    .map((child) => menuLinkToNode(child, maps))
+    .filter((node): node is AdminMenuCategoryNode => node != null);
+  return { ...base, children };
+}
+
+function menuColumnToNode(
+  column: MenuColumn,
+  maps: Awaited<ReturnType<typeof loadAdminCatalogMaps>>,
+): AdminMenuCategoryNode | null {
+  const base = catalogCategoryRecord(column.source as CatalogSource, column.slug, maps, column.count);
+  if (!base) return null;
+  const children = column.children
+    .map((child) => menuLinkToNode(child, maps))
+    .filter((node): node is AdminMenuCategoryNode => node != null);
+  return { ...base, children };
+}
+
+function catalogMenuGroupsForSource(source: CatalogSource): MenuGroup[] {
+  if (source === "treco") return technologyMenuGroups();
+  if (source === "alevado") {
+    const cables = technologyMenuGroups().find((group) => group.key === "cables");
+    return cables ? [cables] : [];
+  }
+  return catalogMenuGroups(source);
+}
+
+export async function adminGetCategoryMenu(source: CatalogSource): Promise<AdminMenuCategoryGroup[]> {
   await requireAdmin();
   const db = getDb();
   const maps = await loadAdminCatalogMaps(db);
-  const merged = applyCategoryOverridesToList(
-    categories.filter((category) => category.source === source),
-    maps.categoryOverrides,
-  );
-  const pool = products.filter((product) => product.source === source);
-  return merged
-    .map((category) => ({
-      id: category.id,
-      source: category.source as CatalogSource,
-      name: category.name,
-      slug: category.slug,
-      parent: category.parent,
-      productCount: pool.filter((product) => applyAdminCatalogLayers(product, maps).categories[0]?.id === category.id)
-        .length,
-      override: maps.categoryOverrides.get(`${category.source}:${category.id}`) ?? null,
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name, "mk"));
+  return catalogMenuGroupsForSource(source).map((group) => ({
+    key: group.key,
+    title: group.title,
+    columns: group.columns
+      .map((column) => menuColumnToNode(column, maps))
+      .filter((node): node is AdminMenuCategoryNode => node != null),
+  }));
+}
+
+export async function adminListCategories(source: CatalogSource) {
+  const groups = await adminGetCategoryMenu(source);
+  return flattenAdminCategoryMenu(groups);
+}
+
+export type AdminCategoryPickerOption = {
+  source: CatalogSource;
+  slug: string;
+  name: string;
+};
+
+export async function adminCategoryPickerOptions(source: CatalogSource | "all") {
+  await requireAdmin();
+  const sources: CatalogSource[] = source === "all" ? ["tremark", "treco", "alevado"] : [source];
+  const options: AdminCategoryPickerOption[] = [];
+  for (const catalogSource of sources) {
+    const groups = await adminGetCategoryMenu(catalogSource);
+    for (const node of flattenAdminCategoryMenu(groups)) {
+      options.push({ source: node.source, slug: node.slug, name: node.name });
+    }
+  }
+  return options;
 }
 
 export async function adminSaveCategoryOverride(input: {
