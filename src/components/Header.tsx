@@ -91,18 +91,7 @@ export function Header({
               {link.label}
             </NavLink>
           ))}
-          <div className="hidden 2xl:contents">
-            {moreLinks.map((link) => (
-              <NavLink
-                key={link.href}
-                href={link.href}
-                active={pathname === link.href || pathname.startsWith(`${link.href}/`)}
-              >
-                {link.label}
-              </NavLink>
-            ))}
-          </div>
-          <MoreNav links={moreLinks} pathname={pathname} className="2xl:hidden" />
+          <MoreNav links={moreLinks} pathname={pathname} />
         </nav>
 
         <div className="ml-auto flex items-center gap-1">
@@ -111,7 +100,7 @@ export function Header({
           <CustomerNav profile={customer} />
           <WhatsAppCta variant="header" />
           <CurrencySwitcher className="hidden shrink-0 lg:flex" compact />
-          <LanguageSwitcher className="hidden shrink-0 lg:flex" />
+          <LanguageSwitcher className="hidden shrink-0 lg:flex" compact />
           <ThemeToggle className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-surface lg:inline-flex" />
 
           <Link

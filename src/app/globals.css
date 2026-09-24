@@ -207,6 +207,46 @@ body:has(.admin-root) > main {
   animation: btn-pulse 1.6s ease-in-out infinite;
 }
 
+.logo-stage {
+  perspective: 720px;
+  perspective-origin: 50% 45%;
+}
+
+.logo-spin {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  animation: logo-orbit 9s linear infinite;
+  filter: drop-shadow(0 10px 8px rgb(0 0 0 / 0.28));
+}
+
+.logo-face {
+  position: absolute;
+  inset: 0;
+  display: block;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.logo-face-back {
+  transform: rotateY(180deg);
+}
+
+@keyframes logo-orbit {
+  from {
+    transform: rotateX(14deg) rotateY(0deg);
+  }
+  to {
+    transform: rotateX(14deg) rotateY(360deg);
+  }
+}
+
+.group:hover .logo-spin {
+  animation-duration: 4.5s;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -218,7 +258,12 @@ body:has(.admin-root) > main {
   .search-backdrop,
   .search-modal,
   .search-panel,
-  .btn-pulse {
+  .btn-pulse,
+  .logo-spin {
     animation: none;
+  }
+
+  .logo-spin {
+    transform: rotateX(8deg);
   }
 }

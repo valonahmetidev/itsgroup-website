@@ -12,36 +12,45 @@ type LogoProps = {
   variant?: "header" | "footer";
 };
 
-const pngSizes = {
-  header: { width: 168, height: 52, className: "h-11 w-auto" },
-  footer: { width: 200, height: 62, className: "h-14 w-auto" },
+const sizes = {
+  header: { width: 92, height: 46, className: "h-11 w-[5.75rem]" },
+  footer: { width: 120, height: 60, className: "h-14 w-[7.5rem]" },
 } as const;
 
 export function Logo({ href = "/", className, imageClassName, variant = "header" }: LogoProps) {
   const { dict } = useLocale();
-  const size = pngSizes[variant];
-  const content = (
-    <span className={cn("inline-flex items-center", className)}>
-      <Image
-        src="/logo.png"
-        alt={dict.meta.siteName}
-        width={size.width}
-        height={size.height}
-        priority={variant !== "footer"}
-        className={cn("object-contain", size.className, imageClassName)}
-      />
+  const size = sizes[variant];
+  const face = (
+    <Image
+      src="/its_logo.svg"
+      alt=""
+      width={size.width}
+      height={size.height}
+      priority={variant === "header"}
+      className={cn("h-full w-full object-contain", imageClassName)}
+    />
+  );
+
+  const mark = (
+    <span className={cn("logo-stage inline-flex items-center", size.className, className)} aria-hidden>
+      <span className="logo-spin">
+        <span className="logo-face">{face}</span>
+        <span className="logo-face logo-face-back" aria-hidden>
+          {face}
+        </span>
+      </span>
     </span>
   );
 
-  if (!href) return content;
+  if (!href) return mark;
 
   return (
     <Link
       href={href}
-      className="group shrink-0 transition hover:opacity-90 focus-visible:outline-none"
+      className="group shrink-0 rounded-md focus-visible:outline-none"
       aria-label={dict.meta.siteName}
     >
-      <span className="inline-block transition duration-300 group-hover:scale-[1.02]">{content}</span>
+      {mark}
     </Link>
   );
 }

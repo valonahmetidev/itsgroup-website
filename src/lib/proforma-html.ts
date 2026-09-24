@@ -9,9 +9,9 @@ import type { ProformaCustomer } from "@/lib/proforma-types";
 /** A4 at 96dpi — matches jsPDF portrait page when margins are 0. */
 const PDF_WIDTH_PX = 794;
 
-/** Intrinsic /logo.png dimensions (verified from asset). */
-const LOGO_NATURAL_WIDTH = 1774;
-const LOGO_NATURAL_HEIGHT = 887;
+/** Intrinsic /its_logo.svg dimensions. */
+const LOGO_NATURAL_WIDTH = 1558;
+const LOGO_NATURAL_HEIGHT = 785;
 const LOGO_DISPLAY_HEIGHT = 44;
 const LOGO_DISPLAY_WIDTH = Math.round((LOGO_DISPLAY_HEIGHT * LOGO_NATURAL_WIDTH) / LOGO_NATURAL_HEIGHT);
 
@@ -614,7 +614,7 @@ function downloadBlob(blob: Blob, filename: string) {
 
 async function renderProformaPdfElement(input: ProformaPdfInput) {
   const origin = window.location.origin;
-  const logoUrl = `${origin}/logo.png`;
+  const logoUrl = `${origin}/its_logo.svg`;
   const html = buildProformaHtml({
     ...input,
     logoUrl,
