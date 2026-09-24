@@ -78,6 +78,8 @@ export type Dictionary = {
     products: string;
     previous: string;
     next: string;
+    findStore: string;
+    openGoogleMaps: string;
   };
   home: {
     trecoTitle: string;

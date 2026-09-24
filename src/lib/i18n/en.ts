@@ -51,6 +51,8 @@ const en: Dictionary = {
     products: "products",
     previous: "Previous",
     next: "Next",
+    findStore: "Find our store",
+    openGoogleMaps: "Google Maps",
   },
   home: {
     trecoTitle: "From the network to the camera",

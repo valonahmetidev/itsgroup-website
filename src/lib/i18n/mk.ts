@@ -51,6 +51,8 @@ const mk: Dictionary = {
     products: "производи",
     previous: "Претходно",
     next: "Следно",
+    findStore: "Најдете ја продавницата",
+    openGoogleMaps: "Google Maps",
   },
   home: {
     trecoTitle: "Од мрежата до камерата",

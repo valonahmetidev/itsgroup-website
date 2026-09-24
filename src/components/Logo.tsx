@@ -27,7 +27,7 @@ export function Logo({ href = "/", className, imageClassName, variant = "header"
       width={size.width}
       height={size.height}
       priority={variant === "header"}
-      className={cn("h-full w-full object-contain", imageClassName)}
+      className={cn("logo-mark-image h-full w-full object-contain", imageClassName)}
     />
   );
 
@@ -47,7 +47,7 @@ export function Logo({ href = "/", className, imageClassName, variant = "header"
   return (
     <Link
       href={href}
-      className="group shrink-0 rounded-md focus-visible:outline-none"
+      className="shrink-0 rounded-md focus-visible:outline-none"
       aria-label={dict.meta.siteName}
     >
       {mark}

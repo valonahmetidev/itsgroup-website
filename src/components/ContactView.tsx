@@ -50,7 +50,7 @@ export function ContactView() {
                 {site.address ? (
                   <address className="not-italic">
                     <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(site.address)}`}
+                      href={site.googleMapsUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-medium text-ink hover:text-tech"

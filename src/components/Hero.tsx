@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import { STORE_MAP_ID } from "@/lib/maps";
+import { site } from "@/lib/site";
 import { CatalogImage } from "@/components/CatalogImage";
 import { WhatsAppCta } from "@/components/WhatsAppCta";
 import { useCurrency } from "@/components/CurrencyProvider";
@@ -69,9 +71,25 @@ export function Hero({
             initial={{ y: 16 }}
             animate={{ y: 0 }}
             transition={{ duration: 0.65, delay: 0.15, ease }}
-            className="mt-4 sm:mt-6"
+            className="mt-4 flex flex-wrap items-center gap-2 sm:mt-6"
           >
             <WhatsAppCta variant="primary" />
+            <Link
+              href={`/kontakt#${STORE_MAP_ID}`}
+              className="inline-flex items-center gap-2 rounded-full border border-ink/15 bg-card px-5 py-3 text-sm font-semibold text-ink shadow-sm transition hover:border-tech hover:text-tech dark:border-white/15 dark:bg-surface dark:text-cream"
+            >
+              <MapPin className="h-4 w-4" aria-hidden />
+              {dict.hero.findStore}
+            </Link>
+            <a
+              href={site.googleMapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-ink/15 px-5 py-3 text-sm font-semibold text-ink/80 transition hover:border-tech hover:text-tech dark:border-white/15 dark:text-cream/85"
+            >
+              {dict.hero.openGoogleMaps}
+              <ArrowUpRight className="h-4 w-4" aria-hidden />
+            </a>
           </motion.div>
           <div className="mt-4 grid gap-2 sm:mt-8 sm:grid-cols-2 sm:gap-3">
             <Portal

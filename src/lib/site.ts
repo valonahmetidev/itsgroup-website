@@ -8,6 +8,7 @@ export const site = {
   phone: "+389 76 302 228",
   phoneHref: "tel:+38976302228",
   address: "11 November 68d, Kumanovo, North Macedonia, 1300",
+  googleMapsUrl: "https://maps.app.goo.gl/hXhGAhDucfucx6HeA",
 };
 
 export const sourceMeta = {

@@ -51,6 +51,8 @@ const sq: Dictionary = {
     products: "produkte",
     previous: "Mëparshme",
     next: "Tjetra",
+    findStore: "Gjeni dyqanin tonë",
+    openGoogleMaps: "Google Maps",
   },
   home: {
     trecoTitle: "Nga rrjeti te kamera",
