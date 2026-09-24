@@ -28,14 +28,14 @@ export const sourceMeta = {
   its: {
     label: "ITS Group",
     brand: "ITS",
-    href: "/katalog?source=its",
+    href: "/katalog?division=its",
     origin: "https://itsgroup.mk",
     tone: "tech" as const,
   },
   alevado: {
     label: "Cables",
     brand: "Cables",
-    href: "/katalog?source=alevado",
+    href: "/katalog?division=cables",
     origin: "https://alevadoenergy.com",
     tone: "tech" as const,
   },

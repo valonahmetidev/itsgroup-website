@@ -1,6 +1,6 @@
 export type Locale = "mk" | "sq" | "en";
 
-export type MenuGroupKey = "surveillance" | "networks" | "access" | "energy" | "rest" | "home";
+export type MenuGroupKey = "surveillance" | "networks" | "access" | "energy" | "rest" | "home" | "cables";
 
 export type Dictionary = {
   meta: {

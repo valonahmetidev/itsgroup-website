@@ -136,6 +136,10 @@ export function getProduct(source: string, id: number | string) {
   return products.find((product) => product.source === source && String(product.id) === String(id));
 }
 
+export function getProductById(id: number | string) {
+  return products.find((product) => String(product.id) === String(id));
+}
+
 export function categoryTrail(category: Category) {
   const trail = [category];
   const seen = new Set<number>([category.id]);
@@ -300,6 +304,30 @@ function toColumn(category: Category): MenuColumn {
 }
 
 const menuCache = new Map<Source, MenuGroup[]>();
+let technologyMenuCached: MenuGroup[] | undefined;
+
+export function technologyMenuGroups(): MenuGroup[] {
+  if (technologyMenuCached) return technologyMenuCached;
+
+  const groups = menuGroups("treco");
+  const alevadoRoots = categories.filter(
+    (category) => category.source === "alevado" && category.parent === 0 && categoryHasProducts(category),
+  );
+  if (alevadoRoots.length === 0) {
+    technologyMenuCached = groups;
+    return groups;
+  }
+
+  technologyMenuCached = [
+    ...groups,
+    {
+      key: "cables",
+      title: "Кабли",
+      columns: alevadoRoots.map(toColumn),
+    },
+  ];
+  return technologyMenuCached;
+}
 
 export function menuGroups(source: Source): MenuGroup[] {
   const cached = menuCache.get(source);
@@ -335,7 +363,12 @@ export function menuGroups(source: Source): MenuGroup[] {
 }
 
 export function divisionCategories(source: Source) {
-  return menuGroups(source).flatMap((group) =>
+  const groups = source === "treco" ? technologyMenuGroups() : menuGroups(source);
+  return groups.flatMap((group) =>
     group.columns.map((column) => ({ group: group.title, groupKey: group.key, ...column })),
   );
+}
+
+export function technologyProductCount() {
+  return products.filter((product) => product.source === "treco" || product.source === "alevado").length;
 }

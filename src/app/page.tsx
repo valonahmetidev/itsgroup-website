@@ -1,7 +1,7 @@
 import { Hero } from "@/components/Hero";
 import { HomeSections } from "@/components/HomeSections";
 import { HomeTicker } from "@/components/HomeTicker";
-import { counts, divisionCategories, menuGroups, products } from "@/lib/catalog";
+import { counts, divisionCategories, products, technologyMenuGroups } from "@/lib/catalog";
 import { liveFeaturedProducts, liveStoreProducts } from "@/lib/catalog-live";
 import { buildBalancedHeroShots } from "@/lib/hero-shots";
 import { getServerI18n } from "@/lib/i18n/server";
@@ -16,7 +16,7 @@ export default async function HomePage() {
   const storeProducts = await liveStoreProducts(locale, 24);
   const techCategories = divisionCategories("treco").slice(0, 8);
   const homeCategories = divisionCategories("tremark");
-  const ticker = menuGroups("treco")
+  const ticker = technologyMenuGroups()
     .flatMap((group) =>
       group.columns.map((column) => ({
         title: column.title,

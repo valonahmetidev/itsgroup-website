@@ -203,6 +203,7 @@ const mk: Dictionary = {
     energy: "Дом, енергија и додатоци",
     rest: "Останато",
     home: "Дом",
+    cables: "Кабли",
   },
   products: {
     one: "1 производ",

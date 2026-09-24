@@ -62,6 +62,20 @@ export function HomeSections({
           ))}
         </div>
         <ProductGrid products={techFeatured} />
+        {alevadoFeatured.length > 0 && (
+          <div className="mt-14">
+            <div className="mb-6 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-tech">{dict.catalog.alevadoProducts}</p>
+                <h3 className="mt-2 font-display text-2xl md:text-4xl">{dict.home.alevadoTitle}</h3>
+              </div>
+              <Link href="/katalog?division=cables" className="hidden text-sm font-semibold text-tech md:inline">
+                {dict.home.allCategories}
+              </Link>
+            </div>
+            <ProductGrid products={alevadoFeatured} />
+          </div>
+        )}
       </section>
 
       <section className="bg-tech-deep text-cream">
@@ -100,7 +114,7 @@ export function HomeSections({
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink/50">ITS Group</p>
               <h2 className="mt-2 font-display text-3xl md:text-5xl">{dict.home.itsTitle}</h2>
             </div>
-            <Link href="/katalog?source=its" className="hidden text-sm font-semibold text-tech md:inline">
+            <Link href="/katalog?division=its" className="hidden text-sm font-semibold text-tech md:inline">
               {dict.home.allCategories}
             </Link>
           </div>
@@ -108,20 +122,6 @@ export function HomeSections({
         </section>
       )}
 
-      {alevadoFeatured.length > 0 && (
-        <section className="shell border-t border-ink/10 py-16">
-          <div className="mb-8 flex items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-tech">{dict.catalog.alevadoProducts}</p>
-              <h2 className="mt-2 font-display text-3xl md:text-5xl">{dict.home.alevadoTitle}</h2>
-            </div>
-            <Link href="/katalog?source=alevado" className="hidden text-sm font-semibold text-tech md:inline">
-              {dict.home.allCategories}
-            </Link>
-          </div>
-          <ProductGrid products={alevadoFeatured} />
-        </section>
-      )}
     </>
   );
 }

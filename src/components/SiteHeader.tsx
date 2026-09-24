@@ -1,13 +1,13 @@
 import { Header } from "@/components/Header";
 import { getCustomerProfile } from "@/lib/customer-profile";
-import { menuGroups } from "@/lib/catalog";
+import { menuGroups, technologyMenuGroups } from "@/lib/catalog";
 
 export async function SiteHeader() {
   const customer = await getCustomerProfile();
 
   return (
     <Header
-      treco={menuGroups("treco")}
+      treco={technologyMenuGroups()}
       tremark={menuGroups("tremark")}
       customer={customer ? { name: customer.name, discountPercent: customer.discountPercent } : null}
     />

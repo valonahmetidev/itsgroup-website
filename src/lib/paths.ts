@@ -1,9 +1,11 @@
+import { sourceToCatalogDivision } from "@/lib/divisions";
 import type { Source } from "@/lib/types";
 
 export function categoryHref(category: { source: Source; id: number }) {
-  return `/kategorija/${category.source}/${category.id}`;
+  const division = sourceToCatalogDivision(category.source);
+  return `/kategorija/${division}/${category.id}`;
 }
 
 export function productHref(product: { source: Source; id: number | string }) {
-  return `/proizvod/${product.source}/${product.id}`;
+  return `/proizvod/${product.id}`;
 }

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { useLocale } from "@/components/LocaleProvider";
-import { menuGroups, products } from "@/lib/catalog";
+import { menuGroups, products, technologyMenuGroups, technologyProductCount } from "@/lib/catalog";
 import { catalogHref, countProducts } from "@/lib/format";
 import { useCategoryLabel } from "@/lib/i18n/catalog-labels";
 import { menuGroupTitle } from "@/lib/i18n/menu";
@@ -12,8 +12,8 @@ import type { Source } from "@/lib/types";
 export function DivisionPage({ source }: { source: Source }) {
   const { dict } = useLocale();
   const categoryLabel = useCategoryLabel();
-  const groups = menuGroups(source);
-  const total = products.filter((product) => product.source === source).length;
+  const groups = source === "treco" ? technologyMenuGroups() : menuGroups(source);
+  const total = source === "treco" ? technologyProductCount() : products.filter((product) => product.source === source).length;
   const content =
     source === "treco"
       ? { eyebrow: dict.nav.technology, title: dict.division.trecoTitle, text: dict.division.trecoText }

@@ -39,9 +39,9 @@ export function ProductView({
     product.source === "tremark"
       ? "/dom"
       : product.source === "its"
-        ? "/katalog?source=its"
+        ? "/katalog?division=its"
         : product.source === "alevado"
-          ? "/katalog?source=alevado"
+          ? "/tehnologija"
           : "/tehnologija";
 
   return (

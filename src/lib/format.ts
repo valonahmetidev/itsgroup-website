@@ -2,6 +2,8 @@ import type { CatalogQuery, Source } from "@/lib/types";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import { fill } from "@/lib/i18n";
 import { formatPriceWithCurrency, type DisplayCurrency, type ExchangeRateSnapshot } from "@/lib/currency";
+import { categoryHref } from "@/lib/paths";
+import { sourceToCatalogDivision } from "@/lib/divisions";
 
 export function formatCount(value: number) {
   return Math.round(value)
@@ -62,7 +64,9 @@ export function salePercent(price: number | null, regularPrice: number | null) {
 export function catalogSearchParams(query: CatalogQuery = {}) {
   const params = new URLSearchParams();
   if (query.q) params.set("q", query.q);
-  if (query.source && query.source !== "all") params.set("source", query.source);
+  if (query.source && query.source !== "all") {
+    params.set("division", sourceToCatalogDivision(query.source));
+  }
   if (query.sort && query.sort !== "name") params.set("sort", query.sort);
   if (query.page && query.page > 1) params.set("page", String(query.page));
   if (query.min !== undefined) params.set("min", String(query.min));
@@ -80,6 +84,6 @@ export function catalogHref(query: CatalogQuery = {}) {
 
 export function categoryCatalogHref(category: { source: Source; id: number }, query: CatalogQuery = {}) {
   const value = catalogSearchParams(query).toString();
-  const base = `/kategorija/${category.source}/${category.id}`;
+  const base = categoryHref(category);
   return value ? `${base}?${value}` : base;
 }

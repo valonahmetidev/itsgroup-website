@@ -203,6 +203,7 @@ const en: Dictionary = {
     energy: "Home, energy, and accessories",
     rest: "Other",
     home: "Home",
+    cables: "Cables",
   },
   products: {
     one: "1 product",

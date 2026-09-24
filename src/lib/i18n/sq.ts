@@ -203,6 +203,7 @@ const sq: Dictionary = {
     energy: "Shtëpi, energji dhe aksesorë",
     rest: "Të tjera",
     home: "Shtëpi",
+    cables: "Kabllo",
   },
   products: {
     one: "1 produkt",

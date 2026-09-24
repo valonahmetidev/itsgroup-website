@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { useLocale } from "@/components/LocaleProvider";
-import { menuGroups } from "@/lib/catalog";
+import { menuGroups, technologyMenuGroups } from "@/lib/catalog";
 import { useCategoryLabel } from "@/lib/i18n/catalog-labels";
 import { menuGroupTitle } from "@/lib/i18n/menu";
 import { site } from "@/lib/site";
@@ -11,7 +11,7 @@ import { site } from "@/lib/site";
 export function Footer() {
   const { dict } = useLocale();
   const categoryLabel = useCategoryLabel();
-  const tech = menuGroups("treco");
+  const tech = technologyMenuGroups();
   const home = menuGroups("tremark")[0];
 
   return (

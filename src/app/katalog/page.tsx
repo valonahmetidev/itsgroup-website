@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { CatalogView } from "@/components/CatalogView";
 import { liveProducts, liveSearchProducts } from "@/lib/catalog-live";
 import {
@@ -6,6 +7,7 @@ import {
   parseCatalogSearchParams,
   sortCatalogProducts,
 } from "@/lib/catalog-filters";
+import { catalogHref } from "@/lib/format";
 import { getServerI18n } from "@/lib/i18n/server";
 import type { Source } from "@/lib/types";
 
@@ -16,8 +18,13 @@ export default async function CatalogPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
+  const raw = await searchParams;
+  if (raw.source && !raw.division) {
+    redirect(catalogHref(parseCatalogSearchParams(raw)));
+  }
+
   const { locale } = await getServerI18n();
-  const query = parseCatalogSearchParams(await searchParams);
+  const query = parseCatalogSearchParams(raw);
   const source = query.source === "all" ? undefined : (query.source as Source);
   const catalog = await liveProducts(locale);
   const base = query.q

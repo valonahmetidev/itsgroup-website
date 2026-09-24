@@ -1,23 +1,25 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductView } from "@/components/ProductView";
-import { getCategory, getProduct, products } from "@/lib/catalog";
+import { getCategory, getProductById, products } from "@/lib/catalog";
 import { liveGetProduct, liveProducts } from "@/lib/catalog-live";
 import { getServerI18n } from "@/lib/i18n/server";
 
 export function generateStaticParams() {
-  return products.map((product) => ({ source: product.source, id: String(product.id) }));
+  return products.map((product) => ({ id: String(product.id) }));
 }
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ source: string; id: string }>;
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { locale } = await getServerI18n();
-  const { source, id } = await params;
+  const { id } = await params;
+  const base = getProductById(id);
+  const source = base?.source ?? "its";
   const product = await liveGetProduct(source, id, locale);
   return {
     title: product?.name ?? "Product",
@@ -28,17 +30,16 @@ export async function generateMetadata({
 export default async function ProductPage({
   params,
 }: {
-  params: Promise<{ source: string; id: string }>;
+  params: Promise<{ id: string }>;
 }) {
   const { locale } = await getServerI18n();
-  const { source, id } = await params;
-  const base = getProduct(source, id);
-  if (!base) notFound();
-
+  const { id } = await params;
+  const base = getProductById(id);
+  const source = base?.source ?? "its";
   const product = await liveGetProduct(source, id, locale);
   if (!product) notFound();
 
-  const primaryCategory = base.categories[0];
+  const primaryCategory = base?.categories[0];
   const category = primaryCategory ? getCategory(product.source, primaryCategory.id) : undefined;
   const catalog = await liveProducts(locale);
   const relatedPool = primaryCategory

@@ -30,7 +30,7 @@ function rowToProduct(row: StoreProductRow, locale: Locale): Product {
     inStock: row.in_stock === 1,
     categories: [],
     excerpt: row.note?.trim() || "",
-    permalink: `/proizvod/its/${row.id}`,
+    permalink: `/proizvod/${row.id}`,
     unit: row.unit ? normalizeProductUnit(row.unit) : undefined,
     tags: (() => {
       const tags = parseProductTags(row.tags);

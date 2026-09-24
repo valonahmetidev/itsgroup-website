@@ -1,3 +1,4 @@
+import { catalogDivisionToSource, parseCatalogDivisionParam } from "@/lib/divisions";
 import type { CatalogQuery, Product, Source } from "@/lib/types";
 
 export type StockFilter = "all" | "in" | "out";
@@ -18,6 +19,7 @@ export type ParsedCatalogQuery = {
 
 type SearchParams = {
   q?: string;
+  division?: string;
   source?: string;
   sort?: string;
   page?: string;
@@ -36,13 +38,9 @@ function parseNumber(value?: string) {
 }
 
 export function parseCatalogSearchParams(search: SearchParams): ParsedCatalogQuery {
-  const source: ParsedCatalogQuery["source"] =
-    search.source === "treco" ||
-    search.source === "tremark" ||
-    search.source === "its" ||
-    search.source === "alevado"
-      ? search.source
-      : "all";
+  const division = parseCatalogDivisionParam(search.division ?? search.source);
+  const mapped = catalogDivisionToSource(division);
+  const source: ParsedCatalogQuery["source"] = mapped === "all" ? "all" : mapped;
   const sort: ParsedCatalogQuery["sort"] =
     search.sort === "price-asc" || search.sort === "price-desc" ? search.sort : "name";
   const stock: StockFilter = search.stock === "in" || search.stock === "out" ? search.stock : "all";
