@@ -344,6 +344,7 @@ export type Dictionary = {
     categoryProducts: string;
     moveToCategory: string;
     categoryParent: string;
+    categoryParentRoot: string;
     categorySlug: string;
     categoryHidden: string;
     categoryMoved: string;

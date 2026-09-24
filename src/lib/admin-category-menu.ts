@@ -29,3 +29,17 @@ export function flattenAdminCategoryMenu(groups: AdminMenuCategoryGroup[]) {
   }
   return flat;
 }
+
+export type AdminMenuCategoryFlatEntry = { node: AdminMenuCategoryNode; depth: number };
+
+export function flattenAdminCategoryMenuWithDepth(groups: AdminMenuCategoryGroup[]) {
+  const flat: AdminMenuCategoryFlatEntry[] = [];
+  function walk(node: AdminMenuCategoryNode, depth: number) {
+    flat.push({ node, depth });
+    for (const child of node.children) walk(child, depth + 1);
+  }
+  for (const group of groups) {
+    for (const column of group.columns) walk(column, 0);
+  }
+  return flat;
+}

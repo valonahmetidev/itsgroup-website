@@ -9,7 +9,12 @@ import {
   adminBrowseProducts,
   adminSaveCategoryOverride,
 } from "@/app/admin/actions";
-import type { AdminMenuCategoryGroup, AdminMenuCategoryNode } from "@/lib/admin-category-menu";
+import {
+  flattenAdminCategoryMenuWithDepth,
+  type AdminMenuCategoryFlatEntry,
+  type AdminMenuCategoryGroup,
+  type AdminMenuCategoryNode,
+} from "@/lib/admin-category-menu";
 import { useLocale } from "@/components/LocaleProvider";
 import { cn } from "@/lib/cn";
 import { countProducts } from "@/lib/format";
@@ -19,16 +24,9 @@ import type { CatalogSource } from "@/lib/types";
 
 const sources: CatalogSource[] = ["treco", "tremark", "alevado"];
 
-function flattenMenu(groups: AdminMenuCategoryGroup[]) {
-  const flat: AdminMenuCategoryNode[] = [];
-  function walk(node: AdminMenuCategoryNode) {
-    flat.push(node);
-    for (const child of node.children) walk(child);
-  }
-  for (const group of groups) {
-    for (const column of group.columns) walk(column);
-  }
-  return flat;
+function categoryOptionLabel(depth: number, name: string) {
+  const pad = depth > 0 ? `${"— ".repeat(depth)}` : "";
+  return `${pad}${name}`;
 }
 
 function nodeMatchesQuery(node: AdminMenuCategoryNode, query: string): boolean {
@@ -51,13 +49,12 @@ function CategoryTreeButton({
 }) {
   const active = selectedId === node.id;
   return (
-    <>
+    <div className="min-w-0" style={{ paddingLeft: depth * 14 }}>
       <button
         type="button"
         onClick={() => onSelect(node)}
         className={cn(
           "flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left transition",
-          depth > 0 && "ml-3 border-l border-ink/10 pl-3",
           active ? "bg-ink text-paper shadow-sm" : "hover:bg-surface",
         )}
       >
@@ -74,14 +71,14 @@ function CategoryTreeButton({
       {node.children.map((child) => (
         <CategoryTreeButton key={child.id} node={child} depth={depth + 1} selectedId={selectedId} onSelect={onSelect} />
       ))}
-    </>
+    </div>
   );
 }
 
 function CategoryDetailBody({
   source,
   selected,
-  flat,
+  flatWithDepth,
   dict,
   nameMk,
   setNameMk,
@@ -105,7 +102,7 @@ function CategoryDetailBody({
 }: {
   source: CatalogSource;
   selected: AdminMenuCategoryNode;
-  flat: AdminMenuCategoryNode[];
+  flatWithDepth: AdminMenuCategoryFlatEntry[];
   dict: ReturnType<typeof useLocale>["dict"];
   nameMk: string;
   setNameMk: (v: string) => void;
@@ -161,7 +158,16 @@ function CategoryDetailBody({
             </label>
             <label className="grid gap-1.5 text-sm">
               <span className="text-ink/60">{dict.admin.categoryParent}</span>
-              <input value={parentId} onChange={(e) => setParentId(e.target.value)} className={inputClass} />
+              <select value={parentId || "0"} onChange={(e) => setParentId(e.target.value)} className={inputClass}>
+                <option value="0">{dict.admin.categoryParentRoot}</option>
+                {flatWithDepth
+                  .filter(({ node }) => node.id !== selected.id)
+                  .map(({ node, depth }) => (
+                    <option key={node.id} value={String(node.id)}>
+                      {categoryOptionLabel(depth, node.name)}
+                    </option>
+                  ))}
+              </select>
             </label>
           </div>
           <label className="flex items-center gap-2.5 rounded-xl border border-ink/10 bg-paper px-3 py-2.5 text-sm">
@@ -225,10 +231,12 @@ function CategoryDetailBody({
                     }}
                   >
                     <option value="">{dict.admin.moveToCategory}</option>
-                    {flat
-                      .filter((option) => option.id !== selected.id)
-                      .map((option) => (
-                        <option key={option.id} value={option.id}>{option.name}</option>
+                    {flatWithDepth
+                      .filter(({ node }) => node.id !== selected.id)
+                      .map(({ node, depth }) => (
+                        <option key={node.id} value={node.id}>
+                          {categoryOptionLabel(depth, node.name)}
+                        </option>
                       ))}
                   </select>
                 </li>
@@ -254,7 +262,7 @@ export function CategoryAdmin({
 }) {
   const router = useRouter();
   const { dict } = useLocale();
-  const flat = useMemo(() => flattenMenu(groups), [groups]);
+  const flatWithDepth = useMemo(() => flattenAdminCategoryMenuWithDepth(groups), [groups]);
   const [selected, setSelected] = useState<AdminMenuCategoryNode | null>(null);
   const [search, setSearch] = useState("");
 
@@ -325,9 +333,9 @@ export function CategoryAdmin({
 
   useEffect(() => {
     if (!initialCategoryId || selected?.id === initialCategoryId) return;
-    const node = flat.find((entry) => entry.id === initialCategoryId);
-    if (node) selectCategory(node);
-  }, [flat, initialCategoryId, selectCategory, selected?.id]);
+    const match = flatWithDepth.find((entry) => entry.node.id === initialCategoryId);
+    if (match) selectCategory(match.node);
+  }, [flatWithDepth, initialCategoryId, selectCategory, selected?.id]);
 
   async function saveCategory(reset = false) {
     if (!selected) return;
@@ -359,7 +367,7 @@ export function CategoryAdmin({
     ? {
         source,
         selected,
-        flat,
+        flatWithDepth,
         dict,
         nameMk,
         setNameMk,

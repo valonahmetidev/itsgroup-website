@@ -26,6 +26,7 @@ import {
   getProduct,
   menuGroups as catalogMenuGroups,
   products,
+  productsInCategory,
   searchProducts,
   technologyMenuGroups,
 } from "@/lib/catalog";
@@ -34,7 +35,7 @@ import {
   type AdminMenuCategoryGroup,
   type AdminMenuCategoryNode,
 } from "@/lib/admin-category-menu";
-import type { MenuColumn, MenuGroup, MenuLink } from "@/lib/types";
+import type { MenuColumn, MenuGroup } from "@/lib/types";
 import { parseTagsInput, serializeProductTags } from "@/lib/product-tags";
 import { getDb } from "@/lib/cloudflare";
 import {
@@ -1012,28 +1013,39 @@ function catalogCategoryRecord(
   };
 }
 
-function menuLinkToNode(
-  link: MenuLink,
+function adminChildrenOf(source: CatalogSource, parentId: number) {
+  return categories
+    .filter((category) => category.source === source && category.parent === parentId)
+    .sort((a, b) => a.name.localeCompare(b.name, "mk"));
+}
+
+/** Full catalog hierarchy for admin (not limited by public menu depth or empty-category pruning). */
+function adminCategoryNodeFromCategory(
+  category: (typeof categories)[number],
   maps: Awaited<ReturnType<typeof loadAdminCatalogMaps>>,
-): AdminMenuCategoryNode | null {
-  const base = catalogCategoryRecord(link.source as CatalogSource, link.slug, maps, link.count);
-  if (!base) return null;
-  const children = link.children
-    .map((child) => menuLinkToNode(child, maps))
-    .filter((node): node is AdminMenuCategoryNode => node != null);
-  return { ...base, children };
+): AdminMenuCategoryNode {
+  const override = maps.categoryOverrides.get(`${category.source}:${category.id}`) ?? null;
+  const merged = applyCategoryOverridesToList([category], maps.categoryOverrides)[0] ?? category;
+  const source = category.source as CatalogSource;
+  return {
+    id: category.id,
+    source,
+    slug: merged.slug,
+    name: merged.name,
+    parent: merged.parent,
+    productCount: productsInCategory(source, category.id).length,
+    override,
+    children: adminChildrenOf(source, category.id).map((child) => adminCategoryNodeFromCategory(child, maps)),
+  };
 }
 
 function menuColumnToNode(
   column: MenuColumn,
   maps: Awaited<ReturnType<typeof loadAdminCatalogMaps>>,
 ): AdminMenuCategoryNode | null {
-  const base = catalogCategoryRecord(column.source as CatalogSource, column.slug, maps, column.count);
-  if (!base) return null;
-  const children = column.children
-    .map((child) => menuLinkToNode(child, maps))
-    .filter((node): node is AdminMenuCategoryNode => node != null);
-  return { ...base, children };
+  const category = categories.find((row) => row.source === column.source && row.slug === column.slug);
+  if (!category) return null;
+  return adminCategoryNodeFromCategory(category, maps);
 }
 
 function catalogMenuGroupsForSource(source: CatalogSource): MenuGroup[] {
