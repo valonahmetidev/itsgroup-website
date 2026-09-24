@@ -14,13 +14,15 @@ function readConsentChoice(): ConsentChoice | null {
   return value === "accepted" || value === "rejected" ? value : null;
 }
 
-function applyConsentToGtag(choice: ConsentChoice | null) {
+function applyConsentToGtag(choice: ConsentChoice | null, gaId: string) {
   if (typeof window === "undefined" || typeof window.gtag !== "function") return;
 
   if (choice === "accepted") {
     window.gtag("consent", "update", {
       analytics_storage: "granted",
     });
+    // First page load ran with analytics_storage denied — record this visit after consent.
+    window.gtag("event", "page_view", { send_to: gaId });
     return;
   }
 
@@ -31,18 +33,20 @@ function applyConsentToGtag(choice: ConsentChoice | null) {
   }
 }
 
-function syncConsentFromCookie() {
-  applyConsentToGtag(readConsentChoice());
-}
-
 export function Analytics() {
   const gaId = readGaId();
 
   useEffect(() => {
+    if (!gaId) return;
+
+    function syncConsentFromCookie() {
+      applyConsentToGtag(readConsentChoice(), gaId);
+    }
+
     syncConsentFromCookie();
     window.addEventListener("its-consent-change", syncConsentFromCookie);
     return () => window.removeEventListener("its-consent-change", syncConsentFromCookie);
-  }, []);
+  }, [gaId]);
 
   if (!gaId) return null;
 
