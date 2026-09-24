@@ -8,3 +8,5 @@ tsconfig.tsbuildinfo
 .wrangler
 .open-next
 .dev.vars
+.env.local
+.env
