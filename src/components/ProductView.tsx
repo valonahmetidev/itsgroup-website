@@ -48,8 +48,8 @@ export function ProductView({
           : "/tehnologija";
 
   return (
-    <div className="shell py-10">
-      <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-ink/50">
+    <div className="shell min-w-0 py-6 sm:py-10">
+      <nav className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink/50 sm:mb-6">
         <Link href={divisionHref}>{divisionLabel}</Link>
         {category && (
           <>
@@ -58,25 +58,25 @@ export function ProductView({
           </>
         )}
       </nav>
-      <div className="grid items-start gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="rise flex min-h-[420px] items-center justify-center rounded-[2rem] border border-ink/10 bg-white p-8">
+      <div className="grid min-w-0 items-start gap-6 sm:gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="rise flex min-h-[min(280px,55vw)] items-center justify-center rounded-2xl border border-ink/10 bg-white p-4 sm:min-h-[420px] sm:rounded-[2rem] sm:p-8">
           {product.image ? (
             <CatalogImage src={product.image} alt={productName} className="max-h-[520px] w-full object-contain" />
           ) : (
             <span className="font-display text-4xl text-ink/20">ITS</span>
           )}
         </div>
-        <div>
+        <div className="min-w-0">
           <p className={tone === "tech" ? "text-sm font-semibold text-tech" : "text-sm font-semibold text-home"}>
             {divisionLabel}
           </p>
-          <h1 className="mt-2 font-display text-4xl leading-tight">{productName}</h1>
+          <h1 className="mt-2 font-display text-2xl leading-tight sm:text-4xl">{productName}</h1>
           {categoryMk && categorySq && (
             <p className="mt-2 text-sm text-ink/55">{categoryMk} · {categorySq}</p>
           )}
-          <div className="mt-6 rounded-3xl border border-ink/10 bg-surface/60 p-5">
-            <div className="flex flex-wrap items-end gap-3">
-              <p className="font-display text-4xl leading-none">{formatPrice(product.price)}</p>
+          <div className="mt-4 rounded-2xl border border-ink/10 bg-surface/60 p-4 sm:mt-6 sm:rounded-3xl sm:p-5">
+            <div className="flex flex-wrap items-end gap-2 sm:gap-3">
+              <p className="font-display text-3xl leading-none sm:text-4xl">{formatPrice(product.price)}</p>
               {discount && product.regularPrice != null && (
                 <p className="pb-1 text-ink/40 line-through">{formatPrice(product.regularPrice)}</p>
               )}

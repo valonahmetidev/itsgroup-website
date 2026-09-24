@@ -340,50 +340,54 @@ export function AddButton({
 
   if (detail) {
     return (
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+      <div className="flex w-full min-w-0 flex-col gap-3">
         {hasTypes && (
           <SelectField
             value={selectedTypeId}
             onChange={setSelectedTypeId}
             label={dict.product.selectType}
             shape="pill"
-            className="min-w-[12rem] shrink-0"
+            className="w-full min-w-0"
+            fullWidth
             options={types!.map((type) => ({ value: type.id, label: type.name }))}
           />
         )}
-        {!locked && (
-          <UnitSelect
-            value={selectedUnit}
-            onChange={setSelectedUnit}
-            label={dict.product.unit}
-            shape="pill"
-            className="shrink-0"
-          />
-        )}
-        <QuantityControl quantity={quantity} unit={productUnit} onChange={setQuantity} compact />
-        <button
-          type="button"
-          disabled={hasTypes && !selectedType}
-          onClick={() =>
-            addItem(
-              {
-                source,
-                id,
-                name: quoteName,
-                names,
-                price,
-                image,
-                unit: productUnit,
-                unitLocked: locked,
-                variantId: selectedType?.id,
-              },
-              quantity,
-            )
-          }
-          className="rounded-full bg-tech px-6 py-3 text-sm font-semibold text-cream transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1"
-        >
-          {dict.product.addToQuote}
-        </button>
+        <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+          {!locked && (
+            <UnitSelect
+              value={selectedUnit}
+              onChange={setSelectedUnit}
+              label={dict.product.unit}
+              shape="pill"
+              className="w-full min-w-0 sm:w-auto sm:min-w-[7rem] sm:flex-1"
+              fullWidth
+            />
+          )}
+          <QuantityControl quantity={quantity} unit={productUnit} onChange={setQuantity} compact />
+          <button
+            type="button"
+            disabled={hasTypes && !selectedType}
+            onClick={() =>
+              addItem(
+                {
+                  source,
+                  id,
+                  name: quoteName,
+                  names,
+                  price,
+                  image,
+                  unit: productUnit,
+                  unitLocked: locked,
+                  variantId: selectedType?.id,
+                },
+                quantity,
+              )
+            }
+            className="w-full rounded-full bg-tech px-6 py-3 text-sm font-semibold text-cream transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:flex-1 sm:min-w-[10rem]"
+          >
+            {dict.product.addToQuote}
+          </button>
+        </div>
       </div>
     );
   }
