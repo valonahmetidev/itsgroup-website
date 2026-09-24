@@ -43,7 +43,7 @@ const en: Dictionary = {
     allDivisions: "All divisions",
   },
   hero: {
-    kicker: "itsgroup.mk",
+    kicker: "Integrated Technology Solutions",
     title: "Technology and home, in one place.",
     subtitle:
       "A catalog with {tech} products for networking, video surveillance, and smart home, plus {home} home appliances.",
@@ -207,7 +207,7 @@ const en: Dictionary = {
     whyTitle: "Why ITS Group?",
     whyBody:
       "Because quality comes first for us. Every project is handled with care—from needs analysis and design through implementation and post-installation support.",
-    tagline: "ITS Group – Technology. Security. Connectivity.",
+    tagline: "ITS Group – Integrated Technology Solutions",
   },
   division: {
     trecoTitle: "Technology for business, network, and home",

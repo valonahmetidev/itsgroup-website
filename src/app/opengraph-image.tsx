@@ -26,7 +26,7 @@ export default async function OpenGraphImage() {
       >
         <div style={{ fontSize: 72, fontWeight: 700, letterSpacing: "-0.03em" }}>ITS Group</div>
         <div style={{ marginTop: 20, fontSize: 34, opacity: 0.92, maxWidth: 900, lineHeight: 1.35 }}>
-          Technology. Security. Connectivity.
+          Integrated Technology Solutions
         </div>
         <div style={{ marginTop: 48, fontSize: 24, opacity: 0.75 }}>itsgroup.mk</div>
       </div>

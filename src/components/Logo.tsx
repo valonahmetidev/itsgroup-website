@@ -13,7 +13,7 @@ type LogoProps = {
 };
 
 const sizes = {
-  header: { width: 92, height: 46, className: "h-11 w-[5.75rem]" },
+  header: { width: 148, height: 74, className: "h-[3.35rem] w-[9.25rem] sm:h-14 sm:w-[10.5rem]" },
   footer: { width: 120, height: 60, className: "h-14 w-[7.5rem]" },
 } as const;
 

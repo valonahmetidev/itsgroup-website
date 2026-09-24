@@ -43,7 +43,7 @@ const sq: Dictionary = {
     allDivisions: "Të gjitha ndarjet",
   },
   hero: {
-    kicker: "itsgroup.mk",
+    kicker: "Zgjidhje të Integruara Teknologjike",
     title: "Teknologji dhe shtëpi, në një vend.",
     subtitle:
       "Katalog me {tech} produkte për rrjet, video-mbikëqyrje dhe shtëpi inteligjente, plus {home} pajisje shtëpiake.",
@@ -207,7 +207,7 @@ const sq: Dictionary = {
     whyTitle: "Pse ITS Group?",
     whyBody:
       "Sepse për ne cilësia është në vend të parë. Çdo projekt trajtohet me kujdes, nga analiza e nevojave dhe projektimi, deri te realizimi dhe mbështetja pas instalimit.",
-    tagline: "ITS Group – Technology. Security. Connectivity.",
+    tagline: "ITS Group – Zgjidhje të Integruara Teknologjike",
   },
   division: {
     trecoTitle: "Teknologji për biznes, rrjet dhe shtëpi",

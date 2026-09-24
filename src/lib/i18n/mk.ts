@@ -43,7 +43,7 @@ const mk: Dictionary = {
     allDivisions: "Сите поделби",
   },
   hero: {
-    kicker: "itsgroup.mk",
+    kicker: "Интегрирани технолошки решенија",
     title: "Технологија и дом, на едно место.",
     subtitle:
       "Каталог со {tech} производи за мрежа, видеонадзор и паметен дом, и {home} апарати за дом.",
@@ -207,7 +207,7 @@ const mk: Dictionary = {
     whyTitle: "Зошто ITS Group?",
     whyBody:
       "Затоа што квалитетот е на прво место за нас. Секој проект се третира со внимание—од анализа на потребите и проектирање, до реализација и поддршка по инсталација.",
-    tagline: "ITS Group – Technology. Security. Connectivity.",
+    tagline: "ITS Group – Интегрирани технолошки решенија",
   },
   division: {
     trecoTitle: "Технологија за бизнис, мрежа и дом",

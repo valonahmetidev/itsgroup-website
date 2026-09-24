@@ -78,8 +78,8 @@ export function Header({
 
   return (
     <header ref={headerRef} className="sticky top-0 z-40 border-b border-ink/10 bg-paper/85 backdrop-blur-xl">
-      <div className="shell flex h-16 items-center gap-2">
-        <Logo href="/" variant="header" className="mr-1 shrink-0" />
+      <div className="shell flex h-[4.5rem] items-center gap-2 sm:h-[4.75rem]">
+        <Logo href="/" variant="header" className="mr-0.5 shrink-0 sm:mr-1" />
 
         <nav className="hidden min-w-0 items-center gap-0.5 lg:flex" aria-label={dict.nav.menu}>
           {coreLinks.map((link) => (
