@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { adminLogin } from "@/app/admin/auth-actions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useLocale } from "@/components/LocaleProvider";
+import { validateRequired } from "@/lib/form-validation";
 
 export function LoginForm() {
   const router = useRouter();
@@ -15,6 +16,11 @@ export function LoginForm() {
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
+    const passwordErr = validateRequired(password, dict);
+    if (passwordErr) {
+      setError(passwordErr);
+      return;
+    }
     setLoading(true);
     setError("");
     const result = await adminLogin(password);

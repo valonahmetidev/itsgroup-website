@@ -10,6 +10,11 @@ import {
 import { liveProducts, liveSearchProducts } from "@/lib/catalog-live";
 import { catalogHref } from "@/lib/format";
 import { getServerI18n } from "@/lib/i18n/server";
+import { createPageMetadata } from "@/lib/page-metadata";
+
+export async function generateMetadata() {
+  return createPageMetadata("catalog");
+}
 
 const PAGE_SIZE = 24;
 

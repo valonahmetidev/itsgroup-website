@@ -2,10 +2,60 @@ export type Locale = "mk" | "sq" | "en";
 
 export type MenuGroupKey = "surveillance" | "networks" | "access" | "energy" | "rest" | "home" | "cables";
 
+export type LegalSection = { title: string; paragraphs: string[] };
+
+export type LegalDoc = {
+  title: string;
+  intro: string;
+  updated: string;
+  sections: LegalSection[];
+};
+
+export type PageMeta = { title: string; description: string };
+
 export type Dictionary = {
   meta: {
     siteDescription: string;
     siteName: string;
+    pages: {
+      home: PageMeta;
+      technology: PageMeta;
+      homeDivision: PageMeta;
+      catalog: PageMeta;
+      about: PageMeta;
+      contact: PageMeta;
+      quote: PageMeta;
+      login: PageMeta;
+      privacy: PageMeta;
+      terms: PageMeta;
+      notFound: PageMeta;
+    };
+  };
+  legal: {
+    eyebrow: string;
+    privacyNav: string;
+    termsNav: string;
+    privacy: LegalDoc;
+    terms: LegalDoc;
+  };
+  cookies: {
+    title: string;
+    text: string;
+    privacyLink: string;
+    accept: string;
+    reject: string;
+  };
+  whatsapp: {
+    cta: string;
+    defaultMessage: string;
+  };
+  validation: {
+    required: string;
+    emailInvalid: string;
+    phoneInvalid: string;
+    minLength: string;
+    fixFields: string;
+    honeypot: string;
   };
   nav: {
     technology: string;
@@ -161,12 +211,15 @@ export type Dictionary = {
     title: string;
     eyebrow: string;
     heading: string;
-    text: string;
-    inside: string;
-    insideBody: string;
-    updated: string;
-    quoteTitle: string;
-    quoteBody: string;
+    intro1: string;
+    intro2: string;
+    intro3: string;
+    servicesTitle: string;
+    services: string[];
+    partners: string;
+    whyTitle: string;
+    whyBody: string;
+    tagline: string;
   };
   division: {
     trecoTitle: string;
@@ -198,6 +251,9 @@ export type Dictionary = {
   };
   notFound: {
     title: string;
+    text: string;
+    home: string;
+    contact: string;
     catalog: string;
   };
   menuGroups: Record<MenuGroupKey, string>;

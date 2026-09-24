@@ -4,7 +4,17 @@ import { site } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-  const staticRoutes = ["", "/tehnologija", "/dom", "/katalog", "/za-nas", "/kontakt", "/ponuda"].map((path) => ({
+  const staticRoutes = [
+    "",
+    "/tehnologija",
+    "/dom",
+    "/katalog",
+    "/za-nas",
+    "/kontakt",
+    "/ponuda",
+    "/privacy",
+    "/terms",
+  ].map((path) => ({
     url: `${site.url}${path || "/"}`,
     lastModified: now,
   }));

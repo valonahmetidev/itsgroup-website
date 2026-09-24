@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
+import { WhatsAppCta } from "@/components/WhatsAppCta";
 import { useLocale } from "@/components/LocaleProvider";
 import { menuGroups, technologyMenuGroups } from "@/lib/catalog";
 import { useCategoryLabel } from "@/lib/i18n/catalog-labels";
@@ -26,9 +27,12 @@ export function Footer() {
           >
             {site.phone}
           </a>
+          <div className="mt-4">
+            <WhatsAppCta variant="footer" />
+          </div>
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink/45 dark:text-cream/45">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink/55 dark:text-cream/55">
             {dict.footer.technology}
           </p>
           <ul className="mt-3 space-y-2 text-sm text-ink/75 dark:text-cream/80">
@@ -42,7 +46,7 @@ export function Footer() {
           </ul>
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink/45 dark:text-cream/45">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink/55 dark:text-cream/55">
             {dict.footer.home}
           </p>
           <ul className="mt-3 space-y-2 text-sm text-ink/75 dark:text-cream/80">
@@ -57,9 +61,9 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t border-ink/10 dark:border-white/10">
-        <div className="shell flex flex-wrap items-center justify-between gap-3 py-5 text-xs text-ink/50 dark:text-cream/50">
+        <div className="shell flex flex-wrap items-center justify-between gap-3 py-5 text-xs text-ink/60 dark:text-cream/60">
           <p>© {new Date().getFullYear()} ITS Group</p>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
             <Link href="/za-nas" className="hover:text-ink dark:hover:text-cream">
               {dict.nav.about}
             </Link>
@@ -68,6 +72,12 @@ export function Footer() {
             </Link>
             <Link href="/katalog" className="hover:text-ink dark:hover:text-cream">
               {dict.nav.catalog}
+            </Link>
+            <Link href="/privacy" className="hover:text-ink dark:hover:text-cream">
+              {dict.legal.privacyNav}
+            </Link>
+            <Link href="/terms" className="hover:text-ink dark:hover:text-cream">
+              {dict.legal.termsNav}
             </Link>
           </div>
         </div>

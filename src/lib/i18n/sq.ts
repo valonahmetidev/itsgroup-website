@@ -1,10 +1,33 @@
 import type { Dictionary } from "@/lib/i18n/types";
+import { legalBundle } from "@/lib/i18n/legal";
+import { metaPagesFor } from "@/lib/i18n/meta-pages";
 
 const sq: Dictionary = {
   meta: {
     siteDescription:
       "Katalog i përbashkët i ITS Group — teknologji dhe pajisje shtëpiake në një vend.",
     siteName: "ITS Group",
+    pages: metaPagesFor("sq"),
+  },
+  legal: legalBundle("sq"),
+  cookies: {
+    title: "Cookies",
+    text: "Përdorim cookies thelbësore për cilësimet dhe sigurinë. Analitika (Google Analytics) aktivizohet vetëm nëse pranoni.",
+    privacyLink: "Politika e privatësisë",
+    accept: "Prano",
+    reject: "Refuzo",
+  },
+  whatsapp: {
+    cta: "WhatsApp",
+    defaultMessage: "Përshëndetje, dëshiroj informacion për shërbimet dhe produktet tuaja.",
+  },
+  validation: {
+    required: "Kjo fushë është e detyrueshme.",
+    emailInvalid: "Shkruani një email të vlefshëm.",
+    phoneInvalid: "Shkruani një numër telefoni të vlefshëm.",
+    minLength: "Mesazhi është shumë i shkurtër.",
+    fixFields: "Kontrolloni fushat e shënuara.",
+    honeypot: "Dërgimi dështoi.",
   },
   nav: {
     technology: "Teknologji",
@@ -146,7 +169,7 @@ const sq: Dictionary = {
     title: "Kontakt",
     eyebrow: "Kontakt",
     heading: "Na tregoni çfarë ju nevojitet.",
-    text: "Lini emrin dhe mesazhin. Pasi të konfirmojmë email-in dhe adresën, forma do të dërgojë drejtpërdrejt te ne.",
+    text: "Plotësoni formularin dhe dërgoni mesazhin te ne në WhatsApp.",
     domain: "Faqja web",
     email: "Email",
     phone: "Telefon",
@@ -160,16 +183,31 @@ const sq: Dictionary = {
   about: {
     title: "Rreth nesh",
     eyebrow: "ITS Group",
-    heading: "Dy katalogë, një vitrinë moderne.",
-    text: "Faqja bashkon teknologjinë dhe pajisjet shtëpiake, me të njëjtat kategori në të dy menu-t.",
-    inside: "Çfarë do të gjeni",
-    insideBody:
-      "Teknologjia përfshin {tech} produkte: kamera, NVR, MikroTik, Ubiquiti, Cudy, fibra optike, rafte, kontroll aksesi, shtëpi inteligjente dhe sisteme solare. Shtëpia përfshin {home} produkte për gatim, kafe, përgatitje ushqimi, pastrim, hekurim dhe kujdes personal.",
-    updated:
-      "Katalogu u përditësua së fundmi më {date}. Çmimet, zbritjet dhe disponueshmëria përditësohen rregullisht.",
-    quoteTitle: "Ofertë",
-    quoteBody:
-      "Mund të shtoni produkte në listën e ofertës, të shkarkoni PDF ose ta dërgoni listën përmes WhatsApp. Ekipi ynë do të konfirmojë çmimin final dhe disponueshmërinë.",
+    heading: "Rreth nesh",
+    intro1:
+      "ITS Group është kompani e specializuar në teknologji, siguri dhe zgjidhje moderne për biznese, institucione dhe objekte private.",
+    intro2:
+      "Me mbi 10 vite eksperiencë në instalime dhe sisteme teknologjike, ofrojmë zgjidhje të kompletuara nga projektimi deri te instalimi, konfigurimi dhe mirëmbajtja.",
+    intro3:
+      "Fokusi ynë kryesor është siguria, cilësia dhe funksionaliteti. Punojmë me marka të njohura ndërkombëtare dhe ofrojmë zgjidhje të përshtatura sipas nevojave të çdo klienti.",
+    servicesTitle: "Çfarë ofrojmë?",
+    services: [
+      "📹 Sisteme profesionale të videombikëqyrjes (CCTV)",
+      "🌐 Rrjete kompjuterike dhe Wi-Fi",
+      "🔐 Sisteme alarmi dhe kontroll aksesi",
+      "🏠 Smart Home dhe automatizim",
+      "⚡ Sisteme KNX",
+      "🌐 Projektim dhe instalim të rrjeteve LAN/Wi-Fi",
+      "💻 Shërbime IT dhe mirëmbajtje",
+      "🖥️ Web Design dhe zhvillim të faqeve web",
+      "🔧 Mirëmbajtje dhe servisim të sistemeve teknologjike",
+    ],
+    partners:
+      "Si partnerë dhe integrues të teknologjive si Tiandy, Cudy, MikroTik dhe Ubiquiti/UniFi, synojmë të sjellim zgjidhje të qëndrueshme dhe profesionale për çdo projekt.",
+    whyTitle: "Pse ITS Group?",
+    whyBody:
+      "Sepse për ne cilësia është në vend të parë. Çdo projekt trajtohet me kujdes, nga analiza e nevojave dhe projektimi, deri te realizimi dhe mbështetja pas instalimit.",
+    tagline: "ITS Group – Technology. Security. Connectivity.",
   },
   division: {
     trecoTitle: "Teknologji për biznes, rrjet dhe shtëpi",
@@ -204,6 +242,9 @@ const sq: Dictionary = {
   },
   notFound: {
     title: "Kjo faqe nuk ekziston.",
+    text: "Lidhja mund të jetë e vjetruar ose faqja është zhvendosur.",
+    home: "Kryefaqja",
+    contact: "Kontakt",
     catalog: "Shko te katalogu",
   },
   menuGroups: {

@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "check:links": "node scripts/check-internal-links.mjs",
     "catalog:refresh": "node scripts/fetch-catalog.mjs && node scripts/generate-category-translations.mjs",
     "catalog:sync": "npm run catalog:refresh && node scripts/prune-catalog-orphans.mjs --apply",
     "preview:cf": "opennextjs-cloudflare build && opennextjs-cloudflare preview",

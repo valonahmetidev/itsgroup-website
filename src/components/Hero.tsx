@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { CatalogImage } from "@/components/CatalogImage";
+import { WhatsAppCta } from "@/components/WhatsAppCta";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { useLocale } from "@/components/LocaleProvider";
 import { fill } from "@/lib/i18n";
@@ -38,11 +39,11 @@ export function Hero({
   return (
     <section className="relative overflow-hidden lg:flex lg:min-h-0 lg:flex-1">
       <Image
-        src="/logo-mark.png"
+        src="/its_logo.svg"
         alt=""
         aria-hidden
-        width={1774}
-        height={887}
+        width={1558}
+        height={785}
         priority
         className="pointer-events-none absolute -left-6 top-1/2 w-[min(760px,80vw)] max-w-none -translate-y-1/2 select-none opacity-[0.12] blur-[8px] dark:opacity-[0.5] dark:blur-[5px]"
       />
@@ -64,6 +65,14 @@ export function Hero({
           >
             {fill(dict.hero.subtitle, { tech: formatCount(techCount), home: formatCount(homeCount) })}
           </motion.p>
+          <motion.div
+            initial={{ y: 16 }}
+            animate={{ y: 0 }}
+            transition={{ duration: 0.65, delay: 0.15, ease }}
+            className="mt-4 sm:mt-6"
+          >
+            <WhatsAppCta variant="primary" />
+          </motion.div>
           <div className="mt-4 grid gap-2 sm:mt-8 sm:grid-cols-2 sm:gap-3">
             <Portal
               href="/tehnologija"

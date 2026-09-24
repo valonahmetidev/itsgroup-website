@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { adminUploadImage } from "@/app/admin/actions";
+import { compressImageForUpload } from "@/lib/compress-image";
 import { CatalogImage } from "@/components/CatalogImage";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -24,8 +25,9 @@ export function ImageUploadField({
     if (!file) return;
     setUploading(true);
     setError("");
+    const compressed = await compressImageForUpload(file);
     const formData = new FormData();
-    formData.set("file", file);
+    formData.set("file", compressed);
     const result = await adminUploadImage(formData);
     setUploading(false);
     if (!result.ok) {

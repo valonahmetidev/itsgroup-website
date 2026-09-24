@@ -1,10 +1,33 @@
 import type { Dictionary } from "@/lib/i18n/types";
+import { legalBundle } from "@/lib/i18n/legal";
+import { metaPagesFor } from "@/lib/i18n/meta-pages";
 
 const en: Dictionary = {
   meta: {
     siteDescription:
       "ITS Group unified catalog — technology and home appliances in one place.",
     siteName: "ITS Group",
+    pages: metaPagesFor("en"),
+  },
+  legal: legalBundle("en"),
+  cookies: {
+    title: "Cookies",
+    text: "We use essential cookies for settings and security. Analytics (Google Analytics) runs only if you accept.",
+    privacyLink: "Privacy policy",
+    accept: "Accept",
+    reject: "Reject",
+  },
+  whatsapp: {
+    cta: "WhatsApp",
+    defaultMessage: "Hello, I would like information about your services and products.",
+  },
+  validation: {
+    required: "This field is required.",
+    emailInvalid: "Enter a valid email address.",
+    phoneInvalid: "Enter a valid phone number.",
+    minLength: "Message is too short.",
+    fixFields: "Please check the highlighted fields.",
+    honeypot: "Submission failed.",
   },
   nav: {
     technology: "Technology",
@@ -146,7 +169,7 @@ const en: Dictionary = {
     title: "Contact",
     eyebrow: "Contact",
     heading: "Tell us what you need.",
-    text: "Leave your name and message. Once we confirm our email and address, the form will send directly to us.",
+    text: "Fill in the form and send your message to us on WhatsApp.",
     domain: "Website",
     email: "Email",
     phone: "Phone",
@@ -158,18 +181,33 @@ const en: Dictionary = {
     saved: "Your message was saved to the quote list in this browser.",
   },
   about: {
-    title: "About",
+    title: "About us",
     eyebrow: "ITS Group",
-    heading: "Two catalogs, one modern storefront.",
-    text: "The site brings together technology and home appliances, with the same categories across both menus.",
-    inside: "What you'll find",
-    insideBody:
-      "Technology includes {tech} products: cameras, NVRs, MikroTik, Ubiquiti, Cudy, fiber optics, racks, access control, smart home, and solar systems. Home includes {home} products for cooking, coffee, food prep, cleaning, ironing, and personal care.",
-    updated:
-      "The catalog was last updated on {date}. Prices, discounts, and availability are refreshed regularly.",
-    quoteTitle: "Quote",
-    quoteBody:
-      "You can add products to a quote list, download a PDF, or send the list via WhatsApp. Our team will confirm the final price and availability.",
+    heading: "About us",
+    intro1:
+      "ITS Group is a company specialized in technology, security, and modern solutions for businesses, institutions, and private properties.",
+    intro2:
+      "With over 10 years of experience in installations and technology systems, we deliver end-to-end solutions from design through installation, configuration, and maintenance.",
+    intro3:
+      "Our main focus is security, quality, and functionality. We work with well-known international brands and tailor solutions to each client's needs.",
+    servicesTitle: "What we offer",
+    services: [
+      "📹 Professional video surveillance systems (CCTV)",
+      "🌐 Computer networks and Wi-Fi",
+      "🔐 Alarm and access control systems",
+      "🏠 Smart home and automation",
+      "⚡ KNX systems",
+      "🌐 LAN/Wi-Fi network design and installation",
+      "💻 IT services and maintenance",
+      "🖥️ Web design and website development",
+      "🔧 Maintenance and servicing of technology systems",
+    ],
+    partners:
+      "As partners and integrators of technologies such as Tiandy, Cudy, MikroTik, and Ubiquiti/UniFi, we aim to deliver stable, professional solutions for every project.",
+    whyTitle: "Why ITS Group?",
+    whyBody:
+      "Because quality comes first for us. Every project is handled with care—from needs analysis and design through implementation and post-installation support.",
+    tagline: "ITS Group – Technology. Security. Connectivity.",
   },
   division: {
     trecoTitle: "Technology for business, network, and home",
@@ -204,6 +242,9 @@ const en: Dictionary = {
   },
   notFound: {
     title: "This page does not exist.",
+    text: "The link may be outdated or the page may have moved.",
+    home: "Home",
+    contact: "Contact",
     catalog: "Go to catalog",
   },
   menuGroups: {

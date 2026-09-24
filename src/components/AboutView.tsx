@@ -2,34 +2,38 @@
 
 import { PageHeader } from "@/components/PageHeader";
 import { useLocale } from "@/components/LocaleProvider";
-import { fetchedAt } from "@/lib/catalog";
-import type { CatalogTotals } from "@/lib/catalog-counts";
-import { fill } from "@/lib/i18n";
-import { formatCount, formatDate } from "@/lib/format";
 
-export function AboutView({ totals }: { totals: CatalogTotals }) {
-  const { dict, locale } = useLocale();
+export function AboutView() {
+  const { dict } = useLocale();
+  const { about } = dict;
 
   return (
     <>
-      <PageHeader eyebrow={dict.about.eyebrow} title={dict.about.heading} text={dict.about.text} />
-      <div className="shell grid gap-6 pb-8 md:grid-cols-3">
-        <article className="rounded-3xl bg-tech-deep p-6 text-cream md:col-span-2">
-          <h2 className="font-display text-3xl">{dict.about.inside}</h2>
-          <p className="mt-4 leading-7 text-cream/80">
-            {fill(dict.about.insideBody, {
-              tech: formatCount(totals.technology),
-              home: formatCount(totals.home),
-            })}
-          </p>
-          <p className="mt-4 leading-7 text-cream/80">
-            {fill(dict.about.updated, { date: formatDate(fetchedAt, locale) })}
-          </p>
-        </article>
-        <article className="rounded-3xl border border-ink/10 bg-card p-6">
-          <h2 className="font-display text-3xl">{dict.about.quoteTitle}</h2>
-          <p className="mt-4 leading-7 text-ink/70">{dict.about.quoteBody}</p>
-        </article>
+      <PageHeader eyebrow={about.eyebrow} title={about.heading} text={about.intro1} />
+      <div className="shell space-y-10 pb-12">
+        <div className="max-w-3xl space-y-4 text-lg leading-8 text-ink/80">
+          <p>{about.intro2}</p>
+          <p>{about.intro3}</p>
+        </div>
+
+        <section className="max-w-3xl">
+          <h2 className="font-display text-3xl text-ink">{about.servicesTitle}</h2>
+          <ul className="mt-5 space-y-3 text-base leading-7 text-ink/80">
+            {about.services.map((item) => (
+              <li key={item} className="flex gap-2">
+                <span className="shrink-0">{item}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <p className="max-w-3xl text-lg leading-8 text-ink/80">{about.partners}</p>
+
+        <section className="rounded-3xl bg-tech-deep p-8 text-cream md:max-w-3xl">
+          <h2 className="font-display text-3xl">{about.whyTitle}</h2>
+          <p className="mt-4 leading-7 text-cream/85">{about.whyBody}</p>
+          <p className="mt-8 font-display text-xl tracking-wide text-cream">{about.tagline}</p>
+        </section>
       </div>
     </>
   );

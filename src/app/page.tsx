@@ -1,4 +1,9 @@
 import { Hero } from "@/components/Hero";
+import { createPageMetadata } from "@/lib/page-metadata";
+
+export async function generateMetadata() {
+  return createPageMetadata("home");
+}
 import { HomeSections } from "@/components/HomeSections";
 import { HomeTicker } from "@/components/HomeTicker";
 import { divisionCategories, products, technologyMenuGroups } from "@/lib/catalog";

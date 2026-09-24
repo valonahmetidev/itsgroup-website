@@ -5,6 +5,7 @@ function contentSecurityPolicy() {
     "'self'",
     "'unsafe-inline'",
     "https://static.cloudflareinsights.com",
+    "https://www.googletagmanager.com",
     isDev ? "'unsafe-eval'" : "",
   ]
     .filter(Boolean)
@@ -16,7 +17,7 @@ function contentSecurityPolicy() {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https://treco.mk https://www.treco.mk https://tremark.mk https://www.tremark.mk",
     "font-src 'self'",
-    "connect-src 'self'",
+    "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com",
     "media-src 'self'",
     "worker-src 'self' blob:",
     "manifest-src 'self'",

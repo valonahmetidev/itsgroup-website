@@ -13,6 +13,7 @@ import type { ProformaCustomer } from "@/lib/proforma";
 import { productHref } from "@/lib/paths";
 import { site } from "@/lib/site";
 import { useResolvedName } from "@/lib/use-product-name";
+import { validateEmail, validateRequired } from "@/lib/form-validation";
 import { shareProformaViaWhatsApp } from "@/lib/whatsapp";
 
 // Personalized/custom products are disabled for now.
@@ -26,11 +27,29 @@ export function QuoteView() {
   const { currency, rates, formatPrice } = useCurrency();
   const [customer, setCustomer] = useState<ProformaCustomer>({ name: "", phone: "", email: "", company: "" });
   const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ProformaCustomer, string>>>({});
+
+  function validateCustomer() {
+    const nameErr = validateRequired(customer.name, dict);
+    const emailErr = validateEmail(customer.email, dict, false);
+    const errors: Partial<Record<keyof ProformaCustomer, string>> = {};
+    if (nameErr) errors.name = nameErr;
+    if (emailErr) errors.email = emailErr;
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      setFormError(dict.validation.fixFields);
+      return false;
+    }
+    setFormError("");
+    return true;
+  }
 
   const total = items.reduce((sum, item) => sum + (lineTotal(item) ?? 0), 0);
 
   async function downloadPdf() {
-    if (!customer.name.trim() || items.length === 0) return;
+    if (items.length === 0) return;
+    if (!validateCustomer()) return;
     const { downloadProformaPdf } = await import("@/lib/proforma");
     await downloadProformaPdf({
       customer,
@@ -46,7 +65,8 @@ export function QuoteView() {
   }
 
   async function sendWhatsApp() {
-    if (!customer.name.trim() || items.length === 0 || sendingWhatsApp) return;
+    if (items.length === 0 || sendingWhatsApp) return;
+    if (!validateCustomer()) return;
     setSendingWhatsApp(true);
     try {
       await shareProformaViaWhatsApp({
@@ -80,9 +100,11 @@ export function QuoteView() {
             <input
               value={customer.name}
               onChange={(event) => setCustomer((current) => ({ ...current, name: event.target.value }))}
-              className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech"
+              aria-invalid={Boolean(fieldErrors.name)}
+              className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech aria-[invalid=true]:border-home"
               required
             />
+            {fieldErrors.name && <span className="text-sm text-home">{fieldErrors.name}</span>}
           </label>
           <label className="grid gap-1 text-sm">
             <span className="text-ink/60">{dict.contact.phone}</span>
@@ -98,8 +120,10 @@ export function QuoteView() {
               type="email"
               value={customer.email}
               onChange={(event) => setCustomer((current) => ({ ...current, email: event.target.value }))}
-              className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech"
+              aria-invalid={Boolean(fieldErrors.email)}
+              className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech aria-[invalid=true]:border-home"
             />
+            {fieldErrors.email && <span className="text-sm text-home">{fieldErrors.email}</span>}
           </label>
           <label className="grid gap-1 text-sm">
             <span className="text-ink/60">{dict.quote.company}</span>
@@ -110,6 +134,7 @@ export function QuoteView() {
             />
           </label>
         </div>
+        {formError && <p className="mt-4 text-sm text-home">{formError}</p>}
       </section>
 
       {items.length === 0 ? (

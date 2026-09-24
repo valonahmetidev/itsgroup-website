@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope, Unbounded } from "next/font/google";
+import { Analytics } from "@/components/Analytics";
+import { CookieConsent } from "@/components/CookieConsent";
 import { Footer } from "@/components/Footer";
 import { InquiryProvider } from "@/components/Inquiry";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
@@ -45,6 +47,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <SiteHeader />
               <main>{children}</main>
               <Footer />
+              <CookieConsent />
+              <Analytics />
             </InquiryProvider>
           </CurrencyProvider>
         </LocaleProvider>

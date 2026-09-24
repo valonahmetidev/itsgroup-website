@@ -1,12 +1,11 @@
-import type { Metadata } from "next";
 import { DivisionPage } from "@/components/DivisionPage";
 import { liveCatalogTotals } from "@/lib/catalog-live";
 import { getServerI18n } from "@/lib/i18n/server";
+import { createPageMetadata } from "@/lib/page-metadata";
 
-export const metadata: Metadata = {
-  title: "Дом",
-  description: "Готвење, кафе, нега, чистење и удобност од каталогот на ITS Group.",
-};
+export async function generateMetadata() {
+  return createPageMetadata("homeDivision");
+}
 
 export const dynamic = "force-dynamic";
 

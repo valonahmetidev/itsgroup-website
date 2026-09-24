@@ -11,6 +11,7 @@ import { CurrencySwitcher } from "@/components/CurrencySwitcher";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Logo } from "@/components/Logo";
+import { WhatsAppCta } from "@/components/WhatsAppCta";
 import { useLocale } from "@/components/LocaleProvider";
 import { SearchBox } from "@/components/SearchBox";
 import { useInquiry } from "@/components/Inquiry";
@@ -108,6 +109,7 @@ export function Header({
           <SearchBox expandable onNavigate={() => setMobile(false)} />
 
           <CustomerNav profile={customer} />
+          <WhatsAppCta variant="header" />
           <CurrencySwitcher className="hidden shrink-0 lg:flex" compact />
           <LanguageSwitcher className="hidden shrink-0 lg:flex" />
           <ThemeToggle className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-surface lg:inline-flex" />
@@ -224,6 +226,10 @@ function MobileMenu({
             <span className="font-semibold">{dict.customer.loginButton}</span>
           </Link>
         )}
+
+        <div className="mb-4">
+          <WhatsAppCta variant="primary" className="w-full" />
+        </div>
 
         <Link
           href="/ponuda"
