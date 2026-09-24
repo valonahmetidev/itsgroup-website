@@ -363,6 +363,8 @@ const mk: Dictionary = {
     categoryMoved: "Производот е преместен.",
     productCategory: "Категорија",
     categorySelectHint: "Изберете категорија погоре за уредување или преместување производи.",
+    categoryPanelEmpty: "Кликнете категорија од листата — деталите и производите ќе се прикажат овде.",
+    categoryClosePanel: "Затвори",
   },
 };
 

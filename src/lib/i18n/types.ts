@@ -349,5 +349,7 @@ export type Dictionary = {
     categoryMoved: string;
     productCategory: string;
     categorySelectHint: string;
+    categoryPanelEmpty: string;
+    categoryClosePanel: string;
   };
 };

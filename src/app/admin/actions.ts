@@ -92,6 +92,7 @@ export type AdminProductListItem = {
   stockQuantity?: number | null;
   image: string | null;
   category: { source: CatalogSource; slug: string; name: string } | null;
+  categoryIds: number[];
 };
 
 export type AdminBrowseResult = {
@@ -100,7 +101,7 @@ export type AdminBrowseResult = {
   total: number;
 };
 
-export type AdminCategoryFilter = { source: Source; slug: string } | null;
+export type AdminCategoryFilter = { source: Source; slug: string; id?: number } | null;
 
 export type CustomerDiscountView = CustomerProductDiscountRow & {
   productName: string;
@@ -177,16 +178,22 @@ async function resolveDiscountProductDetails(db: D1Database, row: CustomerProduc
   };
 }
 
+function resolveAdminCategoryFilter(category: AdminCategoryFilter) {
+  if (!category) return null;
+  if (category.id != null) {
+    return categories.find((c) => c.source === category.source && c.id === category.id) ?? null;
+  }
+  return categories.find((c) => c.source === category.source && c.slug === category.slug) ?? null;
+}
+
 function matchesCategory(item: AdminProductListItem, category: AdminCategoryFilter) {
   if (!category) return true;
-  if (item.category?.source !== category.source) return false;
-  const selected = categories.find((c) => c.source === category.source && c.slug === category.slug);
+  if (item.source !== category.source) return false;
+  const selected = resolveAdminCategoryFilter(category);
   if (!selected) return false;
-  const itemCategory = categories.find(
-    (c) => c.source === category.source && c.slug === item.category?.slug,
-  );
-  if (!itemCategory) return false;
-  return categorySubtreeIds(category.source, selected.id).has(itemCategory.id);
+  const subtree = categorySubtreeIds(category.source, selected.id);
+  const ids = item.categoryIds.length > 0 ? item.categoryIds : [];
+  return ids.some((id) => subtree.has(id));
 }
 
 function filterByCategory(items: AdminProductListItem[], category: AdminCategoryFilter) {
@@ -238,11 +245,11 @@ function toAdminCatalogItemFromProduct(product: Product, maps: Awaited<ReturnTyp
 async function listEditedCatalogItems(
   source: Source | "all",
   category: AdminCategoryFilter,
-  map: Map<string, ProductOverrideRow>,
+  maps: Awaited<ReturnType<typeof loadAdminCatalogMaps>>,
 ) {
   const items: AdminProductListItem[] = [];
 
-  for (const [key, override] of map) {
+  for (const [key] of maps.productOverrides) {
     const parsed = parseOverrideKey(key);
     if (!parsed) continue;
     if (source !== "all" && parsed.source !== source) continue;
@@ -250,8 +257,7 @@ async function listEditedCatalogItems(
     const product = getProduct(parsed.source, parsed.productId);
     if (!product) continue;
 
-    const effective = applyProductOverride(product, override, "mk", { forAdmin: true });
-    const item = toAdminCatalogItem(product, effective);
+    const item = toAdminCatalogItemFromProduct(product, maps);
     if (!matchesCategory(item, category)) continue;
     items.push(item);
   }
@@ -277,6 +283,7 @@ function toAdminCatalogItem(product: Product, effective?: Product | null): Admin
     category: category
       ? { source: product.source as CatalogSource, slug: category.slug, name: category.name }
       : null,
+    categoryIds: display.categories.map((entry) => entry.id),
   };
 }
 
@@ -290,6 +297,7 @@ function toAdminStoreItem(row: StoreProductRow): AdminProductListItem {
     inStock: product.inStock,
     image: product.image,
     category: null,
+    categoryIds: [],
   };
 }
 
@@ -312,7 +320,7 @@ export async function adminBrowseProducts(
   const map = maps.productOverrides;
 
   if (editedOnly) {
-    const merged = db ? await listEditedCatalogItems(source, category, map) : [];
+    const merged = db ? await listEditedCatalogItems(source, category, maps) : [];
     const items = merged.slice(offset, offset + limit);
     return {
       items,

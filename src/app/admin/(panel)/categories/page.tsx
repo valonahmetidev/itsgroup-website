@@ -14,9 +14,11 @@ export const metadata = {
 export default async function AdminCategoriesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ source?: string }>;
+  searchParams: Promise<{ source?: string; category?: string }>;
 }) {
-  const { source: sourceParam } = await searchParams;
+  const { source: sourceParam, category: categoryParam } = await searchParams;
+  const initialCategoryId =
+    categoryParam && /^\d+$/.test(categoryParam) ? Number(categoryParam) : null;
   const source = sourceParam && isCatalogSource(sourceParam) ? sourceParam : "tremark";
   const cookieStore = await cookies();
   const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value;
@@ -27,7 +29,7 @@ export default async function AdminCategoriesPage({
   return (
     <div className="space-y-4">
       <AdminPageHeader title={dict.admin.categoriesTitle} description={dict.admin.categoriesText} />
-      <CategoryAdmin source={source} groups={groups} />
+      <CategoryAdmin source={source} groups={groups} initialCategoryId={initialCategoryId} />
     </div>
   );
 }

@@ -363,6 +363,8 @@ const en: Dictionary = {
     categoryMoved: "Product moved.",
     productCategory: "Category",
     categorySelectHint: "Select a category above to edit names or move products.",
+    categoryPanelEmpty: "Click a category in the list — details and products appear here.",
+    categoryClosePanel: "Close",
   },
 };
 

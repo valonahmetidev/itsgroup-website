@@ -363,6 +363,8 @@ const sq: Dictionary = {
     categoryMoved: "Produkti u zhvendos.",
     productCategory: "Kategoria",
     categorySelectHint: "Zgjidhni një kategori më sipër për të redaktuar ose zhvendosur produkte.",
+    categoryPanelEmpty: "Klikoni një kategori në listë — detajet dhe produktet shfaqen këtu.",
+    categoryClosePanel: "Mbyll",
   },
 };
 
