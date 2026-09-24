@@ -57,7 +57,9 @@ export default async function CategoryPage({
   if (!category) notFound();
 
   const { locale } = await getServerI18n();
-  const query = parseCatalogSearchParams(await searchParams);
+  const parsed = parseCatalogSearchParams(await searchParams);
+  // Category URL already implies division; ignore stray `division` from /katalog navigation.
+  const query = { ...parsed, division: "all" as const };
   const base = await liveProductsInCategory(category.source, category.id, locale);
   const priceBounds = getPriceBounds(base);
   const matched = sortCatalogProducts(applyCatalogFilters(base, query), query.sort);

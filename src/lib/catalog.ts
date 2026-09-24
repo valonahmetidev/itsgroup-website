@@ -153,6 +153,13 @@ export function categorySubtreeIds(source: Source, categoryId: number) {
   return ids;
 }
 
+/** Match static `productsInCategory` indexing (any assigned category in this subtree). */
+export function productInCategorySubtree(product: Product, source: Source, categoryId: number) {
+  if (product.source !== source) return false;
+  const subtree = categorySubtreeIds(source, categoryId);
+  return product.categories.some((category) => subtree.has(category.id));
+}
+
 function categoryHasProducts(category: Category) {
   return productsInCategory(category.source, category.id).length > 0;
 }

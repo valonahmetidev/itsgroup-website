@@ -1,7 +1,14 @@
 const isDev = process.env.NODE_ENV === "development";
 
 function contentSecurityPolicy() {
-  const scriptSrc = ["'self'", "'unsafe-inline'", isDev ? "'unsafe-eval'" : ""].filter(Boolean).join(" ");
+  const scriptSrc = [
+    "'self'",
+    "'unsafe-inline'",
+    "https://static.cloudflareinsights.com",
+    isDev ? "'unsafe-eval'" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return [
     "default-src 'self'",

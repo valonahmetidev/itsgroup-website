@@ -137,7 +137,7 @@ function CatalogFilterFields({
               inputMode="numeric"
               value={minValue}
               onChange={(event) => setMinValue(event.target.value)}
-              placeholder={priceBounds ? String(priceBounds.min) : "0"}
+              placeholder={priceBounds ? String(priceBounds.min) : ""}
               className="w-full rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none transition focus:border-tech"
             />
           </label>

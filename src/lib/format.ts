@@ -98,7 +98,9 @@ export function catalogHref(query: CatalogQuery = {}) {
 }
 
 export function categoryCatalogHref(category: { source: Source; id: number }, query: CatalogQuery = {}) {
-  const value = catalogSearchParams(query).toString();
+  const params = catalogSearchParams({ ...query, division: "all" });
+  params.delete("division");
+  const value = params.toString();
   const base = categoryHref(category);
   return value ? `${base}?${value}` : base;
 }
