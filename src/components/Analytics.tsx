@@ -1,7 +1,7 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { CONSENT_COOKIE, type ConsentChoice } from "@/lib/consent";
 import { getCookie } from "@/lib/cookies-client";
 
@@ -14,39 +14,79 @@ function readConsentChoice(): ConsentChoice | null {
   return value === "accepted" || value === "rejected" ? value : null;
 }
 
-function applyConsentToGtag(choice: ConsentChoice | null, gaId: string) {
-  if (typeof window === "undefined" || typeof window.gtag !== "function") return;
+function gtagReady() {
+  return typeof window !== "undefined" && typeof window.gtag === "function";
+}
 
-  if (choice === "accepted") {
-    window.gtag("consent", "update", {
-      analytics_storage: "granted",
-    });
-    // First page load ran with analytics_storage denied — record this visit after consent.
-    window.gtag("event", "page_view", { send_to: gaId });
-    return;
-  }
+function grantAnalytics(gaId: string) {
+  window.gtag!("consent", "update", {
+    analytics_storage: "granted",
+  });
+  window.gtag!("config", gaId, {
+    anonymize_ip: true,
+    send_page_view: true,
+    page_location: window.location.href,
+    page_title: document.title,
+  });
+}
 
-  if (choice === "rejected") {
-    window.gtag("consent", "update", {
-      analytics_storage: "denied",
-    });
-  }
+function denyAnalytics() {
+  window.gtag!("consent", "update", {
+    analytics_storage: "denied",
+  });
 }
 
 export function Analytics() {
   const gaId = readGaId();
+  const appliedChoiceRef = useRef<ConsentChoice | null>(null);
+
+  const syncConsent = useCallback(() => {
+    if (!gaId || !gtagReady()) return false;
+
+    const choice = readConsentChoice();
+    if (choice === appliedChoiceRef.current) return true;
+
+    if (choice === "accepted") {
+      grantAnalytics(gaId);
+      appliedChoiceRef.current = "accepted";
+      return true;
+    }
+
+    if (choice === "rejected") {
+      denyAnalytics();
+      appliedChoiceRef.current = "rejected";
+      return true;
+    }
+
+    return true;
+  }, [gaId]);
 
   useEffect(() => {
     if (!gaId) return;
 
-    function syncConsentFromCookie() {
-      applyConsentToGtag(readConsentChoice(), gaId);
+    function onConsentChange() {
+      appliedChoiceRef.current = null;
+      syncConsent();
     }
 
-    syncConsentFromCookie();
-    window.addEventListener("its-consent-change", syncConsentFromCookie);
-    return () => window.removeEventListener("its-consent-change", syncConsentFromCookie);
-  }, [gaId]);
+    if (syncConsent()) {
+      window.addEventListener("its-consent-change", onConsentChange);
+      return () => window.removeEventListener("its-consent-change", onConsentChange);
+    }
+
+    const interval = window.setInterval(() => {
+      if (syncConsent()) window.clearInterval(interval);
+    }, 100);
+    const timeout = window.setTimeout(() => window.clearInterval(interval), 15_000);
+
+    window.addEventListener("its-consent-change", onConsentChange);
+
+    return () => {
+      window.clearInterval(interval);
+      window.clearTimeout(timeout);
+      window.removeEventListener("its-consent-change", onConsentChange);
+    };
+  }, [gaId, syncConsent]);
 
   if (!gaId) return null;
 
@@ -61,17 +101,23 @@ export function Analytics() {
             ad_user_data: 'denied',
             ad_personalization: 'denied',
             analytics_storage: 'denied',
-            wait_for_update: 500
+            wait_for_update: 2000
           });
         `}
       </Script>
-      <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+        strategy="afterInteractive"
+        onLoad={() => {
+          appliedChoiceRef.current = null;
+          syncConsent();
+        }}
+      />
       <Script id="ga-init" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', '${gaId}', { anonymize_ip: true });
         `}
       </Script>
     </>
