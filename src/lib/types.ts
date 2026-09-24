@@ -13,6 +13,14 @@ export type Category = {
   count: number;
 };
 
+export type ProductType = {
+  id: string;
+  name: string;
+  cableDiameterMm?: string;
+  weightKgPerKm?: string;
+  packagingM?: string;
+};
+
 export type Product = {
   id: number | string;
   source: Source;
@@ -33,6 +41,7 @@ export type Product = {
   customerDiscountPercent?: number;
   unit?: ProductUnit;
   tags?: string[];
+  types?: ProductType[];
 };
 
 export type MenuLink = {

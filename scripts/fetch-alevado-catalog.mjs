@@ -71,19 +71,31 @@ function slugify(value) {
     .slice(0, 80);
 }
 
-/** Each product page lists cable configurations in a spec table. Those rows are the full type list. */
-function extractConfigurations(html) {
-  const names = [];
-  for (const table of html.matchAll(/<tbody[\s\S]*?<\/tbody>/gi)) {
-    for (const row of table[0].matchAll(/<tr[\s\S]*?<\/tr>/gi)) {
-      const cell = row[0].match(/<td[^>]*>([^<]+)<\/td>/i);
-      const name = cell ? decodeHtml(cell[1]) : "";
+/** Each product page lists cable types in a spec table — those rows become `types`, not separate products. */
+function extractProductTypes(html) {
+  const types = [];
+
+  for (const table of html.matchAll(/<table[\s\S]*?<\/table>/gi)) {
+    const tbody = table[0].match(/<tbody[\s\S]*?<\/tbody>/i)?.[0];
+    if (!tbody) continue;
+
+    for (const row of tbody.matchAll(/<tr[\s\S]*?<\/tr>/gi)) {
+      const cells = [...row[0].matchAll(/<td[^>]*>([^<]*)<\/td>/gi)].map((match) => decodeHtml(match[1]));
+      const name = cells[0]?.trim() ?? "";
       if (name.length < 2) continue;
-      if (!/[a-zA-Z\u0400-\u04FF]/.test(name)) continue;
-      names.push(name);
+      if (!/[a-zA-Z\u0400-\u04FF0-9]/.test(name)) continue;
+
+      const type = { id: slugify(name) || String(types.length), name };
+      if (cells[1]) type.cableDiameterMm = cells[1];
+      if (cells[2]) type.weightKgPerKm = cells[2];
+      if (cells[3]) type.packagingM = cells[3];
+      types.push(type);
     }
+
+    if (types.length > 0) break;
   }
-  return [...new Set(names)];
+
+  return [...new Map(types.map((type) => [type.id, type])).values()];
 }
 
 const productsIndexHtml = await fetchText(`${BASE}/${LOCALE}/products`);
@@ -111,8 +123,6 @@ for (const categorySlug of categorySlugs) {
   const html = categoryPages.get(categorySlug);
   const paths = extractProductPaths(html);
   productPaths.push(...paths);
-  const category = categoryBySlug.get(categorySlug);
-  if (category) category.count = paths.length;
   console.log(`${categorySlug}: ${paths.length}`);
 }
 
@@ -120,7 +130,7 @@ const uniquePaths = [...new Map(productPaths.map((entry) => [`${entry.categorySl
 console.log(`products to fetch: ${uniquePaths.length}`);
 
 const products = [];
-let configurationCount = 0;
+let typeCount = 0;
 for (const [index, entry] of uniquePaths.entries()) {
   const html = await fetchText(`${BASE}/${LOCALE}/products/${entry.categorySlug}/${entry.productId}`);
   const category = categoryBySlug.get(entry.categorySlug);
@@ -129,10 +139,14 @@ for (const [index, entry] of uniquePaths.entries()) {
   const image = extractImage(html);
   const permalink = `${BASE}/${LOCALE}/products/${entry.categorySlug}/${entry.productId}`;
   const categoryRef = category ? [{ id: category.id, name: category.name, slug: category.slug }] : [];
-  const configurations = extractConfigurations(html);
+  const types = extractProductTypes(html);
+  typeCount += types.length;
 
-  const base = {
+  products.push({
     source: "alevado",
+    id: entry.productId,
+    name,
+    slug: entry.productId,
     price: null,
     regularPrice: null,
     onSale: false,
@@ -142,27 +156,13 @@ for (const [index, entry] of uniquePaths.entries()) {
     categories: categoryRef,
     excerpt,
     permalink,
-  };
-
-  if (configurations.length === 0) {
-    products.push({ ...base, id: entry.productId, name, slug: entry.productId });
-  } else {
-    configurationCount += configurations.length;
-    for (const configuration of configurations) {
-      const suffix = slugify(configuration) || String(products.length);
-      products.push({
-        ...base,
-        id: `${entry.productId}--${suffix}`,
-        name: configuration,
-        slug: `${entry.productId}--${suffix}`,
-      });
-    }
-  }
+    ...(types.length > 0 ? { types } : {}),
+  });
 
   if ((index + 1) % 25 === 0) console.log(`fetched ${index + 1}/${uniquePaths.length}`);
 }
 
-console.log(`configurations: ${configurationCount}`);
+console.log(`types: ${typeCount}`);
 
 for (const category of categories) {
   category.count = products.filter((product) => product.categories.some((item) => item.slug === category.slug)).length;

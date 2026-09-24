@@ -12,6 +12,7 @@ import { salePercent } from "@/lib/format";
 import { stockAvailabilityLabel } from "@/lib/stock-label";
 import { useCategoryLabel } from "@/lib/i18n/catalog-labels";
 import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
+import { ProductTypesTable } from "@/components/ProductTypesTable";
 import { ProductTags } from "@/components/ui/ProductTags";
 import { useProductExcerpt, useProductName } from "@/lib/use-product-name";
 import type { Category, Product } from "@/lib/types";
@@ -20,10 +21,12 @@ export function ProductView({
   product,
   category,
   related,
+  initialTypeId,
 }: {
   product: Product;
   category?: Category;
   related: Product[];
+  initialTypeId?: string;
 }) {
   const { dict, locale } = useLocale();
   const { formatPrice } = useCurrency();
@@ -94,10 +97,13 @@ export function ProductView({
                 image={product.image}
                 unit={product.unit}
                 unitLocked={Boolean(product.unit)}
+                types={product.types}
+                initialTypeId={initialTypeId}
               />
             </div>
           </div>
           {productExcerpt && <p className="mt-6 max-w-xl leading-7 text-ink/75">{productExcerpt}</p>}
+          {product.types && product.types.length > 0 && <ProductTypesTable types={product.types} />}
           {product.tags && product.tags.length > 0 && <ProductTags tags={product.tags} className="mt-6" />}
           <div className="mt-6 flex flex-wrap gap-2">
             {product.categories.map((item) => (

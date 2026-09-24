@@ -36,6 +36,7 @@ function buildProductHaystack(product: Product, locale: Locale) {
       product.source === "its" ? "its group itsgroup" : product.source,
       ...categoryNames,
       ...product.categories.map((category) => category.name),
+      ...(product.types?.map((type) => type.name) ?? []),
     ]
       .filter(Boolean)
       .join(" "),

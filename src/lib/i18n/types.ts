@@ -100,6 +100,15 @@ export type Dictionary = {
     openOn: string;
     sameCategory: string;
     placeholderInitials: string;
+    typesHeading: string;
+    typesCount: string;
+    typeSize: string;
+    typeDiameter: string;
+    typeWeight: string;
+    typePackaging: string;
+    typesNote: string;
+    selectType: string;
+    chooseType: string;
   };
   quote: {
     title: string;

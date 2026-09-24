@@ -15,8 +15,9 @@ import {
   quantityStep,
   type ProductUnit,
 } from "@/lib/units";
+import { SelectField } from "@/components/ui/SelectField";
 import type { ProductNames } from "@/lib/product-names";
-import type { Source } from "@/lib/types";
+import type { ProductType, Source } from "@/lib/types";
 
 const STORAGE_KEY = "itsgroup-inquiry";
 
@@ -46,7 +47,7 @@ type InquiryState = {
   items: InquiryItem[];
   messages: InquiryMessage[];
   addItem: (
-    item: Omit<InquiryItem, "key" | "quantity"> & { unit?: ProductUnit; unitLocked?: boolean },
+    item: Omit<InquiryItem, "key" | "quantity"> & { unit?: ProductUnit; unitLocked?: boolean; variantId?: string },
     quantity?: number,
   ) => void;
   setItemQuantity: (key: string, quantity: number) => void;
@@ -58,8 +59,9 @@ type InquiryState = {
 
 const InquiryContext = createContext<InquiryState | null>(null);
 
-function itemKey(source: Source | "custom", id: number | string) {
-  return source === "custom" ? `custom-${id}` : `${source}-${id}`;
+function itemKey(source: Source | "custom", id: number | string, variantId?: string) {
+  const base = source === "custom" ? `custom-${id}` : `${source}-${id}`;
+  return variantId ? `${base}--${variantId}` : base;
 }
 
 function normalizeItem(item: InquiryItem): InquiryItem {
@@ -101,7 +103,7 @@ export function InquiryProvider({ children }: { children: React.ReactNode }) {
       items,
       messages,
       addItem: (item, quantity = 1) => {
-        const key = itemKey(item.source, item.id);
+        const key = itemKey(item.source, item.id, item.variantId);
         const unitLocked = Boolean(item.unitLocked);
         const unit = normalizeProductUnit(item.unit);
         const amount = clampQuantity(quantity, unit);
@@ -270,6 +272,8 @@ export function AddButton({
   image,
   unit,
   unitLocked = false,
+  types,
+  initialTypeId,
   variant = "card",
 }: {
   source: Source;
@@ -280,11 +284,17 @@ export function AddButton({
   image: string | null;
   unit?: ProductUnit;
   unitLocked?: boolean;
+  types?: ProductType[];
+  initialTypeId?: string;
   variant?: "card" | "detail";
 }) {
   const { items, addItem, setItemQuantity, removeItem } = useInquiry();
   const { dict } = useLocale();
-  const key = itemKey(source, id);
+  const hasTypes = Boolean(types && types.length > 0);
+  const [selectedTypeId, setSelectedTypeId] = useState(() => initialTypeId ?? types?.[0]?.id ?? "");
+  const selectedType = types?.find((type) => type.id === selectedTypeId);
+  const quoteName = selectedType ? `${name} — ${selectedType.name}` : name;
+  const key = itemKey(source, id, selectedType?.id);
   const saved = items.find((item) => item.key === key);
   const [quantity, setQuantity] = useState(1);
   const [selectedUnit, setSelectedUnit] = useState<ProductUnit>(() => normalizeProductUnit(unit));
@@ -331,6 +341,16 @@ export function AddButton({
   if (detail) {
     return (
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+        {hasTypes && (
+          <SelectField
+            value={selectedTypeId}
+            onChange={setSelectedTypeId}
+            label={dict.product.selectType}
+            shape="pill"
+            className="min-w-[12rem] shrink-0"
+            options={types!.map((type) => ({ value: type.id, label: type.name }))}
+          />
+        )}
         {!locked && (
           <UnitSelect
             value={selectedUnit}
@@ -343,8 +363,24 @@ export function AddButton({
         <QuantityControl quantity={quantity} unit={productUnit} onChange={setQuantity} compact />
         <button
           type="button"
-          onClick={() => addItem({ source, id, name, names, price, image, unit: productUnit, unitLocked: locked }, quantity)}
-          className="rounded-full bg-tech px-6 py-3 text-sm font-semibold text-cream transition hover:opacity-90 sm:flex-1"
+          disabled={hasTypes && !selectedType}
+          onClick={() =>
+            addItem(
+              {
+                source,
+                id,
+                name: quoteName,
+                names,
+                price,
+                image,
+                unit: productUnit,
+                unitLocked: locked,
+                variantId: selectedType?.id,
+              },
+              quantity,
+            )
+          }
+          className="rounded-full bg-tech px-6 py-3 text-sm font-semibold text-cream transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1"
         >
           {dict.product.addToQuote}
         </button>

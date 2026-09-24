@@ -140,6 +140,23 @@ export function getProductById(id: number | string) {
   return products.find((product) => String(product.id) === String(id));
 }
 
+/** Legacy Alevado URLs used one catalog row per cable type (`{productId}--{type-slug}`). */
+export function resolveLegacyProductId(id: string) {
+  const direct = getProductById(id);
+  if (direct) return { product: direct, typeId: null as string | null };
+
+  const marker = id.indexOf("--");
+  if (marker <= 0) return null;
+
+  const parentId = id.slice(0, marker);
+  const typeId = id.slice(marker + 2);
+  const product = getProductById(parentId);
+  if (!product) return null;
+
+  const type = product.types?.find((entry) => entry.id === typeId);
+  return { product, typeId: type?.id ?? typeId };
+}
+
 export function categoryTrail(category: Category) {
   const trail = [category];
   const seen = new Set<number>([category.id]);

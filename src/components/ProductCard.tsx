@@ -6,6 +6,7 @@ import { AddButton } from "@/components/Inquiry";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { useLocale } from "@/components/LocaleProvider";
 import { customerDivisionLabel, customerDivisionTone } from "@/lib/division-display";
+import { fill } from "@/lib/i18n";
 import { salePercent } from "@/lib/format";
 import { stockAvailabilityLabel } from "@/lib/stock-label";
 import { productHref } from "@/lib/catalog";
@@ -67,16 +68,25 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
           {product.customerDiscountPercent && (
             <p className="text-xs font-semibold text-tech">{dict.customer.yourDiscount}</p>
           )}
-          <AddButton
-            source={product.source}
-            id={product.id}
-            name={productName}
-            names={product.names}
-            price={product.price}
-            image={product.image}
-            unit={product.unit}
-            unitLocked={Boolean(product.unit)}
-          />
+          {product.types && product.types.length > 0 ? (
+            <Link
+              href={href}
+              className="block w-full rounded-full border border-ink/10 px-3 py-2 text-center text-sm font-semibold transition hover:border-tech hover:text-tech"
+            >
+              {fill(dict.product.typesCount, { count: String(product.types.length) })} · {dict.product.chooseType}
+            </Link>
+          ) : (
+            <AddButton
+              source={product.source}
+              id={product.id}
+              name={productName}
+              names={product.names}
+              price={product.price}
+              image={product.image}
+              unit={product.unit}
+              unitLocked={Boolean(product.unit)}
+            />
+          )}
         </div>
       </div>
     </article>
