@@ -216,6 +216,19 @@ const mkToEn = {
   "Филтрирање вода": "Water filtration",
   "Фритези на топол воздух": "Air fryers",
   "Цедалки за цитрус": "Citrus juicers",
+  "LAN Кабли": "LAN cables",
+  "Кабли за Пренос на Податоци": "Data transmission cables",
+  "Profinet Кабли": "Profinet cables",
+  "Контролни Кабли": "Control cables",
+  "Алармни Кабли": "Alarm cables",
+  "Пожарно дојавни Кабли": "Fire alarm cables",
+  "Телекомуникациски Кабли": "Telecommunication cables",
+  "Видео Сигнални Кабли": "Video signal cables",
+  "Високо Флексибилни Контролни Кабли (Drag chain cable)": "High-flex control cables (drag chain)",
+  "Сигнално / Контролни Кабли": "Signal / control cables",
+  "Телефонски Кабли": "Telephone cables",
+  "Аудио Кабли": "Audio cables",
+  "Сервомотор Кабли": "Servomotor cables",
 };
 
 const mkToSq = {
@@ -271,6 +284,19 @@ const mkToSq = {
   "Филтрирање вода": "Filtrim uji",
   "Фритези на топол воздух": "Friteza me ajër të nxehtë",
   "Цедалки за цитрус": "Shtrydhëse agrumesh",
+  "LAN Кабли": "Kabllot LAN",
+  "Кабли за Пренос на Податоци": "Kabllot për transmetim të dhënash",
+  "Profinet Кабли": "Kabllot Profinet",
+  "Контролни Кабли": "Kabllot kontrolli",
+  "Алармни Кабли": "Kabllot alarmi",
+  "Пожарно дојавни Кабли": "Kabllot alarmi zjarri",
+  "Телекомуникациски Кабли": "Kabllot telekomunikacioni",
+  "Видео Сигнални Кабли": "Kabllot sinjali video",
+  "Високо Флексибилни Контролни Кабли (Drag chain cable)": "Kabllot kontrolli me fleksibilitet të lartë (drag chain)",
+  "Сигнално / Контролни Кабли": "Kabllot sinjali / kontrolli",
+  "Телефонски Кабли": "Kabllot telefonike",
+  "Аудио Кабли": "Kabllot audio",
+  "Сервомотор Кабли": "Kabllot servomotori",
 };
 
 const alToEn = {

@@ -1255,68 +1255,68 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
   },
   "alevado:lan-cables": {
     "mk": "LAN Кабли",
-    "en": "LAN Кабли",
-    "sq": "LAN Кабли"
+    "en": "LAN cables",
+    "sq": "Kabllot LAN"
   },
   "alevado:data-transmission-cables": {
     "mk": "Кабли за Пренос на Податоци",
-    "en": "Кабли За Пренос На Податоци",
-    "sq": "Кабли За Пренос На Податоци"
+    "en": "Data transmission cables",
+    "sq": "Kabllot për transmetim të dhënash"
   },
   "alevado:profinet-cables": {
     "mk": "Profinet Кабли",
-    "en": "Profinet Кабли",
-    "sq": "Profinet Кабли"
+    "en": "Profinet cables",
+    "sq": "Kabllot Profinet"
   },
   "alevado:control-cables": {
     "mk": "Контролни Кабли",
-    "en": "Контролни Кабли",
-    "sq": "Контролни Кабли"
+    "en": "Control cables",
+    "sq": "Kabllot kontrolli"
   },
   "alevado:alarm-cables": {
     "mk": "Алармни Кабли",
-    "en": "Алармни Кабли",
-    "sq": "Алармни Кабли"
+    "en": "Alarm cables",
+    "sq": "Kabllot alarmi"
   },
   "alevado:fire-alarm-cables": {
     "mk": "Пожарно дојавни Кабли",
-    "en": "Пожарно Дојавни Кабли",
-    "sq": "Пожарно Дојавни Кабли"
+    "en": "Fire alarm cables",
+    "sq": "Kabllot alarmi zjarri"
   },
   "alevado:communication-cables": {
     "mk": "Телекомуникациски Кабли",
-    "en": "Телекомуникациски Кабли",
-    "sq": "Телекомуникациски Кабли"
+    "en": "Telecommunication cables",
+    "sq": "Kabllot telekomunikacioni"
   },
   "alevado:video-signal-cables": {
     "mk": "Видео Сигнални Кабли",
-    "en": "Видео Сигнални Кабли",
-    "sq": "Видео Сигнални Кабли"
+    "en": "Video signal cables",
+    "sq": "Kabllot sinjali video"
   },
   "alevado:power-chain-cables": {
     "mk": "Високо Флексибилни Контролни Кабли (Drag chain cable)",
-    "en": "Високо Флексибилни Контролни Кабли (drag Chain Cable)",
-    "sq": "Високо Флексибилни Контролни Кабли (drag Chain Cable)"
+    "en": "High-flex control cables (drag chain)",
+    "sq": "Kabllot kontrolli me fleksibilitet të lartë (drag chain)"
   },
   "alevado:signal-cables": {
     "mk": "Сигнално / Контролни Кабли",
-    "en": "Сигнално / Контролни Кабли",
-    "sq": "Сигнално / Контролни Кабли"
+    "en": "Signal / control cables",
+    "sq": "Kabllot sinjali / kontrolli"
   },
   "alevado:telephone-cables": {
     "mk": "Телефонски Кабли",
-    "en": "Телефонски Кабли",
-    "sq": "Телефонски Кабли"
+    "en": "Telephone cables",
+    "sq": "Kabllot telefonike"
   },
   "alevado:audio-speaker-cables": {
     "mk": "Аудио Кабли",
-    "en": "Аудио Кабли",
-    "sq": "Аудио Кабли"
+    "en": "Audio cables",
+    "sq": "Kabllot audio"
   },
   "alevado:servomotor-cables": {
     "mk": "Сервомотор Кабли",
-    "en": "Сервомотор Кабли",
-    "sq": "Сервомотор Кабли"
+    "en": "Servomotor cables",
+    "sq": "Kabllot servomotori"
   }
 };
 

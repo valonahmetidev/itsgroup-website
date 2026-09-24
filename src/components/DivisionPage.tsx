@@ -63,7 +63,7 @@ export function DivisionPage({
                               {child.children.map((nested) => (
                                 <li key={nested.href}>
                                   <Link href={nested.href} className="text-[13px] text-ink/65 hover:text-tech">
-                                    {nested.name}
+                                    {categoryLabel(nested)}
                                   </Link>
                                 </li>
                               ))}

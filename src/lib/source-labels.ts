@@ -37,6 +37,6 @@ export function sourceLabels(source: Source): SourceLabels {
 export function catalogSourceName(source: Source): string {
   if (source === "treco") return "Treco";
   if (source === "tremark") return "Tremark";
-  if (source === "alevado") return "Alevado";
+  if (source === "alevado") return "Cables";
   return "ITS";
 }

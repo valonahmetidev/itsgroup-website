@@ -43,11 +43,25 @@ function decodeText(value: string) {
   return text.replace(/\s+/g, " ").trim();
 }
 
+function sanitizePublicCatalogText(value: string) {
+  return value
+    .replace(/\s*[–—-]\s*Достапно за нарачка кај Alevado Energy\.?/gi, "")
+    .replace(/\s*[–—-]\s*Available from Alevado Energy\.?/gi, "")
+    .replace(/\s*Alevado Energy\s*[–—-]?\s*/gi, " ")
+    .replace(/\bAlevado Energy\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function cleanCatalogText(value: string) {
+  return sanitizePublicCatalogText(decodeText(value));
+}
+
 export const fetchedAt = catalog.fetchedAt;
 export const categories = catalog.categories
   .map((category) => ({
     ...category,
-    name: decodeText(category.name),
+    name: cleanCatalogText(category.name),
   }))
   .sort((a, b) => a.name.localeCompare(b.name, "mk") || String(a.id).localeCompare(String(b.id)));
 function publishedPrice(amount: number | null) {
@@ -61,14 +75,14 @@ export const products = catalog.products
     const regularPrice = publishedPrice(product.regularPrice);
     return {
       ...product,
-      name: decodeText(product.name),
-      excerpt: decodeText(product.excerpt),
+      name: cleanCatalogText(product.name),
+      excerpt: cleanCatalogText(product.excerpt),
       price,
       regularPrice,
       onSale: Boolean(product.onSale && price != null && regularPrice != null && price < regularPrice),
       categories: product.categories.map((category) => ({
         ...category,
-        name: decodeText(category.name),
+        name: cleanCatalogText(category.name),
       })),
     };
   })

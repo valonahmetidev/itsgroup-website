@@ -47,9 +47,19 @@ function extractTitle(html) {
   return decodeHtml(match[1].split("–")[0].trim());
 }
 
+function sanitizePublicText(text) {
+  return text
+    .replace(/\s*[–—-]\s*Достапно за нарачка кај Alevado Energy\.?/gi, "")
+    .replace(/\s*[–—-]\s*Available from Alevado Energy\.?/gi, "")
+    .replace(/\s*Alevado Energy\s*[–—-]?\s*/gi, " ")
+    .replace(/\bAlevado Energy\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function extractExcerpt(html) {
   const match = html.match(/<meta name="description" content="([^"]+)"/i);
-  return match ? decodeHtml(match[1]) : "";
+  return match ? sanitizePublicText(decodeHtml(match[1])) : "";
 }
 
 function extractImage(html) {
@@ -134,7 +144,7 @@ let typeCount = 0;
 for (const [index, entry] of uniquePaths.entries()) {
   const html = await fetchText(`${BASE}/${LOCALE}/products/${entry.categorySlug}/${entry.productId}`);
   const category = categoryBySlug.get(entry.categorySlug);
-  const name = extractTitle(html) || extractHeading(html);
+  const name = sanitizePublicText(extractTitle(html) || extractHeading(html));
   const excerpt = extractExcerpt(html).slice(0, 420);
   const image = extractImage(html);
   const permalink = `${BASE}/${LOCALE}/products/${entry.categorySlug}/${entry.productId}`;

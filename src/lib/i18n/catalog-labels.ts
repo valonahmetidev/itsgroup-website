@@ -16,14 +16,16 @@ function categoryRawName(category: CategoryLabelInput) {
 
 export function categoryDisplayName(category: CategoryLabelInput, locale: Locale) {
   const label = categoryTranslations[categorySlugKey(category.source, category.slug)];
-  if (label) return label[locale];
+  if (label?.[locale]) return label[locale];
 
   const rawName = categoryRawName(category);
+  if (!rawName) return "";
+
   if (locale === "mk" && /[\u0400-\u04FF]/.test(rawName)) return rawName;
   if (locale === "sq" && /[ëçËÇ]/.test(rawName)) return rawName;
   if (locale === "en" && !/[^\x00-\x7F]/.test(rawName)) return rawName;
 
-  return rawName;
+  return label?.mk ?? rawName;
 }
 
 export function withCategoryDisplayName<T extends CategoryLabelInput>(category: T, locale: Locale) {
