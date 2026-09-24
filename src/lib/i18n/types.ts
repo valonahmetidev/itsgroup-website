@@ -349,6 +349,8 @@ export type Dictionary = {
     categoryHidden: string;
     categoryMoved: string;
     productCategory: string;
+    productCategoryDivisionHint: string;
+    productCategoryWrongDivision: string;
     categorySelectHint: string;
     categoryPanelEmpty: string;
     categoryClosePanel: string;

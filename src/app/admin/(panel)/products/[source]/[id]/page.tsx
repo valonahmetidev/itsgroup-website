@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { adminGetCategoryMenu, adminGetProduct, adminGetStoreProduct } from "@/app/admin/actions";
-import { flattenAdminCategoryMenu } from "@/lib/admin-category-menu";
+import { adminGetProduct, adminGetStoreProduct, adminProductCategoryPickerForProduct } from "@/app/admin/actions";
 import { ProductEditForm } from "@/components/admin/ProductEditForm";
 import { StoreProductForm } from "@/components/admin/StoreProductForm";
 import { isCatalogSource, isSource } from "@/lib/catalog";
@@ -33,17 +32,17 @@ export default async function AdminProductEditPage({
   const data = await adminGetProduct(source, id);
   if (!data) notFound();
 
-  const categoryOptions = flattenAdminCategoryMenu(await adminGetCategoryMenu(source)).map((category) => ({
-    id: category.id,
-    name: category.name,
-  }));
+  const categoryGroups = await adminProductCategoryPickerForProduct(source);
+  const catalogCategoryId = data.product.categories[0]?.id ?? null;
 
   return (
     <ProductEditForm
       product={data.product}
       override={data.override}
-      categoryOptions={categoryOptions}
-      assignedCategoryId={data.categoryAssignment ?? data.effective?.categories[0]?.id ?? null}
+      categoryGroups={categoryGroups}
+      catalogCategoryId={catalogCategoryId}
+      assignedCategoryId={data.categoryAssignment ?? data.effective?.categories[0]?.id ?? catalogCategoryId}
+      storedCategoryAssignment={data.categoryAssignment}
     />
   );
 }

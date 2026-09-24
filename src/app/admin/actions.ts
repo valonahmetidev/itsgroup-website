@@ -23,6 +23,7 @@ import {
 import {
   categories,
   categorySubtreeIds,
+  getCategory,
   getProduct,
   menuGroups as catalogMenuGroups,
   products,
@@ -32,6 +33,7 @@ import {
 } from "@/lib/catalog";
 import {
   flattenAdminCategoryMenu,
+  flattenAdminCategoryMenuWithDepth,
   type AdminMenuCategoryGroup,
   type AdminMenuCategoryNode,
 } from "@/lib/admin-category-menu";
@@ -1081,6 +1083,48 @@ export type AdminCategoryPickerOption = {
   name: string;
 };
 
+export type AdminProductCategoryPickerOption = {
+  id: number;
+  source: CatalogSource;
+  name: string;
+  depth: number;
+};
+
+export type AdminProductCategoryPickerGroup = {
+  division: CatalogSource;
+  menuKey: string;
+  menuTitle: string;
+  options: AdminProductCategoryPickerOption[];
+};
+
+/** Full category trees for Technology, Home, and Cables (product edit picker). */
+export async function adminProductCategoryPickerForProduct(
+  productSource: CatalogSource,
+): Promise<AdminProductCategoryPickerGroup[]> {
+  await requireAdmin();
+  const divisionOrder: CatalogSource[] = ["treco", "tremark", "alevado"];
+  const groups: AdminProductCategoryPickerGroup[] = [];
+  for (const division of divisionOrder) {
+    const menus = await adminGetCategoryMenu(division);
+    for (const menu of menus) {
+      const options = flattenAdminCategoryMenuWithDepth([menu]).map(({ node, depth }) => ({
+        id: node.id,
+        source: node.source,
+        name: node.name,
+        depth,
+      }));
+      if (options.length === 0) continue;
+      groups.push({
+        division,
+        menuKey: menu.key,
+        menuTitle: menu.title,
+        options,
+      });
+    }
+  }
+  return groups;
+}
+
 export async function adminCategoryPickerOptions(source: CatalogSource | "all") {
   await requireAdmin();
   const sources: CatalogSource[] = source === "all" ? ["tremark", "treco", "alevado"] : [source];
@@ -1138,6 +1182,10 @@ export async function adminAssignProductCategory(input: {
   if (input.categoryId == null) {
     await deleteProductCategoryOverride(db, input.source, input.productId);
     return { ok: true as const };
+  }
+  const category = getCategory(input.source, input.categoryId);
+  if (!category || category.source !== input.source) {
+    return { ok: false as const, error: "invalid_category" };
   }
   await upsertProductCategoryOverride(db, {
     source: input.source,

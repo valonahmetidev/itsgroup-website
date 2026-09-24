@@ -363,6 +363,9 @@ const sq: Dictionary = {
     categoryHidden: "Fshih kategorinë nga menytë",
     categoryMoved: "Produkti u zhvendos.",
     productCategory: "Kategoria",
+    productCategoryDivisionHint:
+      "Ky produkt është nga {division}. Mund ta zhvendosni vetëm në kategori të të njëjtit katalog; divizionet e tjera janë për referencë.",
+    productCategoryWrongDivision: "Zgjidhni një kategori nga i njëjti katalog si produkti.",
     categorySelectHint: "Zgjidhni një kategori më sipër për të redaktuar ose zhvendosur produkte.",
     categoryPanelEmpty: "Klikoni një kategori në listë — detajet dhe produktet shfaqen këtu.",
     categoryClosePanel: "Mbyll",

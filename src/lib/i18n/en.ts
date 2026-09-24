@@ -363,6 +363,9 @@ const en: Dictionary = {
     categoryHidden: "Hide category from menus",
     categoryMoved: "Product moved.",
     productCategory: "Category",
+    productCategoryDivisionHint:
+      "This product belongs to {division}. You can only assign categories from the same catalog; other divisions are shown for reference.",
+    productCategoryWrongDivision: "Choose a category from the same catalog as this product.",
     categorySelectHint: "Select a category above to edit names or move products.",
     categoryPanelEmpty: "Click a category in the list — details and products appear here.",
     categoryClosePanel: "Close",

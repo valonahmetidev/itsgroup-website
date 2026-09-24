@@ -363,6 +363,9 @@ const mk: Dictionary = {
     categoryHidden: "Сокриј категорија од менија",
     categoryMoved: "Производот е преместен.",
     productCategory: "Категорија",
+    productCategoryDivisionHint:
+      "Овој производ е од {division}. Може да го преместите само во категории од истиот каталог; другите дивизии се прикажани за преглед.",
+    productCategoryWrongDivision: "Изберете категорија од истиот каталог како производот.",
     categorySelectHint: "Изберете категорија погоре за уредување или преместување производи.",
     categoryPanelEmpty: "Кликнете категорија од листата — деталите и производите ќе се прикажат овде.",
     categoryClosePanel: "Затвори",

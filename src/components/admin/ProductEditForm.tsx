@@ -12,7 +12,9 @@ import { useLocale } from "@/components/LocaleProvider";
 import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
 import { formatPrice } from "@/lib/format";
 import { productHref } from "@/lib/paths";
+import { ProductCategorySelectField } from "@/components/admin/ProductCategorySelectField";
 import { TagsInputField } from "@/components/admin/TagsInputField";
+import type { AdminProductCategoryPickerGroup } from "@/app/admin/actions";
 import { formatTagsInput, parseProductTags } from "@/lib/product-tags";
 import { stockAvailabilityLabel } from "@/lib/stock-label";
 import { catalogSourceName, sourceLabels } from "@/lib/source-labels";
@@ -25,13 +27,17 @@ const fieldClass =
 export function ProductEditForm({
   product,
   override,
-  categoryOptions,
+  categoryGroups,
+  catalogCategoryId,
   assignedCategoryId,
+  storedCategoryAssignment,
 }: {
   product: Product;
   override: ProductOverrideRow | null;
-  categoryOptions: { id: number; name: string }[];
+  categoryGroups: AdminProductCategoryPickerGroup[];
+  catalogCategoryId: number | null;
   assignedCategoryId: number | null;
+  storedCategoryAssignment: number | null;
 }) {
   const router = useRouter();
   const { dict, locale } = useLocale();
@@ -54,7 +60,6 @@ export function ProductEditForm({
   const [tags, setTags] = useState(formatTagsInput(parseProductTags(override?.tags)));
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
-  const catalogCategoryId = product.categories[0]?.id ?? null;
   const [categoryId, setCategoryId] = useState(
     String(assignedCategoryId ?? catalogCategoryId ?? ""),
   );
@@ -85,19 +90,29 @@ export function ProductEditForm({
       return;
     }
 
-    if (typeof product.id === "number") {
-      const selected = categoryId ? Number(categoryId) : catalogCategoryId;
-      if (selected === catalogCategoryId) {
+    if (typeof product.id === "number" && categoryGroups.length > 0) {
+      const selected = categoryId ? Number(categoryId) : null;
+      const defaultId = catalogCategoryId;
+      if (selected != null && selected !== defaultId) {
+        const move = await adminAssignProductCategory({
+          source: product.source as CatalogSource,
+          productId: product.id,
+          categoryId: selected,
+        });
+        if (!move.ok) {
+          setLoading(false);
+          setStatus(
+            move.error === "invalid_category"
+              ? dict.admin.productCategoryWrongDivision
+              : dict.admin.saveError,
+          );
+          return;
+        }
+      } else if (storedCategoryAssignment != null && selected === defaultId) {
         await adminAssignProductCategory({
           source: product.source as CatalogSource,
           productId: product.id,
           categoryId: null,
-        });
-      } else if (selected) {
-        await adminAssignProductCategory({
-          source: product.source as CatalogSource,
-          productId: product.id,
-          categoryId: selected,
         });
       }
     }
@@ -183,19 +198,19 @@ export function ProductEditForm({
       >
         <h3 className="font-display text-lg">{dict.admin.editProduct}</h3>
 
-        {categoryOptions.length > 0 && (
-          <label className="mt-4 grid gap-1 text-sm">
-            <span>{dict.admin.productCategory}</span>
-            <select
-              value={categoryId}
-              onChange={(event) => setCategoryId(event.target.value)}
-              className={fieldClass}
-            >
-              {categoryOptions.map((option) => (
-                <option key={option.id} value={option.id}>{option.name}</option>
-              ))}
-            </select>
-          </label>
+        {categoryGroups.length > 0 && (
+          <div className="mt-4 rounded-xl border border-ink/10 bg-surface/50 p-4">
+            <p className="text-sm font-semibold">{dict.admin.productCategory}</p>
+            <div className="mt-2">
+              <ProductCategorySelectField
+                productSource={product.source as CatalogSource}
+                groups={categoryGroups}
+                value={categoryId}
+                onChange={setCategoryId}
+                className={fieldClass}
+              />
+            </div>
+          </div>
         )}
 
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
