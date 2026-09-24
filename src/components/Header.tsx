@@ -303,9 +303,12 @@ function MoreNav({
   pathname: string;
   className?: string;
 }) {
-  const { dict } = useLocale();
   const ref = useRef<HTMLDetailsElement>(null);
   const active = links.some((link) => pathname === link.href || pathname.startsWith(`${link.href}/`));
+
+  useEffect(() => {
+    if (ref.current) ref.current.open = false;
+  }, [pathname]);
 
   return (
     <details ref={ref} className={cn("relative", className)}>
@@ -318,7 +321,7 @@ function MoreNav({
       >
         <MoreHorizontal className="h-4 w-4" />
       </summary>
-      <div className="absolute left-0 top-[calc(100%+8px)] z-50 min-w-[10rem] rounded-2xl border border-ink/10 bg-card p-2 shadow-lift">
+      <div className="absolute right-0 top-[calc(100%+8px)] z-50 min-w-[10rem] max-w-[min(100vw-2.5rem,14rem)] rounded-2xl border border-ink/10 bg-card p-2 shadow-lift">
         {links.map((link) => (
           <Link
             key={link.href}
@@ -327,7 +330,7 @@ function MoreNav({
               if (ref.current) ref.current.open = false;
             }}
             className={cn(
-              "block whitespace-nowrap rounded-xl px-3 py-2 text-sm hover:bg-paper",
+              "block rounded-xl px-3 py-2 text-sm leading-snug hover:bg-paper",
               pathname === link.href || pathname.startsWith(`${link.href}/`) ? "font-semibold text-tech" : "",
             )}
           >
