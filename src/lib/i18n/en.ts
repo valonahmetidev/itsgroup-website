@@ -175,6 +175,8 @@ const en: Dictionary = {
     phone: "Phone",
     address: "Address",
     pending: "Coming soon",
+    mapTitle: "Visit us",
+    openInMaps: "Open in Google Maps",
     name: "Name",
     message: "Message",
     save: "Send message",

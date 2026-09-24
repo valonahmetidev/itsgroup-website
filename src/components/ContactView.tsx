@@ -1,6 +1,7 @@
 "use client";
 
 import { ContactForm } from "@/components/ContactForm";
+import { ContactMap } from "@/components/ContactMap";
 import { PageHeader } from "@/components/PageHeader";
 import { useLocale } from "@/components/LocaleProvider";
 import { site } from "@/lib/site";
@@ -45,11 +46,29 @@ export function ContactView() {
             </div>
             <div>
               <dt className="font-semibold text-ink">{dict.contact.address}</dt>
-              <dd>{site.address || dict.contact.pending}</dd>
+              <dd>
+                {site.address ? (
+                  <address className="not-italic">
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(site.address)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-ink hover:text-tech"
+                    >
+                      {site.address}
+                    </a>
+                  </address>
+                ) : (
+                  dict.contact.pending
+                )}
+              </dd>
             </div>
           </dl>
         </aside>
         <ContactForm />
+      </div>
+      <div className="shell pb-12">
+        <ContactMap />
       </div>
     </>
   );

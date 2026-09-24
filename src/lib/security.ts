@@ -24,7 +24,7 @@ function contentSecurityPolicy() {
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
-    "frame-src 'none'",
+    "frame-src https://www.openstreetmap.org",
     "frame-ancestors 'none'",
   ]
     .filter(Boolean)

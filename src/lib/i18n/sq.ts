@@ -175,6 +175,8 @@ const sq: Dictionary = {
     phone: "Telefon",
     address: "Adresa",
     pending: "Së shpejti",
+    mapTitle: "Na gjeni këtu",
+    openInMaps: "Hap në Google Maps",
     name: "Emri",
     message: "Mesazhi",
     save: "Dërgo mesazhin",

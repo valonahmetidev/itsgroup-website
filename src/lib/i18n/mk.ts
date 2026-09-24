@@ -175,6 +175,8 @@ const mk: Dictionary = {
     phone: "Телефон",
     address: "Адреса",
     pending: "Наскоро",
+    mapTitle: "Локација",
+    openInMaps: "Отвори во Google Maps",
     name: "Име",
     message: "Порака",
     save: "Испрати порака",

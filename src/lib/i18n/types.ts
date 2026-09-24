@@ -202,6 +202,8 @@ export type Dictionary = {
     phone: string;
     address: string;
     pending: string;
+    mapTitle: string;
+    openInMaps: string;
     name: string;
     message: string;
     save: string;

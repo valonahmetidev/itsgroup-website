@@ -7,7 +7,7 @@ export const site = {
   email: "info@itsgroup.mk",
   phone: "+389 76 302 228",
   phoneHref: "tel:+38976302228",
-  address: "",
+  address: "11 November 68d, Kumanovo, North Macedonia, 1300",
 };
 
 export const sourceMeta = {
