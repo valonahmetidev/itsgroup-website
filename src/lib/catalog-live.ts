@@ -52,8 +52,7 @@ async function applyOverrides(list: Product[], locale: Locale) {
         ? categoryAssignments.get(`${product.source}-${product.id}`)
         : undefined;
     next = applyProductCategoryAssignment(next, assignment, categoryOverrides);
-    const image = next.image || override?.image_url;
-    if (!image && product.source !== "its" && product.source !== "alevado") continue;
+    const image = next.image || override?.image_url || null;
     result.push({ ...next, image });
   }
   return result;
@@ -157,7 +156,7 @@ export async function liveGetProduct(source: string, id: string | number, locale
 
   const db = await getDbAsync();
   if (!db || typeof product.id !== "number") {
-    return product.image ? applyCustomerPricing(product, pricing) : undefined;
+    return applyCustomerPricing(product, pricing);
   }
 
   const override = await getProductOverride(db, product.source as CatalogSource, product.id);
@@ -171,7 +170,6 @@ export async function liveGetProduct(source: string, id: string | number, locale
       : undefined;
   next = applyProductCategoryAssignment(next, assignment, categoryOverrides);
   const image = next.image || override?.image_url || null;
-  if (!image && product.source !== "alevado") return undefined;
   return applyCustomerPricing({ ...next, image }, pricing);
 }
 

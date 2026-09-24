@@ -137,16 +137,6 @@ export function productsInCategory(source: Source, id: number) {
   return productsByCategory.get(`${source}:${id}`) ?? [];
 }
 
-/** Products that appear in the public catalog (same image rules as live catalog). */
-export function isListedCatalogProduct(product: Product) {
-  if (product.source === "its" || product.source === "alevado") return true;
-  return Boolean(product.image?.trim());
-}
-
-export function listedProductsInCategory(source: Source, id: number) {
-  return productsInCategory(source, id).filter(isListedCatalogProduct);
-}
-
 /** Category id and all descendants (for matching menu rollup counts to product lists). */
 export function categorySubtreeIds(source: Source, categoryId: number) {
   const ids = new Set<number>([categoryId]);
@@ -164,7 +154,7 @@ export function categorySubtreeIds(source: Source, categoryId: number) {
 }
 
 function categoryHasProducts(category: Category) {
-  return listedProductsInCategory(category.source, category.id).length > 0;
+  return productsInCategory(category.source, category.id).length > 0;
 }
 
 export function getCategory(source: string, id: number) {
@@ -340,7 +330,7 @@ function toLink(category: Category, depth: number): MenuLink {
   return {
     name: category.name,
     href: categoryHref(category),
-    count: listedProductsInCategory(category.source, category.id).length,
+    count: productsInCategory(category.source, category.id).length,
     source: category.source,
     slug: category.slug,
     children,

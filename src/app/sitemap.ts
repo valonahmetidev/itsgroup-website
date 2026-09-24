@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { categories, categoryHref, listedProductsInCategory, productHref, products } from "@/lib/catalog";
+import { categories, categoryHref, productHref, products, productsInCategory } from "@/lib/catalog";
 import { site } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -10,7 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   const categoryRoutes = categories
-    .filter((category) => listedProductsInCategory(category.source, category.id).length > 0)
+    .filter((category) => productsInCategory(category.source, category.id).length > 0)
     .map((category) => ({
       url: `${site.url}${categoryHref(category)}`,
       lastModified: now,
