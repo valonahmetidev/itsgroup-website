@@ -1,5 +1,6 @@
-import { catalogDivisionToSource, parseCatalogDivisionParam } from "@/lib/divisions";
-import type { CatalogQuery, Product, Source } from "@/lib/types";
+import { productMatchesDivision } from "@/lib/catalog-counts";
+import { parseCatalogDivisionParam, type CatalogDivision } from "@/lib/divisions";
+import type { CatalogQuery, Product } from "@/lib/types";
 
 export type StockFilter = "all" | "in" | "out";
 export type SaleFilter = "all" | "yes" | "no";
@@ -7,7 +8,7 @@ export type PriceTypeFilter = "all" | "priced" | "on-request";
 
 export type ParsedCatalogQuery = {
   q: string;
-  source: "all" | Source;
+  division: CatalogDivision | "all";
   sort: NonNullable<CatalogQuery["sort"]>;
   page: number;
   min?: number;
@@ -39,8 +40,6 @@ function parseNumber(value?: string) {
 
 export function parseCatalogSearchParams(search: SearchParams): ParsedCatalogQuery {
   const division = parseCatalogDivisionParam(search.division ?? search.source);
-  const mapped = catalogDivisionToSource(division);
-  const source: ParsedCatalogQuery["source"] = mapped === "all" ? "all" : mapped;
   const sort: ParsedCatalogQuery["sort"] =
     search.sort === "price-asc" || search.sort === "price-desc" ? search.sort : "name";
   const stock: StockFilter = search.stock === "in" || search.stock === "out" ? search.stock : "all";
@@ -53,7 +52,7 @@ export function parseCatalogSearchParams(search: SearchParams): ParsedCatalogQue
 
   return {
     q: search.q?.trim() ?? "",
-    source,
+    division,
     sort,
     page: Math.max(1, Number(search.page) || 1),
     min: min !== undefined && max !== undefined && min > max ? max : min,
@@ -81,13 +80,13 @@ export type ActiveCatalogFilterChip = {
 
 export function getActiveCatalogFilterChips(
   query: ParsedCatalogQuery,
-  options: { showSource?: boolean } = {},
+  options: { showDivision?: boolean } = {},
 ): ActiveCatalogFilterChip[] {
-  const { showSource = true } = options;
+  const { showDivision = true } = options;
   const chips: ActiveCatalogFilterChip[] = [];
 
-  if (showSource && query.source !== "all") {
-    chips.push({ id: "source", patch: { source: "all", page: 1 } });
+  if (showDivision && query.division !== "all") {
+    chips.push({ id: "division", patch: { division: "all", page: 1 } });
   }
   if (query.stock !== "all") {
     chips.push({ id: "stock", patch: { stock: "all", page: 1 } });
@@ -110,7 +109,7 @@ export function getActiveCatalogFilterChips(
 
 export function hasVisibleActiveFilters(
   query: ParsedCatalogQuery,
-  options: { showSource?: boolean } = {},
+  options: { showDivision?: boolean } = {},
 ) {
   return getActiveCatalogFilterChips(query, options).length > 0;
 }
@@ -121,8 +120,13 @@ export function getPriceBounds(products: Product[]) {
   return { min: Math.min(...prices), max: Math.max(...prices) };
 }
 
+export function filterCatalogByDivision(products: Product[], division: CatalogDivision | "all") {
+  return products.filter((product) => productMatchesDivision(product, division));
+}
+
 export function applyCatalogFilters(products: Product[], query: ParsedCatalogQuery) {
   return products.filter((product) => {
+    if (!productMatchesDivision(product, query.division)) return false;
     if (query.stock === "in" && !product.inStock) return false;
     if (query.stock === "out" && product.inStock) return false;
     if (query.sale === "yes" && !product.onSale) return false;

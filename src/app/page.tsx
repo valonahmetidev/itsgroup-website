@@ -1,14 +1,14 @@
 import { Hero } from "@/components/Hero";
 import { HomeSections } from "@/components/HomeSections";
 import { HomeTicker } from "@/components/HomeTicker";
-import { counts, divisionCategories, products, technologyMenuGroups } from "@/lib/catalog";
-import { liveFeaturedProducts, liveStoreProducts } from "@/lib/catalog-live";
+import { divisionCategories, products, technologyMenuGroups } from "@/lib/catalog";
+import { liveCatalogTotals, liveFeaturedProducts, liveStoreProducts } from "@/lib/catalog-live";
 import { buildBalancedHeroShots } from "@/lib/hero-shots";
 import { getServerI18n } from "@/lib/i18n/server";
 
 export default async function HomePage() {
   const { locale } = await getServerI18n();
-  const totals = counts();
+  const totals = await liveCatalogTotals(locale);
   const techFeatured = await liveFeaturedProducts("treco", 8, locale);
   const homeFeatured = await liveFeaturedProducts("tremark", 8, locale);
   const itsFeatured = await liveStoreProducts(locale, 8);
@@ -44,7 +44,7 @@ export default async function HomePage() {
   return (
     <>
       <div className="flex flex-col lg:h-[calc(100dvh-4rem)] lg:overflow-hidden">
-        <Hero techCount={totals.treco} homeCount={totals.tremark} shots={heroShots} />
+        <Hero techCount={totals.technology} homeCount={totals.home} shots={heroShots} />
         <HomeTicker items={ticker} />
       </div>
 

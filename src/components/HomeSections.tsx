@@ -6,6 +6,7 @@ import { ProductGrid } from "@/components/ProductCard";
 import { countProducts, formatCount } from "@/lib/format";
 import { useCategoryLabel } from "@/lib/i18n/catalog-labels";
 import { menuGroupTitle } from "@/lib/i18n/menu";
+import type { CatalogTotals } from "@/lib/catalog-counts";
 import type { Product } from "@/lib/types";
 
 type CategoryCard = {
@@ -33,7 +34,7 @@ export function HomeSections({
   alevadoFeatured: Product[];
   techCategories: CategoryCard[];
   homeCategories: CategoryCard[];
-  totals: { treco: number; tremark: number; alevado: number; categories: number };
+  totals: CatalogTotals;
 }) {
   const { dict } = useLocale();
   const categoryLabel = useCategoryLabel();
@@ -80,8 +81,8 @@ export function HomeSections({
 
       <section className="bg-tech-deep text-cream">
         <div className="shell grid gap-8 py-16 md:grid-cols-3">
-          <Stat value={formatCount(totals.treco)} label={dict.home.statTech} />
-          <Stat value={formatCount(totals.tremark)} label={dict.home.statHome} />
+          <Stat value={formatCount(totals.technology)} label={dict.home.statTech} />
+          <Stat value={formatCount(totals.home)} label={dict.home.statHome} />
           <Stat value={String(totals.categories)} label={dict.home.statCategories} />
         </div>
       </section>

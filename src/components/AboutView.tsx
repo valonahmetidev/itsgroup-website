@@ -2,13 +2,13 @@
 
 import { PageHeader } from "@/components/PageHeader";
 import { useLocale } from "@/components/LocaleProvider";
-import { fetchedAt, counts } from "@/lib/catalog";
+import { fetchedAt } from "@/lib/catalog";
+import type { CatalogTotals } from "@/lib/catalog-counts";
 import { fill } from "@/lib/i18n";
 import { formatCount, formatDate } from "@/lib/format";
 
-export function AboutView() {
+export function AboutView({ totals }: { totals: CatalogTotals }) {
   const { dict, locale } = useLocale();
-  const totals = counts();
 
   return (
     <>
@@ -17,7 +17,10 @@ export function AboutView() {
         <article className="rounded-3xl bg-tech-deep p-6 text-cream md:col-span-2">
           <h2 className="font-display text-3xl">{dict.about.inside}</h2>
           <p className="mt-4 leading-7 text-cream/80">
-            {fill(dict.about.insideBody, { tech: formatCount(totals.treco), home: formatCount(totals.tremark) })}
+            {fill(dict.about.insideBody, {
+              tech: formatCount(totals.technology),
+              home: formatCount(totals.home),
+            })}
           </p>
           <p className="mt-4 leading-7 text-cream/80">
             {fill(dict.about.updated, { date: formatDate(fetchedAt, locale) })}

@@ -34,7 +34,7 @@ export function CatalogProductsSection({
 }) {
   const { dict } = useLocale();
   const [filtersVisible, setFiltersVisible] = useState(true);
-  const activeFilters = hasVisibleActiveFilters(query, { showSource });
+  const activeFilters = hasVisibleActiveFilters(query, { showDivision: showSource });
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);

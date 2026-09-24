@@ -4,6 +4,7 @@ import { fill } from "@/lib/i18n";
 import { formatPriceWithCurrency, type DisplayCurrency, type ExchangeRateSnapshot } from "@/lib/currency";
 import { categoryHref } from "@/lib/paths";
 import { sourceToCatalogDivision } from "@/lib/divisions";
+import type { ParsedCatalogQuery } from "@/lib/catalog-filters";
 
 export function formatCount(value: number) {
   return Math.round(value)
@@ -61,12 +62,17 @@ export function salePercent(price: number | null, regularPrice: number | null) {
   return Math.round((1 - price / regularPrice) * 100);
 }
 
-export function catalogSearchParams(query: CatalogQuery = {}) {
+function resolveCatalogDivision(query: CatalogQuery | ParsedCatalogQuery) {
+  if (query.division && query.division !== "all") return query.division;
+  if ("source" in query && query.source && query.source !== "all") return sourceToCatalogDivision(query.source);
+  return "all";
+}
+
+export function catalogSearchParams(query: CatalogQuery | ParsedCatalogQuery = {}) {
   const params = new URLSearchParams();
   if (query.q) params.set("q", query.q);
-  if (query.source && query.source !== "all") {
-    params.set("division", sourceToCatalogDivision(query.source));
-  }
+  const division = resolveCatalogDivision(query);
+  if (division !== "all") params.set("division", division);
   if (query.sort && query.sort !== "name") params.set("sort", query.sort);
   if (query.page && query.page > 1) params.set("page", String(query.page));
   if (query.min !== undefined) params.set("min", String(query.min));

@@ -50,3 +50,17 @@ export function catalogDivisionToSource(division: CatalogDivision | "all"): Sour
   if (division === "all") return "all";
   return divisionToSource(division);
 }
+
+/** Catalog sources included when a public division filter is active. */
+export function divisionCatalogSources(division: CatalogDivision): Source[] {
+  switch (division) {
+    case "technology":
+      return ["treco", "alevado", "its"];
+    case "home":
+      return ["tremark"];
+    case "cables":
+      return ["alevado"];
+    case "its":
+      return ["its"];
+  }
+}

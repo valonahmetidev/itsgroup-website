@@ -76,15 +76,15 @@ function CatalogFilterFields({
       {showSource && (
         <FilterPills
           label={dict.catalog.sourceLabel}
-          value={query.source}
+          value={query.division}
           options={[
             { value: "all", label: dict.catalog.all },
-            { value: "treco", label: dict.nav.technology },
-            { value: "tremark", label: dict.nav.home },
+            { value: "technology", label: dict.nav.technology },
+            { value: "home", label: dict.nav.home },
             { value: "its", label: dict.catalog.itsProducts },
-            { value: "alevado", label: dict.catalog.alevadoProducts },
+            { value: "cables", label: dict.catalog.alevadoProducts },
           ]}
-          hrefFor={(source) => hrefFor({ source, page: 1 })}
+          hrefFor={(division) => hrefFor({ division, page: 1 })}
         />
       )}
 
@@ -175,11 +175,11 @@ function CatalogFilterFields({
 
 function activeFilterLabel(id: string, query: ParsedCatalogQuery, dict: Dictionary) {
   switch (id) {
-    case "source":
-      if (query.source === "treco") return dict.nav.technology;
-      if (query.source === "tremark") return dict.nav.home;
-      if (query.source === "its") return dict.catalog.itsProducts;
-      if (query.source === "alevado") return dict.catalog.alevadoProducts;
+    case "division":
+      if (query.division === "technology") return dict.nav.technology;
+      if (query.division === "home") return dict.nav.home;
+      if (query.division === "its") return dict.catalog.itsProducts;
+      if (query.division === "cables") return dict.catalog.alevadoProducts;
       return dict.catalog.all;
     case "stock":
       return query.stock === "in" ? dict.catalog.stockIn : dict.catalog.stockOut;
@@ -214,12 +214,12 @@ export function ActiveCatalogFilters({
   className?: string;
 }) {
   const { dict } = useLocale();
-  const chips = getActiveCatalogFilterChips(query, { showSource });
+  const chips = getActiveCatalogFilterChips(query, { showDivision: showSource });
 
   if (chips.length === 0) return null;
 
   const clearHref = hrefFor({
-    source: showSource ? "all" : query.source,
+    division: showSource ? "all" : query.division,
     stock: "all",
     sale: "all",
     priceType: "all",
@@ -266,7 +266,7 @@ export function CatalogFilters({
   const { dict } = useLocale();
   const [minValue, setMinValue] = useState(query.min?.toString() ?? "");
   const [maxValue, setMaxValue] = useState(query.max?.toString() ?? "");
-  const active = hasVisibleActiveFilters(query, { showSource });
+  const active = hasVisibleActiveFilters(query, { showDivision: showSource });
 
   function applyPriceRange(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

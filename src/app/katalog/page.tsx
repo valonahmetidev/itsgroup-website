@@ -1,15 +1,15 @@
 import { redirect } from "next/navigation";
 import { CatalogView } from "@/components/CatalogView";
-import { liveProducts, liveSearchProducts } from "@/lib/catalog-live";
 import {
   applyCatalogFilters,
+  filterCatalogByDivision,
   getPriceBounds,
   parseCatalogSearchParams,
   sortCatalogProducts,
 } from "@/lib/catalog-filters";
+import { liveProducts, liveSearchProducts } from "@/lib/catalog-live";
 import { catalogHref } from "@/lib/format";
 import { getServerI18n } from "@/lib/i18n/server";
-import type { Source } from "@/lib/types";
 
 const PAGE_SIZE = 24;
 
@@ -25,11 +25,10 @@ export default async function CatalogPage({
 
   const { locale } = await getServerI18n();
   const query = parseCatalogSearchParams(raw);
-  const source = query.source === "all" ? undefined : (query.source as Source);
   const catalog = await liveProducts(locale);
   const base = query.q
-    ? await liveSearchProducts(query.q, source, locale)
-    : catalog.filter((product) => !source || product.source === source);
+    ? await liveSearchProducts(query.q, query.division, locale)
+    : filterCatalogByDivision(catalog, query.division);
   const priceBounds = getPriceBounds(base);
   const filtered = applyCatalogFilters(base, query);
   const matched = query.q && query.sort === "name" ? filtered : sortCatalogProducts(filtered, query.sort);

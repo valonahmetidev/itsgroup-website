@@ -1,10 +1,14 @@
 import { unstable_noStore as noStore } from "next/cache";
 import {
+  counts as staticCounts,
   featuredProducts as baseFeaturedProducts,
   getProduct as baseGetProduct,
   products as baseProducts,
   productsInCategory as baseProductsInCategory,
 } from "@/lib/catalog";
+import { buildCatalogTotals, type CatalogTotals } from "@/lib/catalog-counts";
+import { filterCatalogByDivision } from "@/lib/catalog-filters";
+import type { CatalogDivision } from "@/lib/divisions";
 import { applyProductOverride, getOverrideMap, getProductOverride } from "@/lib/catalog-overrides";
 import { getDbAsync } from "@/lib/cloudflare";
 import { loadCustomerPricing, type CustomerPricing } from "@/lib/customers";
@@ -70,22 +74,26 @@ export async function liveProducts(locale: Locale = "mk") {
   return finalizeProducts(merged, pricing);
 }
 
-export async function liveSearchProducts(query: string, source?: Source, locale: Locale = "mk") {
+export async function liveSearchProducts(
+  query: string,
+  division: CatalogDivision | "all" = "all",
+  locale: Locale = "mk",
+) {
   noStore();
   const cleaned = query.trim();
   if (!cleaned) {
     const products = await liveProducts(locale);
-    return source ? products.filter((product) => product.source === source) : products;
+    return filterCatalogByDivision(products, division);
   }
 
   const pricing = await getCustomerPricing();
   const catalog = await finalizeProducts(await applyOverrides(baseProducts, locale), pricing);
   const store = await finalizeProducts(await loadStoreProducts(locale), pricing);
 
-  const catalogScoped = source ? catalog.filter((product) => product.source === source) : catalog;
-  const storeScoped = source ? store.filter((product) => product.source === source) : store;
+  const catalogScoped = filterCatalogByDivision(catalog, division);
+  const storeScoped = filterCatalogByDivision(store, division);
 
-  if (source === "its") {
+  if (division === "its") {
     return searchAndRankProducts(storeScoped, cleaned, locale);
   }
 
@@ -101,6 +109,13 @@ export async function liveSearchProducts(query: string, source?: Source, locale:
     merged.push(product);
   }
   return merged;
+}
+
+export async function liveCatalogTotals(locale: Locale = "mk"): Promise<CatalogTotals> {
+  noStore();
+  const live = await liveProducts(locale);
+  const itsCount = live.filter((product) => product.source === "its").length;
+  return buildCatalogTotals(live, staticCounts().categories, itsCount);
 }
 
 export async function liveProductsInCategory(source: CatalogSource, id: number, locale: Locale = "mk") {

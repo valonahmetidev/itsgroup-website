@@ -1,3 +1,4 @@
+import type { CatalogDivision } from "@/lib/divisions";
 import type { ProductNames } from "@/lib/product-names";
 import type { ProductUnit } from "@/lib/units";
 
@@ -74,7 +75,9 @@ export type PriceTypeFilter = "all" | "priced" | "on-request";
 
 export type CatalogQuery = {
   q?: string;
+  /** @deprecated Use `division` — kept for internal callers migrating from `source`. */
   source?: "all" | Source;
+  division?: CatalogDivision | "all";
   sort?: "name" | "price-asc" | "price-desc";
   page?: number;
   min?: number;

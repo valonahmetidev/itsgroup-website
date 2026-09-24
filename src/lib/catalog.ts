@@ -1,4 +1,5 @@
 import rawCatalog from "../../data/catalog.json";
+import { buildCatalogTotals, type CatalogTotals } from "@/lib/catalog-counts";
 import { categoryHref } from "@/lib/paths";
 import { searchAndRankProducts } from "@/lib/product-search";
 import type { Category, CatalogSource, MenuColumn, MenuGroup, MenuLink, Product, Source } from "@/lib/types";
@@ -202,14 +203,12 @@ export function featuredProducts(source: Source, limit: number) {
   return picked;
 }
 
-const catalogCounts = {
-  treco: products.filter((product) => product.source === "treco").length,
-  tremark: products.filter((product) => product.source === "tremark").length,
-  alevado: products.filter((product) => product.source === "alevado").length,
-  categories: categories.filter(categoryHasProducts).length,
-};
+const catalogCounts = buildCatalogTotals(
+  products,
+  categories.filter(categoryHasProducts).length,
+);
 
-export function counts() {
+export function counts(): CatalogTotals {
   return catalogCounts;
 }
 
@@ -386,6 +385,3 @@ export function divisionCategories(source: Source) {
   );
 }
 
-export function technologyProductCount() {
-  return products.filter((product) => product.source === "treco" || product.source === "alevado").length;
-}
