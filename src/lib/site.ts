@@ -7,7 +7,9 @@ export const site = {
   seoDescription:
     "ITS Group — technology, CCTV, networks, smart home, and appliances in Kumanovo, North Macedonia. Official catalog at itsgroup.mk.",
   whatsapp: "38976302228",
+  /** Hidden from public UI for now; restore when you want mailto / forms again. */
   email: "info@itsgroup.mk",
+  showPublicEmail: false,
   phone: "+389 76 302 228",
   phoneHref: "tel:+38976302228",
   address: "11 November 68d, Kumanovo, North Macedonia, 1300",

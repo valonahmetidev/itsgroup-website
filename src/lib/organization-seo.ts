@@ -12,7 +12,6 @@ export function organizationJsonLd() {
     url: site.url,
     logo: logoUrl,
     image: logoUrl,
-    email: site.email,
     telephone: site.phone.replace(/\s/g, ""),
     description: site.seoDescription,
     address: {
@@ -27,6 +26,10 @@ export function organizationJsonLd() {
       name: "North Macedonia",
     },
   };
+
+  if (site.showPublicEmail && site.email) {
+    payload.email = site.email;
+  }
 
   if (site.sameAs.length > 0) {
     payload.sameAs = site.sameAs;

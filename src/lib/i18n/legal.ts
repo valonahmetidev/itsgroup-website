@@ -11,20 +11,44 @@ export type LegalDoc = {
 
 const company = {
   name: "ITS Group",
-  email: "info@itsgroup.mk",
   phone: "+389 76 302 228",
   website: "https://itsgroup.mk",
+  contactPath: "/kontakt",
   country: "North Macedonia",
 };
 
-function controllerBlock(locale: Locale): string {
+function contactUrl() {
+  return `${company.website}${company.contactPath}`;
+}
+
+function rightsContact(locale: Locale): string {
   if (locale === "sq") {
-    return `${company.name}, ${company.country}. Email: ${company.email}, telefon: ${company.phone}.`;
+    return `Për të ushtruar të drejtat tuaja, na kontaktoni në ${company.phone} ose përmes formularit në ${contactUrl()}.`;
   }
   if (locale === "en") {
-    return `${company.name}, ${company.country}. Email: ${company.email}, phone: ${company.phone}.`;
+    return `To exercise your rights, contact us by phone at ${company.phone} or via the contact form at ${contactUrl()}.`;
   }
-  return `${company.name}, ${company.country}. Е-пошта: ${company.email}, телефон: ${company.phone}.`;
+  return `За остварување на правата, контактирајте не на ${company.phone} или преку формуларот на ${contactUrl()}.`;
+}
+
+function questionsContact(locale: Locale): string {
+  if (locale === "sq") {
+    return `Pyetje: ${company.phone}, ${contactUrl()}`;
+  }
+  if (locale === "en") {
+    return `Questions: ${company.phone}, ${contactUrl()}`;
+  }
+  return `Прашања: ${company.phone}, ${contactUrl()}`;
+}
+
+function controllerBlock(locale: Locale): string {
+  if (locale === "sq") {
+    return `${company.name}, ${company.country}. Telefon: ${company.phone}. Uebfaqe: ${company.website}.`;
+  }
+  if (locale === "en") {
+    return `${company.name}, ${company.country}. Phone: ${company.phone}. Website: ${company.website}.`;
+  }
+  return `${company.name}, ${company.country}. Телефон: ${company.phone}. Веб-сајт: ${company.website}.`;
 }
 
 function privacyDoc(locale: Locale): LegalDoc {
@@ -101,7 +125,7 @@ function privacyDoc(locale: Locale): LegalDoc {
           title: "Your rights",
           paragraphs: [
             "Under North Macedonian data protection law you may request access, correction, deletion, restriction, or objection regarding your personal data, and withdraw consent where processing is consent-based.",
-            `To exercise your rights, contact us at ${company.email}. You may also lodge a complaint with the Personal Data Protection Agency of North Macedonia.`,
+            `${rightsContact("en")} You may also lodge a complaint with the Personal Data Protection Agency of North Macedonia.`,
           ],
         },
         {
@@ -187,7 +211,7 @@ function privacyDoc(locale: Locale): LegalDoc {
           title: "Të drejtat tuaja",
           paragraphs: [
             "Sipas ligjit maqedonas mund të kërkoni qasje, korrigjim, fshirje, kufizim ose kundërshtim, dhe të tërhiqni pëlqimin.",
-            `Na kontaktoni në ${company.email}. Mund të ankoheni te Agjencia për Mbrojtjen e të Dhënave Personale të Maqedonisë së Veriut.`,
+            `${rightsContact("sq")} Mund të ankoheni te Agjencia për Mbrojtjen e të Dhënave Personale të Maqedonisë së Veriut.`,
           ],
         },
         {
@@ -272,7 +296,7 @@ function privacyDoc(locale: Locale): LegalDoc {
         title: "Ваши права",
         paragraphs: [
           "По македонскиот закон можете да побарате пристап, исправка, бришење, ограничување или приговор и да повлечете согласност.",
-          `Контакт: ${company.email}. Може да поднесете приговор до Агенцијата за заштита на личните податоци.`,
+          `${rightsContact("mk")} Може да поднесете приговор до Агенцијата за заштита на личните податоци.`,
         ],
       },
       {
@@ -342,7 +366,7 @@ function termsDoc(locale: Locale): LegalDoc {
         },
         {
           title: "Contact",
-          paragraphs: [`Questions: ${company.email}, ${company.phone}, ${company.website}`],
+          paragraphs: [questionsContact("en")],
         },
       ],
     };
@@ -402,7 +426,7 @@ function termsDoc(locale: Locale): LegalDoc {
         },
         {
           title: "Kontakt",
-          paragraphs: [`Pyetje: ${company.email}, ${company.phone}, ${company.website}`],
+          paragraphs: [questionsContact("sq")],
         },
       ],
     };
@@ -461,7 +485,7 @@ function termsDoc(locale: Locale): LegalDoc {
       },
       {
         title: "Контакт",
-        paragraphs: [`Прашања: ${company.email}, ${company.phone}, ${company.website}`],
+        paragraphs: [questionsContact("mk")],
       },
     ],
   };

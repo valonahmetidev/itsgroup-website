@@ -41,7 +41,7 @@ const pages: Record<Locale, MetaPages> = {
     },
     contact: {
       title: "Контакт",
-      description: "Контактирајте ITS Group на WhatsApp, телефон или е-пошта info@itsgroup.mk.",
+      description: "Контактирајте ITS Group на WhatsApp или телефон. Продавница во Куманово.",
     },
     quote: {
       title: "Понуда",
@@ -93,7 +93,7 @@ const pages: Record<Locale, MetaPages> = {
     },
     contact: {
       title: "Kontakt",
-      description: "Kontaktoni ITS Group në WhatsApp, telefon ose info@itsgroup.mk.",
+      description: "Kontaktoni ITS Group në WhatsApp ose telefon. Dyqan në Kumanovë.",
     },
     quote: {
       title: "Ofertë",
@@ -145,7 +145,7 @@ const pages: Record<Locale, MetaPages> = {
     },
     contact: {
       title: "Contact",
-      description: "Reach ITS Group on WhatsApp, phone, or info@itsgroup.mk.",
+      description: "Reach ITS Group on WhatsApp or phone. Store in Kumanovo, North Macedonia.",
     },
     quote: {
       title: "Quote",

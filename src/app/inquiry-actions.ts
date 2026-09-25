@@ -8,7 +8,7 @@ import { getServerI18n } from "@/lib/i18n/server";
 import { insertInquiry, isInquiryRateLimited } from "@/lib/inquiries";
 import type { ProformaCustomer } from "@/lib/proforma-types";
 import type { ProductUnit } from "@/lib/units";
-import { validateEmail, validateMinLength, validateRequired } from "@/lib/form-validation";
+import { validateMinLength, validateRequired } from "@/lib/form-validation";
 
 function getDb(): D1Database | null {
   try {
@@ -39,8 +39,6 @@ function validateContactFields(
   if (nameErr) errors.name = nameErr;
   const messageErr = validateRequired(input.message, dict) || validateMinLength(input.message, 10, dict);
   if (messageErr) errors.message = messageErr;
-  const emailErr = validateEmail(input.email, dict, false);
-  if (emailErr) errors.email = emailErr;
   return errors;
 }
 
@@ -48,8 +46,6 @@ function validateQuoteCustomer(dict: ReturnType<typeof getDictionary>, customer:
   const errors: Partial<Record<keyof ProformaCustomer, string>> = {};
   const nameErr = validateRequired(customer.name, dict);
   if (nameErr) errors.name = nameErr;
-  const emailErr = validateEmail(customer.email, dict, false);
-  if (emailErr) errors.email = emailErr;
   return errors;
 }
 

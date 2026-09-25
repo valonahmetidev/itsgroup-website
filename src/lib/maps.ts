@@ -19,7 +19,8 @@ export function googleMapsSearchUrl() {
 
 export function googleMapsEmbedUrl() {
   const { lat, lng } = officeLocation;
-  return `https://www.google.com/maps?q=${lat},${lng}&z=17&output=embed`;
+  const place = encodeURIComponent(`ITS Group, ${site.address}`);
+  return `https://www.google.com/maps?q=${place}&ll=${lat},${lng}&z=17&hl=mk&output=embed`;
 }
 
 /** @deprecated OSM embed — use googleMapsEmbedUrl for pin accuracy */

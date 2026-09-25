@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { submitContactInquiry } from "@/app/inquiry-actions";
 import { useLocale } from "@/components/LocaleProvider";
-import { validateEmail, validateMinLength, validateRequired } from "@/lib/form-validation";
+import { validateMinLength, validateRequired } from "@/lib/form-validation";
 import { buildWhatsAppContactUrl } from "@/lib/whatsapp-contact";
 
 export function ContactForm() {
@@ -12,9 +12,7 @@ export function ContactForm() {
   const [formError, setFormError] = useState("");
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [lastPayload, setLastPayload] = useState<{ name: string; phone: string; email: string; message: string } | null>(
-    null,
-  );
+  const [lastPayload, setLastPayload] = useState<{ name: string; phone: string; message: string } | null>(null);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -28,7 +26,6 @@ export function ContactForm() {
 
     const name = String(form.get("name") ?? "").trim();
     const phone = String(form.get("phone") ?? "").trim();
-    const email = String(form.get("email") ?? "").trim();
     const message = String(form.get("message") ?? "").trim();
 
     const nextErrors: Record<string, string> = {};
@@ -36,9 +33,6 @@ export function ContactForm() {
     if (nameErr) nextErrors.name = nameErr;
     const messageErr = validateRequired(message, dict) || validateMinLength(message, 10, dict);
     if (messageErr) nextErrors.message = messageErr;
-    const emailErr = validateEmail(email, dict, false);
-    if (emailErr) nextErrors.email = emailErr;
-
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       setFormError(dict.validation.fixFields);
@@ -51,7 +45,7 @@ export function ContactForm() {
       website: String(form.get("website") ?? ""),
       name,
       phone,
-      email,
+      email: "",
       message,
     });
     setSubmitting(false);
@@ -70,20 +64,19 @@ export function ContactForm() {
       return;
     }
 
-    setLastPayload({ name, phone, email, message });
+    setLastPayload({ name, phone, message });
     setSuccess(true);
     event.currentTarget.reset();
   }
 
   function openWhatsApp() {
     if (!lastPayload) return;
-    const { name, phone, email, message } = lastPayload;
+    const { name, phone, message } = lastPayload;
     const lines = [
       `*${dict.contact.heading}*`,
       "",
       `*${dict.contact.name}:* ${name}`,
       phone ? `*${dict.contact.phone}:* ${phone}` : "",
-      email ? `*${dict.contact.email}:* ${email}` : "",
       "",
       message,
     ].filter(Boolean);
@@ -103,7 +96,6 @@ export function ContactForm() {
       <div className="grid gap-4 sm:grid-cols-2">
         <Field name="name" label={dict.contact.name} required error={errors.name} />
         <Field name="phone" label={dict.contact.phone} error={errors.phone} />
-        <Field name="email" label={dict.contact.email} type="email" className="sm:col-span-2" error={errors.email} />
         <label className="sm:col-span-2 text-sm font-medium">
           {dict.contact.message}
           <textarea
