@@ -13,7 +13,7 @@ import type { ProformaCustomer } from "@/lib/proforma";
 import { productHref } from "@/lib/paths";
 import { site } from "@/lib/site";
 import { useResolvedName } from "@/lib/use-product-name";
-import { validateRequired } from "@/lib/form-validation";
+import { validateEmail, validatePhone, validateRequired } from "@/lib/form-validation";
 import { shareProformaViaWhatsApp } from "@/lib/whatsapp";
 import { submitQuoteInquiry } from "@/app/inquiry-actions";
 
@@ -35,8 +35,12 @@ export function QuoteView() {
 
   function validateCustomer() {
     const nameErr = validateRequired(customer.name, dict);
+    const phoneErr = validatePhone(customer.phone, dict, true);
+    const emailErr = validateEmail(customer.email, dict, false);
     const errors: Partial<Record<keyof ProformaCustomer, string>> = {};
     if (nameErr) errors.name = nameErr;
+    if (phoneErr) errors.phone = phoneErr;
+    if (emailErr) errors.email = emailErr;
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) {
       setFormError(dict.validation.fixFields);
@@ -151,8 +155,22 @@ export function QuoteView() {
             <input
               value={customer.phone}
               onChange={(event) => setCustomer((current) => ({ ...current, phone: event.target.value }))}
-              className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech"
+              aria-invalid={Boolean(fieldErrors.phone)}
+              className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech aria-[invalid=true]:border-home"
+              required
             />
+            {fieldErrors.phone && <span className="text-sm text-home">{fieldErrors.phone}</span>}
+          </label>
+          <label className="grid gap-1 text-sm">
+            <span className="text-ink/60">{dict.contact.email}</span>
+            <input
+              type="email"
+              value={customer.email}
+              onChange={(event) => setCustomer((current) => ({ ...current, email: event.target.value }))}
+              aria-invalid={Boolean(fieldErrors.email)}
+              className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech aria-[invalid=true]:border-home"
+            />
+            {fieldErrors.email && <span className="text-sm text-home">{fieldErrors.email}</span>}
           </label>
           <label className="grid gap-1 text-sm">
             <span className="text-ink/60">{dict.quote.company}</span>

@@ -23,6 +23,7 @@ export function ProfileView({
       <section className="mt-10 grid gap-6 lg:grid-cols-[1fr_1.2fr]">
         <div className="rounded-3xl border border-ink/10 bg-card p-6">
           <h2 className="font-display text-2xl">{profile.name}</h2>
+          <p className="mt-2 text-sm text-ink/60">{profile.email}</p>
           {profile.discountPercent != null && (
             <p className="mt-4 text-sm font-semibold text-tech">
               {dict.customer.generalDiscountLabel}: -{profile.discountPercent}%

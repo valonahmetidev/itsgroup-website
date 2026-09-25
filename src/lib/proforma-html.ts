@@ -12,8 +12,7 @@ const PDF_WIDTH_PX = 794;
 /** Intrinsic /its_logo.svg dimensions. */
 const LOGO_NATURAL_WIDTH = 1558;
 const LOGO_NATURAL_HEIGHT = 785;
-const LOGO_DISPLAY_HEIGHT = 44;
-const LOGO_DISPLAY_WIDTH = Math.round((LOGO_DISPLAY_HEIGHT * LOGO_NATURAL_WIDTH) / LOGO_NATURAL_HEIGHT);
+const LOGO_ASPECT_RATIO = LOGO_NATURAL_WIDTH / LOGO_NATURAL_HEIGHT;
 
 const pdfLabels: Record<
   Locale,
@@ -227,40 +226,46 @@ export function buildProformaHtml({
         .page-body { display: block; }
         .page-main { display: block; }
         .header {
-          background: linear-gradient(135deg, #0b0d11 0%, #12161c 55%, #0f1a17 100%);
-          color: #fff;
-          padding: 28px 32px 24px;
+          background: #ffffff;
+          color: #15181d;
+          padding: 18px 32px;
           display: grid;
           grid-template-columns: minmax(0, 1fr) auto;
           gap: 24px;
-          align-items: center;
+          align-items: stretch;
+          border-bottom: 1px solid #e6e9ee;
         }
         .brand {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
+          display: grid;
+          grid-template-rows: 1fr auto;
+          gap: 6px;
           min-width: 0;
-          align-items: flex-start;
+          min-height: 96px;
+          align-self: stretch;
         }
         .brand-logo {
-          width: ${LOGO_DISPLAY_WIDTH}px;
-          height: ${LOGO_DISPLAY_HEIGHT}px;
-          flex: 0 0 auto;
+          height: 100%;
+          min-height: 72px;
+          width: auto;
+          max-width: 100%;
+          aspect-ratio: ${LOGO_ASPECT_RATIO};
+          justify-self: start;
           background: url("${escapeHtml(logoUrl)}") no-repeat left center;
           background-size: contain;
         }
         .brand .domain {
-          color: #8fa39a;
+          color: #4a515c;
           font-size: 10px;
           letter-spacing: 0.04em;
+          line-height: 1.2;
         }
         .meta {
           min-width: 0;
           text-align: right;
           padding: 14px 16px;
           border-radius: 14px;
-          background: rgba(255, 255, 255, 0.06);
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: #f7f8fa;
+          border: 1px solid #e6e9ee;
         }
         .meta h1 {
           margin: 0 0 12px;
@@ -269,7 +274,7 @@ export function buildProformaHtml({
           letter-spacing: 0.14em;
           text-transform: uppercase;
           line-height: 1.2;
-          color: #d8e8e2;
+          color: #0f6e56;
         }
         .meta-grid {
           display: grid;
@@ -278,7 +283,7 @@ export function buildProformaHtml({
           justify-content: end;
         }
         .meta .label {
-          color: #7f948b;
+          color: #6b7280;
           font-size: 8px;
           text-transform: uppercase;
           letter-spacing: 0.1em;
@@ -288,7 +293,7 @@ export function buildProformaHtml({
           font-weight: 700;
           margin-top: 2px;
           word-break: break-word;
-          color: #ffffff;
+          color: #15181d;
         }
         .accent-bar {
           height: 4px;
