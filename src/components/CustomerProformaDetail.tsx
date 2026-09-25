@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { customerDeleteProforma } from "@/app/customer/actions";
 import { useCurrency } from "@/components/CurrencyProvider";
@@ -24,7 +23,6 @@ export function CustomerProformaDetail({
   createdAt: string;
   payload: ProformaDocumentPayload;
 }) {
-  const router = useRouter();
   const { dict, locale } = useLocale();
   const { rates } = useCurrency();
   const [downloading, setDownloading] = useState(false);
@@ -69,8 +67,7 @@ export function CustomerProformaDetail({
         setError(dict.validation.databaseUnavailable);
         return;
       }
-      router.push("/profil");
-      router.refresh();
+      window.location.assign("/profil");
     } finally {
       setDeleting(false);
     }
@@ -108,10 +105,10 @@ export function CustomerProformaDetail({
         </div>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
-            href={`/ponuda?proforma=${proformaId}`}
+            href={`/profil/ponuda/${proformaId}/uredi`}
             className="rounded-full border border-tech/30 bg-surface px-5 py-2.5 text-sm font-semibold text-tech hover:border-tech"
           >
-            {dict.customer.editProformaInQuote}
+            {dict.customer.editProforma}
           </Link>
           <button
             type="button"

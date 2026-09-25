@@ -17,6 +17,7 @@ import {
 } from "@/lib/units";
 import { SelectField } from "@/components/ui/SelectField";
 import type { ProductNames } from "@/lib/product-names";
+import { enqueueProformaCatalogItem, getProformaCatalogTarget } from "@/lib/proforma-catalog-bridge";
 import type { ProductType, Source } from "@/lib/types";
 
 const STORAGE_KEY = "itsgroup-inquiry";
@@ -94,6 +95,14 @@ export function InquiryProvider({ children }: { children: React.ReactNode }) {
         const unitLocked = Boolean(item.unitLocked);
         const unit = normalizeProductUnit(item.unit);
         const amount = clampQuantity(quantity, unit);
+        const proformaId = getProformaCatalogTarget();
+        if (proformaId) {
+          enqueueProformaCatalogItem(
+            proformaId,
+            normalizeItem({ ...item, key, quantity: amount, unit, unitLocked }),
+          );
+          return;
+        }
         setItems((current) => {
           const existing = current.find((entry) => entry.key === key);
           if (existing) {
@@ -148,7 +157,7 @@ export function lineTotal(item: InquiryItem) {
   return item.price * item.quantity;
 }
 
-function QuantityControl({
+export function QuantityControl({
   quantity,
   unit,
   onChange,

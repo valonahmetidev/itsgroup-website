@@ -1,6 +1,8 @@
 "use client";
 
+import { Suspense } from "react";
 import { PageHeader } from "@/components/PageHeader";
+import { ProformaCatalogMode } from "@/components/ProformaCatalogMode";
 import { CatalogProductsSection } from "@/components/CatalogProductsSection";
 import { useLocale } from "@/components/LocaleProvider";
 import { catalogHref, countProducts } from "@/lib/format";
@@ -27,6 +29,9 @@ export function CatalogView({
 
   return (
     <>
+      <Suspense fallback={null}>
+        <ProformaCatalogMode />
+      </Suspense>
       <PageHeader
         eyebrow={dict.catalog.title}
         title={query.q ? fill(dict.catalog.resultsFor, { query: query.q }) : dict.catalog.title}

@@ -64,7 +64,10 @@ export function ProfileView({
                     <p className="text-sm font-semibold tabular-nums">
                       {item.total != null ? formatPrice(item.total, locale, dict) : dict.product.onRequest}
                     </p>
-                    <Link href={`/profil/ponuda/${item.id}`} className="text-sm font-semibold text-tech hover:underline">
+                    <Link href={`/profil/ponuda/${item.id}/uredi`} className="text-sm font-semibold text-tech hover:underline">
+                      {dict.customer.editProforma}
+                    </Link>
+                    <Link href={`/profil/ponuda/${item.id}`} className="text-sm text-ink/55 hover:text-tech hover:underline">
                       {dict.customer.viewProforma}
                     </Link>
                   </div>

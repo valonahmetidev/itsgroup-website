@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCustomerSessionId, clearCustomerSession, setCustomerSession } from "@/lib/customer-auth";
 import { getDbAsync } from "@/lib/cloudflare";
@@ -125,6 +126,7 @@ export async function customerSaveQuoteProforma(input: {
       payload,
       createdAt,
     });
+    revalidatePath("/profil");
     return { ok: true as const, id, documentNo };
   } catch {
     return { ok: false as const, error: "save_failed" as const };
@@ -177,6 +179,10 @@ export async function customerUpdateProforma(input: {
       updatedAt,
     });
 
+    revalidatePath("/profil");
+    revalidatePath(`/profil/ponuda/${input.id}`);
+    revalidatePath(`/profil/ponuda/${input.id}/uredi`);
+
     return { ok: true as const, id: input.id, documentNo: existing.documentNo };
   } catch {
     return { ok: false as const, error: "save_failed" as const };
@@ -196,6 +202,7 @@ export async function customerDeleteProforma(id: string) {
       return { ok: false as const, error: "not_found" as const };
     }
     await deleteProforma(db, id);
+    revalidatePath("/profil");
     return { ok: true as const };
   } catch {
     return { ok: false as const, error: "delete_failed" as const };

@@ -114,7 +114,11 @@ export type Dictionary = {
     openCatalog: string;
     openQuote: string;
     proformaDetail: string;
-    editProformaInQuote: string;
+    editProforma: string;
+    proformaEditorNote: string;
+    addProductsToProforma: string;
+    backToProformaEditor: string;
+    proformaCatalogItemsAdded: string;
     deleteProforma: string;
     deleteProformaConfirm: string;
   };
@@ -132,6 +136,7 @@ export type Dictionary = {
     showFilters: string;
     hideFilters: string;
     clearFilters: string;
+    addingToProforma: string;
     sourceLabel: string;
     sortLabel: string;
     stockLabel: string;
@@ -203,7 +208,7 @@ export type Dictionary = {
     signInToSaveProforma: string;
     updateProforma: string;
     proformaUpdated: string;
-    editingSavedProforma: string;
+    quoteListNote: string;
     sendWhatsApp: string;
     whatsAppInquiryTitle: string;
     whatsAppInquiryIntro: string;
