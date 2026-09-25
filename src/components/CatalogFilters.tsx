@@ -14,6 +14,27 @@ import {
 } from "@/lib/catalog-filters";
 import { cn } from "@/lib/cn";
 
+/** Let the catalog page scroll when the filter panel has nowhere left to scroll (or does not overflow). */
+function forwardFilterWheelToPage(event: React.WheelEvent<HTMLDivElement>) {
+  const node = event.currentTarget;
+  const maxScroll = node.scrollHeight - node.clientHeight;
+  if (maxScroll <= 1) {
+    window.scrollBy({ top: event.deltaY, left: 0 });
+    event.preventDefault();
+    return;
+  }
+
+  const scrollingDown = event.deltaY > 0;
+  const scrollingUp = event.deltaY < 0;
+  const atTop = node.scrollTop <= 0;
+  const atBottom = node.scrollTop + node.clientHeight >= node.scrollHeight - 1;
+
+  if ((scrollingDown && atBottom) || (scrollingUp && atTop)) {
+    window.scrollBy({ top: event.deltaY, left: 0 });
+    event.preventDefault();
+  }
+}
+
 type PillOption<T extends string> = { value: T; label: string };
 
 function FilterPills<T extends string>({
@@ -346,7 +367,10 @@ export function CatalogFilters({
               </Link>
             )}
           </div>
-          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-5">
+          <div
+            className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5"
+            onWheel={forwardFilterWheelToPage}
+          >
             {fields}
           </div>
         </div>
