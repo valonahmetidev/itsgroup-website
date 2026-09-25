@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Trash2 } from "lucide-react";
 import {
   customerDeleteProforma,
@@ -17,10 +17,11 @@ import { validateEmail } from "@/lib/form-validation";
 import type { ProformaDocumentPayload } from "@/lib/proforma-document";
 import type { ProformaCustomer } from "@/lib/proforma-types";
 import {
+  PROFORMA_DRAFT_CHANGED,
   clearProformaCatalogTarget,
-  drainProformaCatalogQueue,
-  mergeInquiryLists,
+  readProformaDraftBundle,
   setProformaCatalogTarget,
+  writeProformaDraftBundle,
 } from "@/lib/proforma-catalog-bridge";
 import { productHref } from "@/lib/paths";
 import { site } from "@/lib/site";
@@ -41,8 +42,13 @@ export function CustomerProformaEditor({
   const router = useRouter();
   const { dict, locale } = useLocale();
   const { currency, rates, formatPrice: formatMoney } = useCurrency();
-  const [customer, setCustomer] = useState<ProformaCustomer>(initialPayload.customer);
-  const [items, setItems] = useState<InquiryItem[]>(initialPayload.items);
+  const [customer, setCustomer] = useState<ProformaCustomer>(() => {
+    return readProformaDraftBundle(proformaId)?.customer ?? initialPayload.customer;
+  });
+  const [items, setItems] = useState<InquiryItem[]>(() => {
+    return readProformaDraftBundle(proformaId)?.items ?? initialPayload.items;
+  });
+  const draftReady = useRef(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -50,24 +56,46 @@ export function CustomerProformaEditor({
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ProformaCustomer, string>>>({});
 
-  const pullCatalogQueue = useCallback(() => {
-    const queued = drainProformaCatalogQueue(proformaId);
-    if (queued.length > 0) {
-      setItems((current) => mergeInquiryLists(current, queued));
-      setNotice(dict.customer.proformaCatalogItemsAdded);
+  const syncFromDraft = useCallback(() => {
+    const bundle = readProformaDraftBundle(proformaId);
+    if (!bundle) return;
+    setItems(bundle.items);
+    setCustomer(bundle.customer);
+  }, [proformaId]);
+
+  useEffect(() => {
+    if (!readProformaDraftBundle(proformaId)) {
+      writeProformaDraftBundle(proformaId, {
+        items: initialPayload.items,
+        customer: initialPayload.customer,
+        currency,
+      });
     }
-  }, [proformaId, dict.customer.proformaCatalogItemsAdded]);
+    draftReady.current = true;
+  }, [proformaId, currency, initialPayload.customer, initialPayload.items]);
 
   useEffect(() => {
-    pullCatalogQueue();
-    const onFocus = () => pullCatalogQueue();
-    window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
-  }, [pullCatalogQueue]);
+    if (!draftReady.current) return;
+    writeProformaDraftBundle(proformaId, { items, customer, currency });
+  }, [proformaId, items, customer, currency]);
 
   useEffect(() => {
-    return () => clearProformaCatalogTarget();
-  }, []);
+    const onDraft = (event: Event) => {
+      const detail = (event as CustomEvent<{ proformaId: string }>).detail;
+      if (detail?.proformaId === proformaId) syncFromDraft();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") syncFromDraft();
+    };
+    window.addEventListener(PROFORMA_DRAFT_CHANGED, onDraft);
+    window.addEventListener("focus", syncFromDraft);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener(PROFORMA_DRAFT_CHANGED, onDraft);
+      window.removeEventListener("focus", syncFromDraft);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [proformaId, syncFromDraft]);
 
   const total = items.reduce((sum, item) => sum + (lineTotal(item) ?? 0), 0);
 
@@ -94,6 +122,7 @@ export function CustomerProformaEditor({
   }
 
   function openCatalogForProforma() {
+    writeProformaDraftBundle(proformaId, { items, customer, currency });
     setProformaCatalogTarget(proformaId);
     router.push(`/katalog?forProforma=${proformaId}`);
   }
@@ -341,16 +370,20 @@ function EditorItemRow({
           </div>
         </div>
       </div>
-      <div className="mt-4 flex flex-wrap items-end gap-3 border-t border-ink/10 pt-4">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-ink/10 pt-3">
         {item.unitLocked ? (
-          <div className="shrink-0">
-            <p className="mb-1 text-xs text-ink/55">{dict.product.unit}</p>
-            <span className="inline-flex rounded-full border border-ink/10 bg-surface px-3 py-2 text-sm font-medium">
-              {unitLabel(item.unit, locale)}
-            </span>
-          </div>
+          <span className="text-xs font-medium text-ink/55">{unitLabel(item.unit, locale)}</span>
         ) : (
-          <UnitSelect value={item.unit} onChange={onUnitChange} label={dict.product.unit} shape="pill" className="shrink-0" />
+          <UnitSelect
+            value={item.unit}
+            onChange={onUnitChange}
+            label={dict.product.unit}
+            shape="pill"
+            size="compact"
+            hideLabel
+            fullWidth={false}
+            className="min-w-[6.5rem] shrink-0"
+          />
         )}
         <QuantityControl quantity={item.quantity} unit={item.unit} onChange={onQuantityChange} compact />
       </div>

@@ -137,6 +137,8 @@ export type Dictionary = {
     hideFilters: string;
     clearFilters: string;
     addingToProforma: string;
+    saveProforma: string;
+    proformaItemCount: string;
     sourceLabel: string;
     sortLabel: string;
     stockLabel: string;
@@ -165,6 +167,8 @@ export type Dictionary = {
     checkStock: string;
     addToQuote: string;
     inQuote: string;
+    inProforma: string;
+    addToProforma: string;
     quantity: string;
     unit: string;
     decreaseQuantity: string;

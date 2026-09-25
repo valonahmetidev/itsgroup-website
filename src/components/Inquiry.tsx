@@ -17,7 +17,8 @@ import {
 } from "@/lib/units";
 import { SelectField } from "@/components/ui/SelectField";
 import type { ProductNames } from "@/lib/product-names";
-import { enqueueProformaCatalogItem, getProformaCatalogTarget } from "@/lib/proforma-catalog-bridge";
+import { addToProformaDraft, getProformaCatalogTarget } from "@/lib/proforma-catalog-bridge";
+import { useProformaCatalogDraft } from "@/lib/use-proforma-catalog-draft";
 import type { ProductType, Source } from "@/lib/types";
 
 const STORAGE_KEY = "itsgroup-inquiry";
@@ -97,7 +98,7 @@ export function InquiryProvider({ children }: { children: React.ReactNode }) {
         const amount = clampQuantity(quantity, unit);
         const proformaId = getProformaCatalogTarget();
         if (proformaId) {
-          enqueueProformaCatalogItem(
+          addToProformaDraft(
             proformaId,
             normalizeItem({ ...item, key, quantity: amount, unit, unitLocked }),
           );
@@ -277,13 +278,27 @@ export function AddButton({
   variant?: "card" | "detail";
 }) {
   const { items, addItem, setItemQuantity, removeItem } = useInquiry();
+  const { proformaId, items: proformaItems, setItemQuantity: setProformaQuantity } = useProformaCatalogDraft();
   const { dict } = useLocale();
+  const listItems = proformaId ? proformaItems : items;
+  const inListLabel = proformaId ? dict.product.inProforma : dict.product.inQuote;
+  const addLabel = proformaId ? dict.product.addToProforma : dict.product.addToQuote;
   const hasTypes = Boolean(types && types.length > 0);
   const [selectedTypeId, setSelectedTypeId] = useState(() => initialTypeId ?? types?.[0]?.id ?? "");
   const selectedType = types?.find((type) => type.id === selectedTypeId);
   const quoteName = selectedType ? `${name} — ${selectedType.name}` : name;
   const key = itemKey(source, id, selectedType?.id);
-  const saved = items.find((item) => item.key === key);
+  const saved = listItems.find((item) => item.key === key);
+
+  function updateListedQuantity(next: number) {
+    if (proformaId) {
+      if (next <= 0) setProformaQuantity(key, 0);
+      else setProformaQuantity(key, next);
+      return;
+    }
+    if (next <= 0) removeItem(key);
+    else setItemQuantity(key, next);
+  }
   const [quantity, setQuantity] = useState(1);
   const [selectedUnit, setSelectedUnit] = useState<ProductUnit>(() => normalizeProductUnit(unit));
   const detail = variant === "detail";
@@ -294,16 +309,8 @@ export function AddButton({
     if (detail) {
       return (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-tech/20 bg-tech/5 px-3 py-2.5">
-          <QuantityControl
-            quantity={saved.quantity}
-            unit={saved.unit}
-            onChange={(next) => {
-              if (next <= 0) removeItem(key);
-              else setItemQuantity(key, next);
-            }}
-            compact
-          />
-          <p className="text-sm font-semibold text-tech">{dict.product.inQuote}</p>
+          <QuantityControl quantity={saved.quantity} unit={saved.unit} onChange={updateListedQuantity} compact />
+          <p className="text-sm font-semibold text-tech">{inListLabel}</p>
         </div>
       );
     }
@@ -311,17 +318,9 @@ export function AddButton({
     return (
       <div className="mt-3 w-full min-w-0 overflow-hidden rounded-2xl border border-tech/20 bg-tech/5 p-2">
         <div className="flex justify-center">
-          <QuantityControl
-            quantity={saved.quantity}
-            unit={saved.unit}
-            onChange={(next) => {
-              if (next <= 0) removeItem(key);
-              else setItemQuantity(key, next);
-            }}
-            compact
-          />
+          <QuantityControl quantity={saved.quantity} unit={saved.unit} onChange={updateListedQuantity} compact />
         </div>
-        <p className="mt-1.5 truncate text-center text-xs font-semibold text-tech">{dict.product.inQuote}</p>
+        <p className="mt-1.5 truncate text-center text-xs font-semibold text-tech">{inListLabel}</p>
       </div>
     );
   }
@@ -373,7 +372,7 @@ export function AddButton({
             }
             className="w-full rounded-full bg-tech px-6 py-3 text-sm font-semibold text-cream transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:flex-1 sm:min-w-[10rem]"
           >
-            {dict.product.addToQuote}
+            {addLabel}
           </button>
         </div>
       </div>
@@ -403,7 +402,7 @@ export function AddButton({
         onClick={() => addItem({ source, id, name, names, price, image, unit: productUnit, unitLocked: locked }, quantity)}
         className="w-full rounded-full border border-ink/10 px-3 py-2 text-sm font-semibold transition hover:border-tech hover:text-tech"
       >
-        {dict.product.addToQuote}
+        {addLabel}
       </button>
     </div>
   );
