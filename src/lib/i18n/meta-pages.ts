@@ -9,6 +9,7 @@ export type MetaPages = {
   contact: { title: string; description: string };
   quote: { title: string; description: string };
   login: { title: string; description: string };
+  profile: { title: string; description: string };
   privacy: { title: string; description: string };
   terms: { title: string; description: string };
   notFound: { title: string; description: string };
@@ -49,6 +50,10 @@ const pages: Record<Locale, MetaPages> = {
     login: {
       title: "Најава",
       description: "Најава за регистрирани клиенти на ITS Group.",
+    },
+    profile: {
+      title: "Мој профил",
+      description: "Ваши податоци, попусти и проформи од ITS Group.",
     },
     privacy: {
       title: "Политика за приватност",
@@ -98,6 +103,10 @@ const pages: Record<Locale, MetaPages> = {
       title: "Hyrje",
       description: "Hyrje për klientët e regjistruar të ITS Group.",
     },
+    profile: {
+      title: "Profili im",
+      description: "Të dhënat, zbritjet dhe proformat nga ITS Group.",
+    },
     privacy: {
       title: "Politika e privatësisë",
       description: "Si ITS Group përpunon të dhënat personale në itsgroup.mk.",
@@ -145,6 +154,10 @@ const pages: Record<Locale, MetaPages> = {
     login: {
       title: "Sign in",
       description: "Sign in for registered ITS Group customers.",
+    },
+    profile: {
+      title: "My profile",
+      description: "Your details, discounts, and proformas from ITS Group.",
     },
     privacy: {
       title: "Privacy policy",

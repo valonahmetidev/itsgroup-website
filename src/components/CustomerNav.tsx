@@ -78,6 +78,14 @@ export function CustomerNav({
           {profile.discountPercent ? (
             <p className="px-3 pb-2 text-xs text-ink/55">-{profile.discountPercent}%</p>
           ) : null}
+          <Link
+            href="/profil"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="block rounded-xl px-3 py-2 text-sm hover:bg-paper"
+          >
+            {dict.customer.profile}
+          </Link>
           <button
             type="button"
             role="menuitem"

@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { submitContactInquiry } from "@/app/inquiry-actions";
 import { useLocale } from "@/components/LocaleProvider";
 import { validateEmail, validateMinLength, validateRequired } from "@/lib/form-validation";
 import { buildWhatsAppContactUrl } from "@/lib/whatsapp-contact";
@@ -9,10 +10,16 @@ export function ContactForm() {
   const { dict } = useLocale();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [lastPayload, setLastPayload] = useState<{ name: string; phone: string; email: string; message: string } | null>(
+    null,
+  );
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormError("");
+    setSuccess(false);
     const form = new FormData(event.currentTarget);
     if (String(form.get("website") ?? "").trim()) {
       setFormError(dict.validation.honeypot);
@@ -39,6 +46,38 @@ export function ContactForm() {
     }
     setErrors({});
 
+    setSubmitting(true);
+    const result = await submitContactInquiry({
+      website: String(form.get("website") ?? ""),
+      name,
+      phone,
+      email,
+      message,
+    });
+    setSubmitting(false);
+
+    if (!result.ok) {
+      if (result.error === "validation" && result.fieldErrors) {
+        setErrors(result.fieldErrors);
+        setFormError(dict.validation.fixFields);
+        return;
+      }
+      if (result.error === "rate_limited") {
+        setFormError(dict.validation.rateLimited);
+        return;
+      }
+      setFormError(dict.validation.databaseUnavailable);
+      return;
+    }
+
+    setLastPayload({ name, phone, email, message });
+    setSuccess(true);
+    event.currentTarget.reset();
+  }
+
+  function openWhatsApp() {
+    if (!lastPayload) return;
+    const { name, phone, email, message } = lastPayload;
     const lines = [
       `*${dict.contact.heading}*`,
       "",
@@ -48,13 +87,11 @@ export function ContactForm() {
       "",
       message,
     ].filter(Boolean);
-
     window.open(buildWhatsAppContactUrl(lines.join("\n")), "_blank", "noopener,noreferrer");
-    event.currentTarget.reset();
   }
 
   return (
-    <form onSubmit={onSubmit} className="rounded-3xl border border-ink/10 bg-card p-6" noValidate>
+    <form onSubmit={(event) => void onSubmit(event)} className="rounded-3xl border border-ink/10 bg-card p-6" noValidate>
       <input
         type="text"
         name="website"
@@ -79,9 +116,25 @@ export function ContactForm() {
           {errors.message && <span className="mt-1 block text-sm text-home">{errors.message}</span>}
         </label>
       </div>
-      <button type="submit" className="mt-5 rounded-full bg-[#25D366] px-5 py-3 text-sm font-semibold text-white">
-        {dict.whatsapp.cta}
-      </button>
+      <div className="mt-5 flex flex-wrap gap-3">
+        <button
+          type="submit"
+          disabled={submitting}
+          className="rounded-full bg-tech px-5 py-3 text-sm font-semibold text-cream disabled:opacity-40"
+        >
+          {submitting ? dict.quote.sendingRequest : dict.contact.save}
+        </button>
+        {success && lastPayload && (
+          <button
+            type="button"
+            onClick={openWhatsApp}
+            className="rounded-full bg-[#25D366] px-5 py-3 text-sm font-semibold text-white"
+          >
+            {dict.contact.openWhatsApp}
+          </button>
+        )}
+      </div>
+      {success && <p className="mt-4 text-sm leading-6 text-tech">{dict.contact.submitSuccess}</p>}
       {formError && <p className="mt-4 text-sm leading-6 text-home">{formError}</p>}
     </form>
   );

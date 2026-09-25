@@ -34,18 +34,8 @@ export type InquiryItem = {
   unitLocked: boolean;
 };
 
-export type InquiryMessage = {
-  id: string;
-  name: string;
-  phone: string;
-  email: string;
-  message: string;
-  createdAt: string;
-};
-
 type InquiryState = {
   items: InquiryItem[];
-  messages: InquiryMessage[];
   addItem: (
     item: Omit<InquiryItem, "key" | "quantity"> & { unit?: ProductUnit; unitLocked?: boolean; variantId?: string },
     quantity?: number,
@@ -54,7 +44,6 @@ type InquiryState = {
   setItemUnit: (key: string, unit: ProductUnit) => void;
   removeItem: (key: string) => void;
   clearItems: () => void;
-  addMessage: (message: Omit<InquiryMessage, "id" | "createdAt">) => void;
 };
 
 const InquiryContext = createContext<InquiryState | null>(null);
@@ -76,16 +65,14 @@ function normalizeItem(item: InquiryItem): InquiryItem {
 
 export function InquiryProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<InquiryItem[]>([]);
-  const [messages, setMessages] = useState<InquiryMessage[]>([]);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
-        const parsed = JSON.parse(stored) as { items?: InquiryItem[]; messages?: InquiryMessage[] };
+        const parsed = JSON.parse(stored) as { items?: InquiryItem[] };
         setItems((parsed.items ?? []).map(normalizeItem));
-        setMessages(parsed.messages ?? []);
       } catch {
         localStorage.removeItem(STORAGE_KEY);
       }
@@ -95,13 +82,12 @@ export function InquiryProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!ready) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ items, messages }));
-  }, [items, messages, ready]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ items }));
+  }, [items, ready]);
 
   const value = useMemo<InquiryState>(
     () => ({
       items,
-      messages,
       addItem: (item, quantity = 1) => {
         const key = itemKey(item.source, item.id, item.variantId);
         const unitLocked = Boolean(item.unitLocked);
@@ -142,17 +128,8 @@ export function InquiryProvider({ children }: { children: React.ReactNode }) {
       },
       removeItem: (key) => setItems((current) => current.filter((item) => item.key !== key)),
       clearItems: () => setItems([]),
-      addMessage: (message) =>
-        setMessages((current) => [
-          {
-            ...message,
-            id: crypto.randomUUID(),
-            createdAt: new Date().toISOString(),
-          },
-          ...current,
-        ]),
     }),
-    [items, messages],
+    [items],
   );
 
   return <InquiryContext.Provider value={value}>{children}</InquiryContext.Provider>;

@@ -26,6 +26,7 @@ export type Dictionary = {
       contact: PageMeta;
       quote: PageMeta;
       login: PageMeta;
+      profile: PageMeta;
       privacy: PageMeta;
       terms: PageMeta;
       notFound: PageMeta;
@@ -56,6 +57,8 @@ export type Dictionary = {
     minLength: string;
     fixFields: string;
     honeypot: string;
+    rateLimited: string;
+    databaseUnavailable: string;
   };
   nav: {
     technology: string;
@@ -101,6 +104,16 @@ export type Dictionary = {
     loginError: string;
     logout: string;
     yourDiscount: string;
+    profile: string;
+    profileTitle: string;
+    profileText: string;
+    myProformas: string;
+    noProformas: string;
+    viewProforma: string;
+    generalDiscountLabel: string;
+    openCatalog: string;
+    openQuote: string;
+    proformaDetail: string;
   };
   catalog: {
     title: string;
@@ -171,8 +184,10 @@ export type Dictionary = {
     openCatalog: string;
     remove: string;
     clear: string;
-    messages: string;
     proformaTitle: string;
+    sendRequest: string;
+    sendingRequest: string;
+    submitSuccess: string;
     customerDetails: string;
     company: string;
     itemsHeading: string;
@@ -210,6 +225,8 @@ export type Dictionary = {
     message: string;
     save: string;
     saved: string;
+    submitSuccess: string;
+    openWhatsApp: string;
   };
   about: {
     title: string;
@@ -414,5 +431,20 @@ export type Dictionary = {
     categorySelectHint: string;
     categoryPanelEmpty: string;
     categoryClosePanel: string;
+    inquiries: string;
+    inquiriesText: string;
+    inquiryTypeContact: string;
+    inquiryTypeQuote: string;
+    inquiryStatusNew: string;
+    inquiryStatusRead: string;
+    inquiryMarkRead: string;
+    inquiryNoItems: string;
+    inquiryView: string;
+    inquiryPayload: string;
+    newInquiries: string;
+    proformasCount: string;
+    recentProformas: string;
+    inquiryDate: string;
+    inquiryMessage: string;
   };
 };

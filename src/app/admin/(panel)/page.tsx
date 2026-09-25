@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowUpRight, Database, Package, Pencil, Users } from "lucide-react";
-import { adminStats } from "@/app/admin/actions";
+import { ArrowUpRight, Database, FileText, Inbox, Package, Pencil, Users } from "lucide-react";
+import { adminListProformas, adminStats } from "@/app/admin/actions";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { ProformaAdminList } from "@/components/admin/ProformaAdminList";
 import { getServerI18n } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 
 export default async function AdminDashboardPage() {
   const stats = await adminStats();
+  const recentProformas = (await adminListProformas(5)).slice(0, 5);
   const { dict } = await getServerI18n();
 
   const cards = [
@@ -43,10 +45,24 @@ export default async function AdminDashboardPage() {
       icon: Users,
       tone: "bg-tech/10 text-tech",
     },
+    {
+      href: "/admin/proformas",
+      label: dict.admin.proformasCount,
+      value: stats.proformaCount,
+      icon: FileText,
+      tone: "bg-tech/10 text-tech",
+    },
+    {
+      href: "/admin/inquiries?status=new",
+      label: dict.admin.newInquiries,
+      value: stats.newInquiryCount,
+      icon: Inbox,
+      tone: "bg-home/10 text-home",
+    },
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <AdminPageHeader title={dict.admin.dashboard} description={dict.admin.dashboardText} />
         <div className="flex items-center gap-1.5 rounded-full border border-ink/10 bg-surface px-2.5 py-1 text-xs text-ink/55">
@@ -55,7 +71,7 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((card) => (
           <Link
             key={card.label}
@@ -73,6 +89,16 @@ export default async function AdminDashboardPage() {
           </Link>
         ))}
       </div>
+
+      <section className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-display text-xl">{dict.admin.recentProformas}</h2>
+          <Link href="/admin/proformas" className="text-sm font-semibold text-tech hover:underline">
+            {dict.admin.proformas}
+          </Link>
+        </div>
+        <ProformaAdminList items={recentProformas} />
+      </section>
     </div>
   );
 }

@@ -34,7 +34,7 @@ export function CustomerLoginForm() {
       setError(dict.customer.loginError);
       return;
     }
-    router.push("/katalog");
+    router.push("/profil");
     router.refresh();
   }
 

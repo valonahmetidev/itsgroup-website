@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export default async function LoginPage() {
   const profile = await getCustomerProfile();
-  if (profile) redirect("/katalog");
+  if (profile) redirect("/profil");
 
   return (
     <div className="shell py-16">

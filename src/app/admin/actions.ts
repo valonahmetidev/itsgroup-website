@@ -85,6 +85,14 @@ import {
 import { normalizeProductUnit } from "@/lib/units";
 import type { Product, CatalogSource, Source } from "@/lib/types";
 import type { D1Database } from "@/lib/db";
+import {
+  countNewInquiries,
+  getInquiryById,
+  listInquiries,
+  markInquiryRead,
+  type InquiryRow,
+  type InquiryStatus,
+} from "@/lib/inquiries";
 
 export type AdminProductListItem = {
   source: Source;
@@ -604,12 +612,28 @@ export async function adminStats() {
   const overrides = db ? await getOverrideMap(db) : new Map();
   const store = db ? await listAllStoreProducts(db) : [];
   const customers = db ? await listCustomers(db) : [];
+  let proformaCount = 0;
+  let proformaDraftCount = 0;
+  let newInquiryCount = 0;
+  if (db) {
+    try {
+      const proformas = await listProformas(db, 500);
+      proformaCount = proformas.length;
+      proformaDraftCount = proformas.filter((row) => row.status === "draft").length;
+      newInquiryCount = await countNewInquiries(db);
+    } catch {
+      // tables may be missing before migration
+    }
+  }
   return {
     catalogCount: products.length,
     overrideCount: overrides.size,
     customCount: store.length,
     storeCount: store.length,
     customerCount: customers.length,
+    proformaCount,
+    proformaDraftCount,
+    newInquiryCount,
     databaseReady: Boolean(db),
   };
 }
@@ -1193,6 +1217,61 @@ export async function adminAssignProductCategory(input: {
     categoryId: input.categoryId,
   });
   return { ok: true as const };
+}
+
+export type AdminInquirySummary = {
+  id: string;
+  type: InquiryRow["type"];
+  status: InquiryStatus;
+  name: string;
+  email: string | null;
+  createdAt: string;
+};
+
+function inquirySummary(row: InquiryRow): AdminInquirySummary {
+  return {
+    id: row.id,
+    type: row.type,
+    status: row.status,
+    name: row.name,
+    email: row.email,
+    createdAt: row.created_at,
+  };
+}
+
+export async function adminListInquiries(status: InquiryStatus | "all" = "all") {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return [] as AdminInquirySummary[];
+  try {
+    const rows = await listInquiries(db, { status });
+    return rows.map(inquirySummary);
+  } catch {
+    return [];
+  }
+}
+
+export async function adminGetInquiry(id: string) {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return null;
+  try {
+    return await getInquiryById(db, id);
+  } catch {
+    return null;
+  }
+}
+
+export async function adminMarkInquiryRead(id: string) {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return { ok: false as const, error: "database_unavailable" as const };
+  try {
+    await markInquiryRead(db, id);
+    return { ok: true as const };
+  } catch {
+    return { ok: false as const, error: "failed" as const };
+  }
 }
 
 export type { CustomerProductDiscountRow, CustomerRow };

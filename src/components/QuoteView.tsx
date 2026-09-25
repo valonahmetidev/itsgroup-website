@@ -15,6 +15,7 @@ import { site } from "@/lib/site";
 import { useResolvedName } from "@/lib/use-product-name";
 import { validateEmail, validateRequired } from "@/lib/form-validation";
 import { shareProformaViaWhatsApp } from "@/lib/whatsapp";
+import { submitQuoteInquiry } from "@/app/inquiry-actions";
 
 // Personalized/custom products are disabled for now.
 // import { createCustomProduct, fetchCustomProducts, removeCustomProduct } from "@/app/actions";
@@ -22,11 +23,13 @@ import { shareProformaViaWhatsApp } from "@/lib/whatsapp";
 // const LOCAL_CUSTOM_KEY = "itsgroup-custom-catalog";
 
 export function QuoteView() {
-  const { items, messages, removeItem, clearItems, setItemUnit } = useInquiry();
+  const { items, removeItem, clearItems, setItemUnit } = useInquiry();
   const { dict, locale } = useLocale();
   const { currency, rates, formatPrice } = useCurrency();
   const [customer, setCustomer] = useState<ProformaCustomer>({ name: "", phone: "", email: "", company: "" });
   const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
+  const [sendingRequest, setSendingRequest] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
   const [formError, setFormError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ProformaCustomer, string>>>({});
 
@@ -62,6 +65,45 @@ export function QuoteView() {
       currency,
       rates: rates.rates,
     });
+  }
+
+  async function sendRequest() {
+    if (items.length === 0 || sendingRequest) return;
+    if (!validateCustomer()) return;
+    setSendingRequest(true);
+    setSubmitSuccess(false);
+    try {
+      const lines = items.map((item) => ({
+        source: item.source,
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        unit: item.unit,
+        price: item.price,
+      }));
+      const result = await submitQuoteInquiry({
+        customer,
+        items: lines,
+        total: total > 0 ? total : null,
+      });
+      if (!result.ok) {
+        if (result.error === "validation" && result.fieldErrors) {
+          setFieldErrors(result.fieldErrors);
+          setFormError(dict.validation.fixFields);
+          return;
+        }
+        if (result.error === "rate_limited") {
+          setFormError(dict.validation.rateLimited);
+          return;
+        }
+        setFormError(dict.validation.databaseUnavailable);
+        return;
+      }
+      setFormError("");
+      setSubmitSuccess(true);
+    } finally {
+      setSendingRequest(false);
+    }
   }
 
   async function sendWhatsApp() {
@@ -158,10 +200,21 @@ export function QuoteView() {
             <p className="font-display text-xl">{dict.quote.total}</p>
             <p className="font-display text-2xl">{formatPrice(total > 0 ? total : null)}</p>
           </div>
+          {submitSuccess && (
+            <p className="rounded-2xl border border-tech/20 bg-tech/5 px-4 py-3 text-sm text-ink/80">{dict.quote.submitSuccess}</p>
+          )}
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
-              onClick={downloadPdf}
+              onClick={() => void sendRequest()}
+              disabled={!customer.name.trim() || sendingRequest}
+              className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-paper disabled:opacity-40"
+            >
+              {sendingRequest ? dict.quote.sendingRequest : dict.quote.sendRequest}
+            </button>
+            <button
+              type="button"
+              onClick={() => void downloadPdf()}
               disabled={!customer.name.trim()}
               className="rounded-full bg-tech px-5 py-2.5 text-sm font-semibold text-cream disabled:opacity-40"
             >
@@ -182,25 +235,6 @@ export function QuoteView() {
         </div>
       )}
 
-      {/*
-      Personalized/custom products — disabled for now.
-      <section className="mt-12 rounded-3xl border border-ink/10 bg-card p-6">...</section>
-      */}
-
-      {messages.length > 0 && (
-        <section className="mt-12">
-          <h2 className="font-display text-3xl">{dict.quote.messages}</h2>
-          <div className="mt-4 space-y-3">
-            {messages.map((message) => (
-              <article key={message.id} className="rounded-3xl bg-card p-5">
-                <p className="font-semibold">{message.name}</p>
-                <p className="text-sm text-ink/50">{[message.phone, message.email].filter(Boolean).join(" · ")}</p>
-                <p className="mt-2 leading-6">{message.message}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 }
