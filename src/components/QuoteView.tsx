@@ -15,6 +15,7 @@ import { site } from "@/lib/site";
 import { useResolvedName } from "@/lib/use-product-name";
 import { validateEmail, validatePhone, validateRequired } from "@/lib/form-validation";
 import { shareProformaViaWhatsApp } from "@/lib/whatsapp";
+import { customerSaveQuoteProforma } from "@/app/customer/actions";
 import { submitQuoteInquiry } from "@/app/inquiry-actions";
 
 // Personalized/custom products are disabled for now.
@@ -29,11 +30,19 @@ export function QuoteView() {
   const [customer, setCustomer] = useState<ProformaCustomer>({ name: "", phone: "", email: "", company: "" });
   const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
   const [sendingRequest, setSendingRequest] = useState(false);
+  const [savingProforma, setSavingProforma] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [formError, setFormError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ProformaCustomer, string>>>({});
 
-  function validateCustomer() {
+  function hasContactDetailsForSubmit() {
+    const nameErr = validateRequired(customer.name, dict);
+    const phoneErr = validatePhone(customer.phone, dict, true);
+    return !nameErr && !phoneErr;
+  }
+
+  function validateCustomerForSubmit() {
     const nameErr = validateRequired(customer.name, dict);
     const phoneErr = validatePhone(customer.phone, dict, true);
     const emailErr = validateEmail(customer.email, dict, false);
@@ -50,11 +59,12 @@ export function QuoteView() {
     return true;
   }
 
+  const canSubmitToItsGroup = hasContactDetailsForSubmit();
+
   const total = items.reduce((sum, item) => sum + (lineTotal(item) ?? 0), 0);
 
   async function downloadPdf() {
     if (items.length === 0) return;
-    if (!validateCustomer()) return;
     const { downloadProformaPdf } = await import("@/lib/proforma");
     await downloadProformaPdf({
       customer,
@@ -69,9 +79,39 @@ export function QuoteView() {
     });
   }
 
+  async function saveProforma() {
+    if (items.length === 0 || savingProforma) return;
+    setSaveSuccess(false);
+    setSavingProforma(true);
+    try {
+      const result = await customerSaveQuoteProforma({
+        customer,
+        items,
+        currency,
+      });
+      if (!result.ok) {
+        if (result.error === "unauthorized") {
+          setFormError(dict.quote.signInToSaveProforma);
+          return;
+        }
+        if (result.error === "validation" && result.fieldErrors) {
+          setFieldErrors(result.fieldErrors);
+          setFormError(dict.validation.fixFields);
+          return;
+        }
+        setFormError(dict.validation.databaseUnavailable);
+        return;
+      }
+      setFormError("");
+      setSaveSuccess(true);
+    } finally {
+      setSavingProforma(false);
+    }
+  }
+
   async function sendRequest() {
     if (items.length === 0 || sendingRequest) return;
-    if (!validateCustomer()) return;
+    if (!validateCustomerForSubmit()) return;
     setSendingRequest(true);
     setSubmitSuccess(false);
     try {
@@ -110,7 +150,7 @@ export function QuoteView() {
 
   async function sendWhatsApp() {
     if (items.length === 0 || sendingWhatsApp) return;
-    if (!validateCustomer()) return;
+    if (!validateCustomerForSubmit()) return;
     setSendingWhatsApp(true);
     try {
       await shareProformaViaWhatsApp({
@@ -146,7 +186,6 @@ export function QuoteView() {
               onChange={(event) => setCustomer((current) => ({ ...current, name: event.target.value }))}
               aria-invalid={Boolean(fieldErrors.name)}
               className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech aria-[invalid=true]:border-home"
-              required
             />
             {fieldErrors.name && <span className="text-sm text-home">{fieldErrors.name}</span>}
           </label>
@@ -157,7 +196,6 @@ export function QuoteView() {
               onChange={(event) => setCustomer((current) => ({ ...current, phone: event.target.value }))}
               aria-invalid={Boolean(fieldErrors.phone)}
               className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech aria-[invalid=true]:border-home"
-              required
             />
             {fieldErrors.phone && <span className="text-sm text-home">{fieldErrors.phone}</span>}
           </label>
@@ -208,11 +246,19 @@ export function QuoteView() {
           {submitSuccess && (
             <p className="rounded-2xl border border-tech/20 bg-tech/5 px-4 py-3 text-sm text-ink/80">{dict.quote.submitSuccess}</p>
           )}
+          {saveSuccess && (
+            <p className="rounded-2xl border border-tech/20 bg-tech/5 px-4 py-3 text-sm text-ink/80">
+              {dict.quote.proformaSaved}{" "}
+              <Link href="/profil" className="font-semibold text-tech hover:underline">
+                {dict.customer.profile}
+              </Link>
+            </p>
+          )}
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
               onClick={() => void sendRequest()}
-              disabled={!customer.name.trim() || sendingRequest}
+              disabled={!canSubmitToItsGroup || sendingRequest}
               className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-paper disabled:opacity-40"
             >
               {sendingRequest ? dict.quote.sendingRequest : dict.quote.sendRequest}
@@ -220,15 +266,22 @@ export function QuoteView() {
             <button
               type="button"
               onClick={() => void downloadPdf()}
-              disabled={!customer.name.trim()}
               className="rounded-full bg-tech px-5 py-2.5 text-sm font-semibold text-cream disabled:opacity-40"
             >
               {dict.quote.downloadPdf}
             </button>
             <button
               type="button"
+              onClick={() => void saveProforma()}
+              disabled={savingProforma}
+              className="rounded-full border border-tech/30 bg-surface px-5 py-2.5 text-sm font-semibold text-tech hover:border-tech disabled:opacity-40"
+            >
+              {savingProforma ? dict.quote.savingProforma : dict.quote.saveProforma}
+            </button>
+            <button
+              type="button"
               onClick={() => void sendWhatsApp()}
-              disabled={!customer.name.trim() || sendingWhatsApp}
+              disabled={!canSubmitToItsGroup || sendingWhatsApp}
               className="rounded-full border border-ink/10 bg-surface px-5 py-2.5 text-sm font-semibold hover:border-tech hover:text-tech disabled:opacity-40"
             >
               {sendingWhatsApp ? dict.quote.sendingWhatsApp : dict.quote.sendWhatsApp}

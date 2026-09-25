@@ -194,6 +194,10 @@ export type Dictionary = {
     total: string;
     proformaNote: string;
     downloadPdf: string;
+    saveProforma: string;
+    savingProforma: string;
+    proformaSaved: string;
+    signInToSaveProforma: string;
     sendWhatsApp: string;
     whatsAppInquiryTitle: string;
     whatsAppInquiryIntro: string;

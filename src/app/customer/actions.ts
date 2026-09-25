@@ -5,8 +5,13 @@ import { getCustomerSessionId, clearCustomerSession, setCustomerSession } from "
 import { getDbAsync } from "@/lib/cloudflare";
 import { getCustomerByEmail } from "@/lib/customers";
 import { getAuthSecretAsync, verifyPassword } from "@/lib/password";
-import { getProformaById, listProformasForCustomer } from "@/lib/proformas";
-import type { ProformaDocumentPayload } from "@/lib/proforma-document";
+import type { DisplayCurrency } from "@/lib/currency";
+import { validateEmail } from "@/lib/form-validation";
+import { getDictionary } from "@/lib/i18n";
+import { getServerI18n } from "@/lib/i18n/server";
+import { defaultProformaRenderOptions, type ProformaDocumentPayload, type ProformaLineItem } from "@/lib/proforma-document";
+import type { ProformaCustomer } from "@/lib/proforma-types";
+import { buildProformaDocumentNumber, getProformaById, insertProforma, listProformasForCustomer } from "@/lib/proformas";
 
 export type CustomerProformaSummary = {
   id: string;
@@ -68,6 +73,51 @@ export async function customerListProformas() {
     return { ok: true as const, items: rows.map((row) => summaryFromProforma(row)) };
   } catch {
     return { ok: false as const, error: "unavailable" as const, items: [] as CustomerProformaSummary[] };
+  }
+}
+
+export async function customerSaveQuoteProforma(input: {
+  customer: ProformaCustomer;
+  items: ProformaLineItem[];
+  currency: DisplayCurrency;
+}) {
+  const customerId = await getCustomerSessionId();
+  if (!customerId) return { ok: false as const, error: "unauthorized" as const };
+
+  if (!input.items.length) return { ok: false as const, error: "empty_cart" as const };
+
+  const { locale } = await getServerI18n();
+  const dict = getDictionary(locale);
+  const emailErr = validateEmail(input.customer.email, dict, false);
+  if (emailErr) {
+    return { ok: false as const, error: "validation" as const, fieldErrors: { email: emailErr } };
+  }
+
+  const db = await getDbAsync();
+  if (!db) return { ok: false as const, error: "unavailable" as const };
+
+  try {
+    const id = crypto.randomUUID();
+    const createdAt = new Date().toISOString();
+    const payload: ProformaDocumentPayload = {
+      customer: input.customer,
+      items: input.items,
+      locale,
+      currency: input.currency,
+      options: defaultProformaRenderOptions(),
+    };
+    const documentNo = await buildProformaDocumentNumber(db, input.customer);
+    await insertProforma(db, {
+      id,
+      documentNo,
+      customerId,
+      status: "draft",
+      payload,
+      createdAt,
+    });
+    return { ok: true as const, id, documentNo };
+  } catch {
+    return { ok: false as const, error: "save_failed" as const };
   }
 }
 
