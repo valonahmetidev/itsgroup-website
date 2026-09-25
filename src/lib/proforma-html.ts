@@ -228,7 +228,7 @@ export function buildProformaHtml({
         .header {
           background: #ffffff;
           color: #15181d;
-          padding: 18px 32px;
+          padding: 14px 32px;
           display: grid;
           grid-template-columns: minmax(0, 1fr) auto;
           gap: 24px;
@@ -240,12 +240,12 @@ export function buildProformaHtml({
           grid-template-rows: 1fr auto;
           gap: 6px;
           min-width: 0;
-          min-height: 96px;
+          min-height: 118px;
           align-self: stretch;
         }
         .brand-logo {
           height: 100%;
-          min-height: 72px;
+          min-height: 92px;
           width: auto;
           max-width: 100%;
           aspect-ratio: ${LOGO_ASPECT_RATIO};
