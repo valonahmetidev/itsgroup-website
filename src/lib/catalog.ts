@@ -154,10 +154,24 @@ export function categorySubtreeIds(source: Source, categoryId: number) {
 }
 
 /** Match static `productsInCategory` indexing (any assigned category in this subtree). */
-export function productInCategorySubtree(product: Product, source: Source, categoryId: number) {
+export function productInCategorySubtree(
+  product: Product,
+  source: Source,
+  categoryId: number,
+  subtree?: Set<number>,
+) {
   if (product.source !== source) return false;
+  const ids = subtree ?? categorySubtreeIds(source, categoryId);
+  return product.categories.some((category) => ids.has(category.id));
+}
+
+export function filterProductsInCategorySubtree(
+  products: Product[],
+  source: Source,
+  categoryId: number,
+) {
   const subtree = categorySubtreeIds(source, categoryId);
-  return product.categories.some((category) => subtree.has(category.id));
+  return products.filter((product) => productInCategorySubtree(product, source, categoryId, subtree));
 }
 
 function categoryHasProducts(category: Category) {

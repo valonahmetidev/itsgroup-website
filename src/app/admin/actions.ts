@@ -20,6 +20,7 @@ import {
   upsertProductCategoryOverride,
   type CategoryOverrideRow,
 } from "@/lib/catalog-category-overrides";
+import { revalidateCatalogCache } from "@/lib/revalidate-catalog";
 import {
   categories,
   categorySubtreeIds,
@@ -473,6 +474,7 @@ export async function adminSaveProduct(input: {
 
   if (input.reset) {
     await deleteProductOverride(db, input.source, input.productId);
+    revalidateCatalogCache();
     return { ok: true as const };
   }
 
@@ -511,6 +513,7 @@ export async function adminSaveProduct(input: {
     tags: serializeProductTags(parseTagsInput(input.tags)),
   });
 
+  revalidateCatalogCache();
   return { ok: true as const };
 }
 
@@ -559,6 +562,7 @@ export async function adminSaveStoreProduct(input: {
       unit,
       tags,
     });
+    revalidateCatalogCache();
     return { ok: true as const, id: input.id };
   }
 
@@ -579,6 +583,7 @@ export async function adminSaveStoreProduct(input: {
     tags,
     createdAt,
   });
+  revalidateCatalogCache();
   return { ok: true as const, id };
 }
 
@@ -587,6 +592,7 @@ export async function adminDeleteStoreProduct(id: string) {
   const db = getDb();
   if (!db) return { ok: false as const, error: "database_unavailable" };
   await deleteStoreProduct(db, id);
+  revalidateCatalogCache();
   return { ok: true as const };
 }
 
@@ -1178,6 +1184,7 @@ export async function adminSaveCategoryOverride(input: {
   if (!db) return { ok: false as const, error: "database_unavailable" };
   if (input.reset) {
     await deleteCategoryOverride(db, input.source, input.categoryId);
+    revalidateCatalogCache();
     return { ok: true as const };
   }
   const parentTrimmed = input.parentId.trim();
@@ -1192,6 +1199,7 @@ export async function adminSaveCategoryOverride(input: {
     parentId: parentId != null && Number.isFinite(parentId) ? parentId : null,
     hidden: input.hidden,
   });
+  revalidateCatalogCache();
   return { ok: true as const };
 }
 
@@ -1205,6 +1213,7 @@ export async function adminAssignProductCategory(input: {
   if (!db) return { ok: false as const, error: "database_unavailable" };
   if (input.categoryId == null) {
     await deleteProductCategoryOverride(db, input.source, input.productId);
+    revalidateCatalogCache();
     return { ok: true as const };
   }
   const category = getCategory(input.source, input.categoryId);
@@ -1216,6 +1225,7 @@ export async function adminAssignProductCategory(input: {
     productId: input.productId,
     categoryId: input.categoryId,
   });
+  revalidateCatalogCache();
   return { ok: true as const };
 }
 
