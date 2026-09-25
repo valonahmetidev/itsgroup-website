@@ -13,6 +13,9 @@ const PDF_WIDTH_PX = 794;
 const LOGO_NATURAL_WIDTH = 1558;
 const LOGO_NATURAL_HEIGHT = 785;
 const LOGO_ASPECT_RATIO = LOGO_NATURAL_WIDTH / LOGO_NATURAL_HEIGHT;
+/** Fixed height so html2canvas/jsPDF match the on-screen header band beside the meta card. */
+const HEADER_LOGO_HEIGHT_PX = 112;
+const HEADER_LOGO_WIDTH_PX = Math.round(HEADER_LOGO_HEIGHT_PX * LOGO_ASPECT_RATIO);
 
 const pdfLabels: Record<
   Locale,
@@ -228,34 +231,31 @@ export function buildProformaHtml({
         .header {
           background: #ffffff;
           color: #15181d;
-          padding: 14px 32px;
+          padding: 14px 32px 10px;
           display: grid;
           grid-template-columns: minmax(0, 1fr) auto;
           gap: 24px;
-          align-items: stretch;
+          align-items: center;
           border-bottom: 1px solid #e6e9ee;
         }
         .brand {
-          display: grid;
-          grid-template-rows: 1fr auto;
-          gap: 6px;
+          position: relative;
           min-width: 0;
-          min-height: 118px;
-          align-self: stretch;
+          padding-bottom: 14px;
         }
         .brand-logo {
-          height: 100%;
-          min-height: 92px;
-          width: auto;
+          width: ${HEADER_LOGO_WIDTH_PX}px;
+          height: ${HEADER_LOGO_HEIGHT_PX}px;
           max-width: 100%;
-          aspect-ratio: ${LOGO_ASPECT_RATIO};
-          justify-self: start;
           background: url("${escapeHtml(logoUrl)}") no-repeat left center;
           background-size: contain;
         }
         .brand .domain {
+          position: absolute;
+          left: 0;
+          bottom: 0;
           color: #4a515c;
-          font-size: 10px;
+          font-size: 9px;
           letter-spacing: 0.04em;
           line-height: 1.2;
         }
