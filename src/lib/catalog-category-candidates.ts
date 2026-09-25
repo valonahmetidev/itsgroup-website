@@ -13,12 +13,16 @@ export function productStorageKey(product: Pick<Product, "source" | "id">) {
   return `${product.source}-${product.id}`;
 }
 
-export function parseProductStorageKey(key: string): { source: CatalogSource; id: number } | null {
+export function parseProductStorageKey(
+  key: string,
+): { source: CatalogSource; id: number | string } | null {
   for (const source of CATALOG_SOURCES) {
     const prefix = `${source}-`;
     if (!key.startsWith(prefix)) continue;
-    const id = Number(key.slice(prefix.length));
-    if (Number.isFinite(id)) return { source, id };
+    const idPart = key.slice(prefix.length);
+    if (!idPart) return null;
+    const id = /^\d+$/.test(idPart) ? Number(idPart) : idPart;
+    return { source, id };
   }
   return null;
 }
@@ -30,24 +34,26 @@ export function collectCategoryBaseCandidates(
   ctx: CatalogOverrideContext,
 ) {
   const subtree = categorySubtreeIds(source, categoryId);
-  const keys = new Set<string>();
+  const seen = new Set<string>();
+  const products: Product[] = [];
 
   for (const product of productsInCategory(source, categoryId)) {
-    keys.add(productStorageKey(product));
+    const key = productStorageKey(product);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    products.push(product);
   }
 
   for (const [key, assignment] of ctx.categoryAssignments) {
     if (assignment.source !== source) continue;
     if (!subtree.has(assignment.category_id)) continue;
-    keys.add(key);
-  }
-
-  const products: Product[] = [];
-  for (const key of keys) {
+    if (seen.has(key)) continue;
     const parsed = parseProductStorageKey(key);
     if (!parsed || parsed.source !== source) continue;
     const product = getProduct(parsed.source, parsed.id);
-    if (product) products.push(product);
+    if (!product) continue;
+    seen.add(key);
+    products.push(product);
   }
 
   return { subtree, products };

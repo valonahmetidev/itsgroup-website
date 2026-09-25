@@ -230,10 +230,14 @@ export function searchProducts(query: string, source?: Source) {
   return searchAndRankProducts(pool, query, "mk");
 }
 
+function featuredProductEligible(product: Product, source: Source) {
+  if (product.source !== source || !product.image) return false;
+  if (source === "alevado") return true;
+  return product.price != null;
+}
+
 export function featuredProducts(source: Source, limit: number) {
-  const pool = products.filter(
-    (product) => product.source === source && product.image && product.price != null,
-  );
+  const pool = products.filter((product) => featuredProductEligible(product, source));
   const picked: Product[] = [];
   const seenCategories = new Set<number>();
 
