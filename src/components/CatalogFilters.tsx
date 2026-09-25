@@ -14,27 +14,6 @@ import {
 } from "@/lib/catalog-filters";
 import { cn } from "@/lib/cn";
 
-/** Let the catalog page scroll when the filter panel has nowhere left to scroll (or does not overflow). */
-function forwardFilterWheelToPage(event: React.WheelEvent<HTMLDivElement>) {
-  const node = event.currentTarget;
-  const maxScroll = node.scrollHeight - node.clientHeight;
-  if (maxScroll <= 1) {
-    window.scrollBy({ top: event.deltaY, left: 0 });
-    event.preventDefault();
-    return;
-  }
-
-  const scrollingDown = event.deltaY > 0;
-  const scrollingUp = event.deltaY < 0;
-  const atTop = node.scrollTop <= 0;
-  const atBottom = node.scrollTop + node.clientHeight >= node.scrollHeight - 1;
-
-  if ((scrollingDown && atBottom) || (scrollingUp && atTop)) {
-    window.scrollBy({ top: event.deltaY, left: 0 });
-    event.preventDefault();
-  }
-}
-
 type PillOption<T extends string> = { value: T; label: string };
 
 function FilterPills<T extends string>({
@@ -354,12 +333,12 @@ export function CatalogFilters({
 
       <aside
         className={cn(
-          "hidden lg:sticky lg:top-20 lg:block lg:max-h-[calc(100dvh-6rem)] lg:self-start",
+          "hidden lg:sticky lg:top-20 lg:z-10 lg:block lg:self-start",
           hideDesktopSidebar && "lg:hidden",
         )}
       >
-        <div className="flex max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-3xl border border-ink/10 bg-card shadow-sm">
-          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-ink/10 px-5 py-4">
+        <div className="rounded-3xl border border-ink/10 bg-card shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink/10 px-5 py-4">
             <h2 className="font-display text-xl">{dict.catalog.filters}</h2>
             {active && (
               <Link href={clearHref} className="text-sm font-semibold text-tech">
@@ -367,12 +346,7 @@ export function CatalogFilters({
               </Link>
             )}
           </div>
-          <div
-            className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5"
-            onWheel={forwardFilterWheelToPage}
-          >
-            {fields}
-          </div>
+          <div className="space-y-4 p-5">{fields}</div>
         </div>
       </aside>
     </>
