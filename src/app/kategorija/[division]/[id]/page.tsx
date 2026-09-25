@@ -1,19 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { CategoryView } from "@/components/CategoryView";
 import { categories, categoryTrail, getCategory, productsInCategory } from "@/lib/catalog";
 import { liveProductsInCategory } from "@/lib/catalog-live";
-import {
-  applyCatalogFilters,
-  getPriceBounds,
-  parseCatalogSearchParams,
-  sortCatalogProducts,
-} from "@/lib/catalog-filters";
 import { catalogDivisionToSource, isCatalogDivision, sourceToCatalogDivision } from "@/lib/divisions";
 import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
 import { getServerI18n, getServerLocale } from "@/lib/i18n/server";
-
-const PAGE_SIZE = 24;
 
 export function generateStaticParams() {
   return categories
@@ -25,6 +18,9 @@ export function generateStaticParams() {
 }
 
 export const dynamicParams = false;
+
+/** Filters/pagination use URL search params on the client so filter URLs stay static at the edge. */
+export const revalidate = 120;
 
 export async function generateMetadata({
   params,
@@ -43,10 +39,8 @@ export async function generateMetadata({
 
 export default async function CategoryPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ division: string; id: string }>;
-  searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const { division, id } = await params;
   if (!isCatalogDivision(division)) notFound();
@@ -57,15 +51,7 @@ export default async function CategoryPage({
   if (!category) notFound();
 
   const { locale } = await getServerI18n();
-  const parsed = parseCatalogSearchParams(await searchParams);
-  // Category URL already implies division; ignore stray `division` from /katalog navigation.
-  const query = { ...parsed, division: "all" as const };
-  const base = await liveProductsInCategory(category.source, category.id, locale);
-  const priceBounds = getPriceBounds(base);
-  const matched = sortCatalogProducts(applyCatalogFilters(base, query), query.sort);
-  const pages = Math.max(1, Math.ceil(matched.length / PAGE_SIZE));
-  const page = Math.min(query.page, pages);
-  const visible = matched.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const products = await liveProductsInCategory(category.source, category.id, locale);
   const trail = categoryTrail(category);
   const children = categories.filter(
     (item) =>
@@ -75,16 +61,8 @@ export default async function CategoryPage({
   );
 
   return (
-    <CategoryView
-      category={category}
-      trail={trail}
-      children={children}
-      query={query}
-      total={matched.length}
-      page={page}
-      pages={pages}
-      visible={visible}
-      priceBounds={priceBounds}
-    />
+    <Suspense fallback={<div className="shell py-10 text-sm text-ink/55">…</div>}>
+      <CategoryView category={category} trail={trail} children={children} products={products} />
+    </Suspense>
   );
 }
