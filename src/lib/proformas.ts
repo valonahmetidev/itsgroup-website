@@ -19,15 +19,28 @@ function todayKey() {
   return `${y}-${m}-${d}`;
 }
 
+export function mergeProformaCustomerWithAccount(
+  form: ProformaCustomer,
+  account: { name: string; email: string } | null | undefined,
+): ProformaCustomer {
+  if (!account) return form;
+  return {
+    name: form.name.trim() || account.name,
+    email: form.email.trim() || account.email,
+    phone: form.phone,
+    company: form.company,
+  };
+}
+
 export function proformaCustomerSlug(customer: ProformaCustomer) {
   const base = customer.company.trim() || customer.name.trim() || "Client";
-  const ascii = base
+  const slug = base
     .normalize("NFD")
     .replace(/\p{M}/gu, "")
-    .replace(/[^\w\s-]/g, "")
+    .replace(/[^\p{L}\p{N}\s-]/gu, "")
     .trim()
     .replace(/\s+/g, "-");
-  return (ascii || "Client").slice(0, 48);
+  return (slug || "Client").slice(0, 48);
 }
 
 async function nextDailyProformaNumber(db: D1Database) {
@@ -46,10 +59,18 @@ async function nextDailyProformaNumber(db: D1Database) {
   return next;
 }
 
-export async function buildProformaDocumentNumber(db: D1Database, customer: ProformaCustomer) {
+export async function buildProformaDocumentNumber(
+  db: D1Database,
+  customer: ProformaCustomer,
+  account?: { name: string } | null,
+) {
   const year = new Date().getFullYear();
   const dailyNumber = await nextDailyProformaNumber(db);
-  const slug = proformaCustomerSlug(customer);
+  const forSlug: ProformaCustomer = {
+    ...customer,
+    name: customer.name.trim() || customer.company.trim() || account?.name.trim() || "",
+  };
+  const slug = proformaCustomerSlug(forSlug);
   return `PF-ITS-${year}-${dailyNumber}-${slug}`;
 }
 

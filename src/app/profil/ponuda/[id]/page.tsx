@@ -20,6 +20,7 @@ export default async function CustomerProformaPage({ params }: { params: Promise
 
   return (
     <CustomerProformaDetail
+      proformaId={id}
       documentNo={result.documentNo}
       status={result.status}
       createdAt={result.createdAt}

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { CatalogImage } from "@/components/CatalogImage";
 import { lineTotal, QuoteQuantityControl, useInquiry, type InquiryItem } from "@/components/Inquiry";
@@ -15,7 +16,11 @@ import { site } from "@/lib/site";
 import { useResolvedName } from "@/lib/use-product-name";
 import { validateEmail, validatePhone, validateRequired } from "@/lib/form-validation";
 import { shareProformaViaWhatsApp } from "@/lib/whatsapp";
-import { customerSaveQuoteProforma } from "@/app/customer/actions";
+import {
+  customerGetProformaForDownload,
+  customerSaveQuoteProforma,
+  customerUpdateProforma,
+} from "@/app/customer/actions";
 import { submitQuoteInquiry } from "@/app/inquiry-actions";
 
 // Personalized/custom products are disabled for now.
@@ -24,15 +29,20 @@ import { submitQuoteInquiry } from "@/app/inquiry-actions";
 // const LOCAL_CUSTOM_KEY = "itsgroup-custom-catalog";
 
 export function QuoteView() {
-  const { items, removeItem, clearItems, setItemUnit } = useInquiry();
+  const searchParams = useSearchParams();
+  const proformaParam = searchParams.get("proforma");
+  const { items, removeItem, clearItems, setItemUnit, replaceItems } = useInquiry();
   const { dict, locale } = useLocale();
-  const { currency, rates, formatPrice } = useCurrency();
+  const { currency, rates, formatPrice, setCurrency } = useCurrency();
   const [customer, setCustomer] = useState<ProformaCustomer>({ name: "", phone: "", email: "", company: "" });
+  const [editingProformaId, setEditingProformaId] = useState<string | null>(null);
+  const [savedDocumentNo, setSavedDocumentNo] = useState<string | null>(null);
+  const [loadingProforma, setLoadingProforma] = useState(Boolean(proformaParam));
   const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
   const [sendingRequest, setSendingRequest] = useState(false);
   const [savingProforma, setSavingProforma] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveNotice, setSaveNotice] = useState<"created" | "updated" | null>(null);
   const [formError, setFormError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ProformaCustomer, string>>>({});
 
@@ -61,6 +71,29 @@ export function QuoteView() {
 
   const canSubmitToItsGroup = hasContactDetailsForSubmit();
 
+  useEffect(() => {
+    if (!proformaParam) return;
+    let cancelled = false;
+    setLoadingProforma(true);
+    void customerGetProformaForDownload(proformaParam).then((result) => {
+      if (cancelled) return;
+      if (!result.ok) {
+        setFormError(dict.validation.databaseUnavailable);
+        setLoadingProforma(false);
+        return;
+      }
+      setEditingProformaId(proformaParam);
+      setSavedDocumentNo(result.documentNo);
+      setCustomer(result.payload.customer);
+      replaceItems(result.payload.items);
+      setCurrency(result.payload.currency);
+      setLoadingProforma(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [proformaParam, dict.validation.databaseUnavailable, replaceItems, setCurrency]);
+
   const total = items.reduce((sum, item) => sum + (lineTotal(item) ?? 0), 0);
 
   async function downloadPdf() {
@@ -76,19 +109,28 @@ export function QuoteView() {
       siteDomain: site.domain,
       currency,
       rates: rates.rates,
+      documentNo: savedDocumentNo ?? undefined,
     });
   }
 
   async function saveProforma() {
     if (items.length === 0 || savingProforma) return;
-    setSaveSuccess(false);
+    setSaveNotice(null);
     setSavingProforma(true);
+    const isUpdate = Boolean(editingProformaId);
     try {
-      const result = await customerSaveQuoteProforma({
-        customer,
-        items,
-        currency,
-      });
+      const result = editingProformaId
+        ? await customerUpdateProforma({
+            id: editingProformaId,
+            customer,
+            items,
+            currency,
+          })
+        : await customerSaveQuoteProforma({
+            customer,
+            items,
+            currency,
+          });
       if (!result.ok) {
         if (result.error === "unauthorized") {
           setFormError(dict.quote.signInToSaveProforma);
@@ -99,11 +141,21 @@ export function QuoteView() {
           setFormError(dict.validation.fixFields);
           return;
         }
+        if (result.error === "not_found") {
+          setEditingProformaId(null);
+          setSavedDocumentNo(null);
+          setFormError(dict.validation.databaseUnavailable);
+          return;
+        }
         setFormError(dict.validation.databaseUnavailable);
         return;
       }
+      if (!isUpdate && result.documentNo) {
+        setEditingProformaId(result.id);
+        setSavedDocumentNo(result.documentNo);
+      }
       setFormError("");
-      setSaveSuccess(true);
+      setSaveNotice(isUpdate ? "updated" : "created");
     } finally {
       setSavingProforma(false);
     }
@@ -176,6 +228,15 @@ export function QuoteView() {
       <h1 className="mt-3 font-display text-5xl">{dict.quote.heading}</h1>
       <p className="mt-4 max-w-2xl text-lg text-ink/70">{dict.quote.text}</p>
 
+      {loadingProforma && (
+        <p className="mt-6 text-sm text-ink/60">{dict.quote.savingProforma}</p>
+      )}
+      {savedDocumentNo && !loadingProforma && (
+        <p className="mt-6 rounded-2xl border border-tech/20 bg-tech/5 px-4 py-3 text-sm text-ink/80">
+          {dict.quote.editingSavedProforma.replace("{documentNo}", savedDocumentNo)}
+        </p>
+      )}
+
       <section className="mt-10 rounded-3xl border border-ink/10 bg-card p-6">
         <h2 className="font-display text-2xl">{dict.quote.customerDetails}</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -246,9 +307,9 @@ export function QuoteView() {
           {submitSuccess && (
             <p className="rounded-2xl border border-tech/20 bg-tech/5 px-4 py-3 text-sm text-ink/80">{dict.quote.submitSuccess}</p>
           )}
-          {saveSuccess && (
+          {saveNotice && (
             <p className="rounded-2xl border border-tech/20 bg-tech/5 px-4 py-3 text-sm text-ink/80">
-              {dict.quote.proformaSaved}{" "}
+              {saveNotice === "updated" ? dict.quote.proformaUpdated : dict.quote.proformaSaved}{" "}
               <Link href="/profil" className="font-semibold text-tech hover:underline">
                 {dict.customer.profile}
               </Link>
@@ -276,7 +337,11 @@ export function QuoteView() {
               disabled={savingProforma}
               className="rounded-full border border-tech/30 bg-surface px-5 py-2.5 text-sm font-semibold text-tech hover:border-tech disabled:opacity-40"
             >
-              {savingProforma ? dict.quote.savingProforma : dict.quote.saveProforma}
+              {savingProforma
+                ? dict.quote.savingProforma
+                : editingProformaId
+                  ? dict.quote.updateProforma
+                  : dict.quote.saveProforma}
             </button>
             <button
               type="button"

@@ -44,6 +44,7 @@ type InquiryState = {
   setItemUnit: (key: string, unit: ProductUnit) => void;
   removeItem: (key: string) => void;
   clearItems: () => void;
+  replaceItems: (items: InquiryItem[]) => void;
 };
 
 const InquiryContext = createContext<InquiryState | null>(null);
@@ -128,6 +129,7 @@ export function InquiryProvider({ children }: { children: React.ReactNode }) {
       },
       removeItem: (key) => setItems((current) => current.filter((item) => item.key !== key)),
       clearItems: () => setItems([]),
+      replaceItems: (next) => setItems(next.map(normalizeItem)),
     }),
     [items],
   );

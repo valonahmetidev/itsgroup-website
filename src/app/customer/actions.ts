@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { getCustomerSessionId, clearCustomerSession, setCustomerSession } from "@/lib/customer-auth";
 import { getDbAsync } from "@/lib/cloudflare";
-import { getCustomerByEmail } from "@/lib/customers";
+import { getCustomerByEmail, getCustomerById } from "@/lib/customers";
 import { getAuthSecretAsync, verifyPassword } from "@/lib/password";
 import type { DisplayCurrency } from "@/lib/currency";
 import { validateEmail } from "@/lib/form-validation";
@@ -11,7 +11,15 @@ import { getDictionary } from "@/lib/i18n";
 import { getServerI18n } from "@/lib/i18n/server";
 import { defaultProformaRenderOptions, type ProformaDocumentPayload, type ProformaLineItem } from "@/lib/proforma-document";
 import type { ProformaCustomer } from "@/lib/proforma-types";
-import { buildProformaDocumentNumber, getProformaById, insertProforma, listProformasForCustomer } from "@/lib/proformas";
+import {
+  buildProformaDocumentNumber,
+  deleteProforma,
+  getProformaById,
+  insertProforma,
+  listProformasForCustomer,
+  mergeProformaCustomerWithAccount,
+  updateProforma,
+} from "@/lib/proformas";
 
 export type CustomerProformaSummary = {
   id: string;
@@ -97,16 +105,18 @@ export async function customerSaveQuoteProforma(input: {
   if (!db) return { ok: false as const, error: "unavailable" as const };
 
   try {
+    const account = await getCustomerById(db, customerId);
+    const customer = mergeProformaCustomerWithAccount(input.customer, account);
     const id = crypto.randomUUID();
     const createdAt = new Date().toISOString();
     const payload: ProformaDocumentPayload = {
-      customer: input.customer,
+      customer,
       items: input.items,
       locale,
       currency: input.currency,
       options: defaultProformaRenderOptions(),
     };
-    const documentNo = await buildProformaDocumentNumber(db, input.customer);
+    const documentNo = await buildProformaDocumentNumber(db, customer, account);
     await insertProforma(db, {
       id,
       documentNo,
@@ -118,6 +128,77 @@ export async function customerSaveQuoteProforma(input: {
     return { ok: true as const, id, documentNo };
   } catch {
     return { ok: false as const, error: "save_failed" as const };
+  }
+}
+
+export async function customerUpdateProforma(input: {
+  id: string;
+  customer: ProformaCustomer;
+  items: ProformaLineItem[];
+  currency: DisplayCurrency;
+}) {
+  const customerId = await getCustomerSessionId();
+  if (!customerId) return { ok: false as const, error: "unauthorized" as const };
+
+  if (!input.items.length) return { ok: false as const, error: "empty_cart" as const };
+
+  const { locale } = await getServerI18n();
+  const dict = getDictionary(locale);
+  const emailErr = validateEmail(input.customer.email, dict, false);
+  if (emailErr) {
+    return { ok: false as const, error: "validation" as const, fieldErrors: { email: emailErr } };
+  }
+
+  const db = await getDbAsync();
+  if (!db) return { ok: false as const, error: "unavailable" as const };
+
+  try {
+    const existing = await getProformaById(db, input.id);
+    if (!existing || existing.customerId !== customerId) {
+      return { ok: false as const, error: "not_found" as const };
+    }
+
+    const account = await getCustomerById(db, customerId);
+    const customer = mergeProformaCustomerWithAccount(input.customer, account);
+    const updatedAt = new Date().toISOString();
+    const payload: ProformaDocumentPayload = {
+      customer,
+      items: input.items,
+      locale: existing.locale,
+      currency: input.currency,
+      options: existing.options,
+    };
+
+    await updateProforma(db, {
+      id: input.id,
+      customerId,
+      status: existing.status,
+      payload,
+      updatedAt,
+    });
+
+    return { ok: true as const, id: input.id, documentNo: existing.documentNo };
+  } catch {
+    return { ok: false as const, error: "save_failed" as const };
+  }
+}
+
+export async function customerDeleteProforma(id: string) {
+  const customerId = await getCustomerSessionId();
+  if (!customerId) return { ok: false as const, error: "unauthorized" as const };
+
+  const db = await getDbAsync();
+  if (!db) return { ok: false as const, error: "unavailable" as const };
+
+  try {
+    const existing = await getProformaById(db, id);
+    if (!existing || existing.customerId !== customerId) {
+      return { ok: false as const, error: "not_found" as const };
+    }
+    await deleteProforma(db, id);
+    return { ok: true as const };
+  } catch {
+    return { ok: false as const, error: "delete_failed" as const };
   }
 }
 

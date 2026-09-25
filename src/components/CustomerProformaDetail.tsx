@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { customerDeleteProforma } from "@/app/customer/actions";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { useLocale } from "@/components/LocaleProvider";
 import { formatPrice } from "@/lib/format";
@@ -10,19 +12,24 @@ import { site } from "@/lib/site";
 import { unitLabel } from "@/lib/units";
 
 export function CustomerProformaDetail({
+  proformaId,
   documentNo,
   status,
   createdAt,
   payload,
 }: {
+  proformaId: string;
   documentNo: string;
   status: "draft" | "sent";
   createdAt: string;
   payload: ProformaDocumentPayload;
 }) {
+  const router = useRouter();
   const { dict, locale } = useLocale();
   const { rates } = useCurrency();
   const [downloading, setDownloading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState("");
 
   const total = payload.items.reduce((sum, item) => {
     if (item.price == null || item.price <= 0) return sum;
@@ -49,6 +56,23 @@ export function CustomerProformaDetail({
       });
     } finally {
       setDownloading(false);
+    }
+  }
+
+  async function onDelete() {
+    if (!window.confirm(dict.customer.deleteProformaConfirm)) return;
+    setDeleting(true);
+    setError("");
+    try {
+      const result = await customerDeleteProforma(proformaId);
+      if (!result.ok) {
+        setError(dict.validation.databaseUnavailable);
+        return;
+      }
+      router.push("/profil");
+      router.refresh();
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -82,14 +106,31 @@ export function CustomerProformaDetail({
           <span>{dict.quote.total}</span>
           <span>{formatPrice(total > 0 ? total : null, locale, dict)}</span>
         </div>
-        <button
-          type="button"
-          onClick={() => void onDownload()}
-          disabled={downloading}
-          className="mt-6 rounded-full bg-tech px-5 py-2.5 text-sm font-semibold text-cream disabled:opacity-40"
-        >
-          {downloading ? dict.quote.sendingRequest : dict.quote.downloadPdf}
-        </button>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link
+            href={`/ponuda?proforma=${proformaId}`}
+            className="rounded-full border border-tech/30 bg-surface px-5 py-2.5 text-sm font-semibold text-tech hover:border-tech"
+          >
+            {dict.customer.editProformaInQuote}
+          </Link>
+          <button
+            type="button"
+            onClick={() => void onDownload()}
+            disabled={downloading}
+            className="rounded-full bg-tech px-5 py-2.5 text-sm font-semibold text-cream disabled:opacity-40"
+          >
+            {downloading ? dict.quote.sendingRequest : dict.quote.downloadPdf}
+          </button>
+          <button
+            type="button"
+            onClick={() => void onDelete()}
+            disabled={deleting}
+            className="rounded-full border border-home/30 px-5 py-2.5 text-sm font-semibold text-home hover:border-home disabled:opacity-40"
+          >
+            {deleting ? dict.quote.savingProforma : dict.customer.deleteProforma}
+          </button>
+        </div>
+        {error && <p className="mt-4 text-sm text-home">{error}</p>}
       </section>
     </div>
   );
