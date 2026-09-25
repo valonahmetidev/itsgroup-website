@@ -1,4 +1,5 @@
 import { Hero } from "@/components/Hero";
+import { WebSiteJsonLd } from "@/components/WebSiteJsonLd";
 import { createPageMetadata } from "@/lib/page-metadata";
 
 export async function generateMetadata() {
@@ -48,6 +49,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <WebSiteJsonLd />
       <div className="flex flex-col lg:h-[calc(100dvh-4.75rem)] lg:overflow-hidden">
         <Hero techCount={totals.technology} homeCount={totals.home} shots={heroShots} />
         <HomeTicker items={ticker} />

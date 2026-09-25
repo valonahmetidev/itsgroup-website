@@ -20,7 +20,7 @@ const pages: Record<Locale, MetaPages> = {
     home: {
       title: "Почетна",
       description:
-        "ITS Group — технологија, безбедност и поврзување. Каталог за видеонадзор, мрежи, паметен дом и апарати за дом.",
+        "ITS Group Куманово — технологија, безбедност и поврзување. Официјален каталог itsgroup.mk: видеонадзор, мрежи, паметен дом и апарати за дом.",
     },
     technology: {
       title: "Технологија",
@@ -72,7 +72,7 @@ const pages: Record<Locale, MetaPages> = {
     home: {
       title: "Kryefaqja",
       description:
-        "ITS Group — teknologji, siguri dhe lidhshmëri. Katalog për CCTV, rrjete, smart home dhe pajisje shtëpiake.",
+        "ITS Group Kumanovë — teknologji, siguri dhe lidhshmëri. Katalogu zyrtar itsgroup.mk: CCTV, rrjete, smart home dhe pajisje shtëpiake.",
     },
     technology: {
       title: "Teknologji",
@@ -124,7 +124,7 @@ const pages: Record<Locale, MetaPages> = {
     home: {
       title: "Home",
       description:
-        "ITS Group — technology, security, and connectivity. Catalog for CCTV, networks, smart home, and appliances.",
+        "ITS Group Kumanovo, North Macedonia — technology, security, and connectivity. Official catalog at itsgroup.mk: CCTV, networks, smart home, and appliances.",
     },
     technology: {
       title: "Technology",
