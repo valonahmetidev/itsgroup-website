@@ -45,7 +45,7 @@ const pages: Record<Locale, MetaPages> = {
     },
     quote: {
       title: "Понуда",
-      description: "Листа за понуда со производи, PDF и испраќање преку WhatsApp.",
+      description: "Листа за понуда со производи, PDF профактура и испраќање преку WhatsApp.",
     },
     login: {
       title: "Најава",
@@ -53,7 +53,7 @@ const pages: Record<Locale, MetaPages> = {
     },
     profile: {
       title: "Мој профил",
-      description: "Ваши податоци, попусти и проформи од ITS Group.",
+      description: "Ваши податоци, попусти и профактури од ITS Group.",
     },
     privacy: {
       title: "Политика за приватност",
@@ -97,7 +97,7 @@ const pages: Record<Locale, MetaPages> = {
     },
     quote: {
       title: "Ofertë",
-      description: "Lista e ofertës me produkte, PDF dhe dërgim përmes WhatsApp.",
+      description: "Lista e ofertës me produkte, profaturë (PDF) dhe dërgim përmes WhatsApp.",
     },
     login: {
       title: "Hyrje",
@@ -105,7 +105,7 @@ const pages: Record<Locale, MetaPages> = {
     },
     profile: {
       title: "Profili im",
-      description: "Të dhënat, zbritjet dhe proformat nga ITS Group.",
+      description: "Të dhënat, zbritjet dhe profaturat nga ITS Group.",
     },
     privacy: {
       title: "Politika e privatësisë",
@@ -149,7 +149,7 @@ const pages: Record<Locale, MetaPages> = {
     },
     quote: {
       title: "Quote",
-      description: "Quote list with products, PDF export, and WhatsApp sharing.",
+      description: "Quote list with products, proforma invoice PDF, and WhatsApp sharing.",
     },
     login: {
       title: "Sign in",
@@ -157,7 +157,7 @@ const pages: Record<Locale, MetaPages> = {
     },
     profile: {
       title: "My profile",
-      description: "Your details, discounts, and proformas from ITS Group.",
+      description: "Your details, discounts, and proforma invoices from ITS Group.",
     },
     privacy: {
       title: "Privacy policy",
