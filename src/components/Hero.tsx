@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import { STORE_MAP_ID } from "@/lib/maps";
 import { site } from "@/lib/site";
@@ -117,26 +117,62 @@ export function Hero({
   );
 }
 
+const slideEase = [0.22, 1, 0.36, 1] as const;
+
+const heroSlideVariants = {
+  enter: (direction: number) => ({
+    opacity: 0,
+    x: direction >= 0 ? 28 : -28,
+    scale: 0.97,
+    filter: "blur(6px)",
+  }),
+  center: {
+    opacity: 1,
+    x: 0,
+    scale: 1,
+    filter: "blur(0px)",
+  },
+  exit: (direction: number) => ({
+    opacity: 0,
+    x: direction >= 0 ? -20 : 20,
+    scale: 0.985,
+    filter: "blur(4px)",
+  }),
+};
+
 function HeroSlideshow({ shots, fromCatalog }: { shots: HeroShot[]; fromCatalog: string }) {
-  const { dict, locale } = useLocale();
+  const { dict } = useLocale();
   const { formatPrice } = useCurrency();
+  const reduceMotion = useReducedMotion();
   const [deck, setDeck] = useState<HeroShot[]>([]);
   const [index, setIndex] = useState(0);
+  const [direction, setDirection] = useState(1);
   const [paused, setPaused] = useState(false);
   const shot = deck[index];
+
+  const slideTransition = reduceMotion
+    ? { duration: 0 }
+    : { duration: 0.62, ease: slideEase };
 
   useEffect(() => {
     setDeck(shots.slice(0, 24));
     setIndex(0);
+    setDirection(1);
   }, [shots]);
 
   useEffect(() => {
     if (paused || deck.length < 2) return;
     const timer = window.setInterval(() => {
+      setDirection(1);
       setIndex((current) => (current + 1) % deck.length);
     }, 4200);
     return () => window.clearInterval(timer);
   }, [paused, deck]);
+
+  function go(step: number) {
+    setDirection(step >= 0 ? 1 : -1);
+    setIndex((current) => (current + step + deck.length) % deck.length);
+  }
 
   if (!shot) {
     return <div className="rounded-[2rem] border border-ink/10 bg-card p-5 shadow-lift sm:p-6" aria-hidden />;
@@ -151,8 +187,6 @@ function HeroSlideshow({ shots, fromCatalog }: { shots: HeroShot[]; fromCatalog:
         : shot.source === "alevado"
           ? dict.catalog.alevadoProducts
           : "ITS Group";
-  const go = (step: number) => setIndex((current) => (current + step + deck.length) % deck.length);
-
   return (
     <div
       className="rounded-[2rem] border border-ink/10 bg-card p-3 shadow-lift sm:p-5"
@@ -166,22 +200,36 @@ function HeroSlideshow({ shots, fromCatalog }: { shots: HeroShot[]; fromCatalog:
         </p>
       </div>
 
-      <Link href={shot.href} className="mt-3 block">
-        <div className="flex aspect-[5/4] max-h-[min(34dvh,220px)] w-full items-center justify-center overflow-hidden rounded-2xl bg-white sm:max-h-[min(36dvh,260px)] lg:max-h-[280px]">
-          <CatalogImage
-            key={shot.src}
-            src={shot.src}
-            alt={shot.alt}
-            className="max-h-full max-w-full object-contain p-3"
-          />
-        </div>
-        <p className="mt-2 line-clamp-2 text-sm font-medium leading-5 sm:mt-3 sm:text-base sm:leading-6">
-          {shot.label}
-        </p>
-        <p className="mt-1 font-display text-base sm:text-lg">
-          {formatPrice(shot.price)}
-        </p>
-      </Link>
+      <div className="relative mt-3 overflow-hidden">
+        <AnimatePresence mode="wait" custom={direction} initial={false}>
+          <motion.div
+            key={`${shot.href}-${index}`}
+            custom={direction}
+            variants={heroSlideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={slideTransition}
+          >
+            <Link href={shot.href} className="block">
+              <div className="flex aspect-[5/4] max-h-[min(34dvh,220px)] w-full items-center justify-center overflow-hidden rounded-2xl bg-white sm:max-h-[min(36dvh,260px)] lg:max-h-[280px]">
+                <motion.div
+                  className="flex h-full w-full items-center justify-center"
+                  initial={reduceMotion ? false : { scale: 1.04 }}
+                  animate={{ scale: 1 }}
+                  transition={reduceMotion ? { duration: 0 } : { duration: 0.85, ease: slideEase }}
+                >
+                  <CatalogImage src={shot.src} alt={shot.alt} className="max-h-full max-w-full object-contain p-3" />
+                </motion.div>
+              </div>
+              <p className="mt-2 line-clamp-2 text-sm font-medium leading-5 sm:mt-3 sm:text-base sm:leading-6">
+                {shot.label}
+              </p>
+              <p className="mt-1 font-display text-base sm:text-lg">{formatPrice(shot.price)}</p>
+            </Link>
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
       <div className="mt-2 flex min-w-0 items-center gap-3 sm:mt-4">
         {deck.length <= 10 ? (
@@ -192,7 +240,10 @@ function HeroSlideshow({ shots, fromCatalog }: { shots: HeroShot[]; fromCatalog:
                 type="button"
                 aria-label={item.label}
                 aria-current={itemIndex === index ? "true" : undefined}
-                onClick={() => setIndex(itemIndex)}
+                onClick={() => {
+                  setDirection(itemIndex > index ? 1 : -1);
+                  setIndex(itemIndex);
+                }}
                 className={
                   itemIndex === index
                     ? "h-2 w-6 shrink-0 rounded-full bg-tech"
