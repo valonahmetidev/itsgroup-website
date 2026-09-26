@@ -20,7 +20,8 @@ const sizes = {
 export function Logo({ href = "/", className, imageClassName, variant = "header" }: LogoProps) {
   const { dict } = useLocale();
   const size = sizes[variant];
-  const face = (
+
+  const image = (
     <Image
       src="/its_logo.svg"
       alt=""
@@ -31,16 +32,33 @@ export function Logo({ href = "/", className, imageClassName, variant = "header"
     />
   );
 
-  const mark = (
-    <span className={cn("logo-stage inline-flex items-center", size.className, className)} aria-hidden>
-      <span className="logo-spin">
-        <span className="logo-face">{face}</span>
-        <span className="logo-face logo-face-back" aria-hidden>
-          {face}
+  const mark =
+    variant === "footer" ? (
+      <span className={cn("inline-flex items-center", size.className, className)}>{image}</span>
+    ) : (
+      <span
+        className={cn("logo-stage logo-stage--medallion inline-flex items-center", size.className, className)}
+        aria-hidden
+      >
+        <span className="logo-spin logo-medallion">
+          <span className="logo-face logo-face-front">{image}</span>
+          <span className="logo-face logo-face-back" aria-hidden>
+            <Image
+              src="/its_logo.svg"
+              alt=""
+              width={size.width}
+              height={size.height}
+              priority
+              className={cn("logo-mark-image logo-mark-image--back h-full w-full object-contain", imageClassName)}
+            />
+          </span>
+          <span className="logo-edge logo-edge-t" aria-hidden />
+          <span className="logo-edge logo-edge-r" aria-hidden />
+          <span className="logo-edge logo-edge-b" aria-hidden />
+          <span className="logo-edge logo-edge-l" aria-hidden />
         </span>
       </span>
-    </span>
-  );
+    );
 
   if (!href) return mark;
 
