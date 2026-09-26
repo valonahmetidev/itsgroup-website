@@ -20,6 +20,19 @@ export const site = {
   googleMapsUrl: "https://maps.app.goo.gl/hXhGAhDucfucx6HeA",
   /** Social profiles — strengthens Google entity match (Organization sameAs). */
   sameAs: ["https://www.facebook.com/Itsgroup24/"],
+  /**
+   * Defaults for Product `offers` (Merchant listings). Adjust to match your real policies.
+   * @see https://developers.google.com/search/docs/appearance/structured-data/merchant-listing
+   */
+  merchantListing: {
+    applicableCountry: "MK",
+    returnPolicyDays: 14,
+    returnPolicyUrl: "https://itsgroup.mk/terms",
+    shippingHandlingDaysMin: 1,
+    shippingHandlingDaysMax: 3,
+    shippingTransitDaysMin: 1,
+    shippingTransitDaysMax: 7,
+  },
 };
 
 export const sourceMeta = {

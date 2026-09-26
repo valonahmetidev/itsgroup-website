@@ -74,6 +74,7 @@ import {
   type ProformaStatus,
   proformaLineFromProduct,
 } from "@/lib/proforma-document";
+import { computeProformaTotals } from "@/lib/proforma-pricing";
 import {
   buildProformaDocumentNumber,
   deleteProforma,
@@ -834,10 +835,7 @@ export type AdminProformaSummary = {
 };
 
 function proformaSummaryFromRow(row: NonNullable<Awaited<ReturnType<typeof getProformaById>>>): AdminProformaSummary {
-  const total = row.items.reduce((sum, item) => {
-    if (item.price == null || item.price <= 0) return sum;
-    return sum + item.price * item.quantity;
-  }, 0);
+  const { total } = computeProformaTotals(row.items, row.options.generalDiscountPercent);
   return {
     id: row.id,
     documentNo: row.documentNo,

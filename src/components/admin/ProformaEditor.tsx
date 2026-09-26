@@ -13,7 +13,8 @@ import {
   type AdminProductListItem,
 } from "@/app/admin/actions";
 import type { CustomerRow } from "@/app/admin/actions";
-import { lineTotal } from "@/components/Inquiry";
+import { lineSubtotal, lineTotal } from "@/components/Inquiry";
+import { clampDiscountPercent, computeProformaTotals } from "@/lib/proforma-pricing";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { useLocale } from "@/components/LocaleProvider";
 import { cn } from "@/lib/cn";
@@ -84,7 +85,9 @@ export function ProformaEditor({
         : emptyProformaCustomer()),
   );
   const [items, setItems] = useState<ProformaLineItem[]>(initial?.items ?? []);
-  const [options, setOptions] = useState<ProformaRenderOptions>(initial?.options ?? adminDefaultOptions());
+  const [options, setOptions] = useState<ProformaRenderOptions>(
+    initial?.options ? { ...adminDefaultOptions(), ...initial.options } : adminDefaultOptions(),
+  );
   const [statusMessage, setStatusMessage] = useState("");
   const [saving, setSaving] = useState(false);
   const [query, setQuery] = useState("");
@@ -95,7 +98,10 @@ export function ProformaEditor({
   const [manualPrice, setManualPrice] = useState("");
 
   const docDict = useMemo(() => getDictionary(docLocale), [docLocale]);
-  const total = items.reduce((sum, item) => sum + (lineTotal(item) ?? 0), 0);
+  const totals = useMemo(
+    () => computeProformaTotals(items, options.generalDiscountPercent),
+    [items, options.generalDiscountPercent],
+  );
 
   useEffect(() => {
     setDocCurrency(uiCurrency);
@@ -356,20 +362,24 @@ export function ProformaEditor({
 
           <section className="rounded-2xl border border-ink/10 bg-card p-4">
             <h3 className="font-display text-lg">{dict.admin.proformaLines}</h3>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {proformaServicePresets.map((preset) => (
-                <button
-                  key={preset.key}
-                  type="button"
-                  onClick={() => addPresetLine(preset.key)}
-                  className="rounded-full border border-ink/10 px-3 py-1 text-xs font-semibold hover:border-tech hover:text-tech"
-                >
-                  + {proformaServicePresetLabel(preset.key, docLocale)}
-                </button>
-              ))}
-            </div>
 
-            <div className="mt-4 grid gap-2 sm:grid-cols-[minmax(0,1fr)_8rem_auto]">
+            <div className="mt-4 rounded-xl border border-dashed border-tech/25 bg-tech/5 p-4">
+              <h4 className="text-sm font-semibold text-ink">{dict.admin.proformaCustomLinesTitle}</h4>
+              <p className="mt-1 text-xs text-ink/55">{dict.admin.proformaCustomLinesHint}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {proformaServicePresets.map((preset) => (
+                  <button
+                    key={preset.key}
+                    type="button"
+                    onClick={() => addPresetLine(preset.key)}
+                    className="rounded-full border border-ink/10 bg-card px-3 py-1 text-xs font-semibold hover:border-tech hover:text-tech"
+                  >
+                    + {proformaServicePresetLabel(preset.key, docLocale)}
+                  </button>
+                ))}
+              </div>
+
+            <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_8rem_auto]">
               <input
                 value={manualName}
                 onChange={(event) => setManualName(event.target.value)}
@@ -392,6 +402,7 @@ export function ProformaEditor({
                 <Plus className="h-4 w-4" />
                 {dict.admin.proformaAddLine}
               </button>
+            </div>
             </div>
 
             <div className="relative mt-4">
@@ -444,7 +455,7 @@ export function ProformaEditor({
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
-                    <div className="mt-2 grid grid-cols-3 gap-2">
+                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
                       <label className="grid gap-0.5 text-xs">
                         <span className="text-ink/45">{dict.product.quantity}</span>
                         <input
@@ -488,7 +499,28 @@ export function ProformaEditor({
                           className="rounded-lg border border-ink/10 bg-surface px-2 py-1"
                         />
                       </label>
+                      <label className="grid gap-0.5 text-xs">
+                        <span className="text-ink/45">{dict.admin.proformaLineDiscount}</span>
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={item.discountPercent ?? ""}
+                          onChange={(event) => {
+                            const raw = event.target.value;
+                            updateItem(item.key, {
+                              discountPercent: raw === "" ? undefined : clampDiscountPercent(raw),
+                            });
+                          }}
+                          className="rounded-lg border border-ink/10 bg-surface px-2 py-1"
+                        />
+                      </label>
                     </div>
+                    {item.discountPercent && item.discountPercent > 0 && lineSubtotal(item) != null && (
+                      <p className="mt-1 text-xs text-ink/45 line-through">
+                        {formatPrice(lineSubtotal(item), docLocale, docDict)}
+                      </p>
+                    )}
                     <p className="mt-2 text-right text-sm font-semibold text-tech">
                       {formatPrice(lineTotal(item), docLocale, docDict)}
                     </p>
@@ -497,9 +529,27 @@ export function ProformaEditor({
               </ul>
             )}
 
-            <p className="mt-4 text-right font-display text-xl">
-              {dict.quote.total}: {formatPrice(total > 0 ? total : null, docLocale, docDict)}
-            </p>
+            <div className="mt-4 space-y-1 text-right text-sm">
+              {totals.subtotal > 0 && totals.lineDiscountAmount + totals.generalDiscountAmount > 0 && (
+                <p className="text-ink/55">
+                  {dict.admin.proformaSubtotal}: {formatPrice(totals.subtotal, docLocale, docDict)}
+                </p>
+              )}
+              {totals.lineDiscountAmount > 0 && (
+                <p className="text-home">
+                  −{formatPrice(totals.lineDiscountAmount, docLocale, docDict)} ({dict.admin.proformaLineDiscount})
+                </p>
+              )}
+              {totals.generalDiscountAmount > 0 && (
+                <p className="text-home">
+                  −{formatPrice(totals.generalDiscountAmount, docLocale, docDict)} ({dict.admin.proformaGeneralDiscount}{" "}
+                  {totals.generalDiscountPercent}%)
+                </p>
+              )}
+              <p className="font-display text-xl text-ink">
+                {dict.quote.total}: {formatPrice(totals.total > 0 ? totals.total : null, docLocale, docDict)}
+              </p>
+            </div>
           </section>
         </div>
 
@@ -550,6 +600,23 @@ export function ProformaEditor({
 
           <section className="rounded-2xl border border-ink/10 bg-card p-4">
             <h3 className="font-display text-lg">{dict.admin.proformaOptions}</h3>
+            <label className="mt-3 grid gap-1 text-sm">
+              <span>{dict.admin.proformaGeneralDiscount}</span>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                value={options.generalDiscountPercent ?? ""}
+                onChange={(event) => {
+                  const raw = event.target.value;
+                  patchOption(
+                    "generalDiscountPercent",
+                    raw === "" ? 0 : clampDiscountPercent(raw),
+                  );
+                }}
+                className="rounded-2xl border border-ink/10 bg-surface px-3 py-2"
+              />
+            </label>
             <div className="mt-3 space-y-2 text-sm">
               {(
                 [

@@ -429,6 +429,11 @@ export type Dictionary = {
     proformaAddLine: string;
     proformaAddPreset: string;
     proformaManualLine: string;
+    proformaCustomLinesTitle: string;
+    proformaCustomLinesHint: string;
+    proformaGeneralDiscount: string;
+    proformaLineDiscount: string;
+    proformaSubtotal: string;
     proformaDownloadPdf: string;
     proformaSave: string;
     proformaDelete: string;

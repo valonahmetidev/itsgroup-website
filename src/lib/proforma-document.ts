@@ -17,6 +17,8 @@ export type ProformaRenderOptions = {
   bankDetails: string;
   customerSignatureLabel: string;
   companySignatureLabel: string;
+  /** Document-wide discount applied after line discounts (0–100). */
+  generalDiscountPercent?: number;
 };
 
 export const defaultProformaRenderOptions = (): ProformaRenderOptions => ({
@@ -30,6 +32,7 @@ export const defaultProformaRenderOptions = (): ProformaRenderOptions => ({
   bankDetails: "",
   customerSignatureLabel: "",
   companySignatureLabel: "",
+  generalDiscountPercent: 0,
 });
 
 export type ProformaLineItem = InquiryItem;

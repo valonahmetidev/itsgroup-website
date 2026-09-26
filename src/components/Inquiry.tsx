@@ -35,6 +35,8 @@ export type InquiryItem = {
   quantity: number;
   unit: ProductUnit;
   unitLocked: boolean;
+  /** Line-level discount on this proforma row (0–100). */
+  discountPercent?: number;
 };
 
 type InquiryState = {
@@ -154,10 +156,7 @@ export function useInquiry() {
   return value;
 }
 
-export function lineTotal(item: InquiryItem) {
-  if (item.price == null || item.price <= 0) return null;
-  return item.price * item.quantity;
-}
+export { lineSubtotal, lineTotal } from "@/lib/proforma-pricing";
 
 export function QuantityControl({
   quantity,

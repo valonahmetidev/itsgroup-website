@@ -1,4 +1,5 @@
-import { lineTotal, type InquiryItem } from "@/components/Inquiry";
+import type { InquiryItem } from "@/components/Inquiry";
+import { computeProformaTotals, lineTotal } from "@/lib/proforma-pricing";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import type { DisplayCurrency, ExchangeRateSnapshot } from "@/lib/currency";
 import { formatPrice } from "@/lib/format";
@@ -29,6 +30,9 @@ const pdfLabels: Record<
     validUntil: string;
     poReference: string;
     bankDetails: string;
+    subtotal: string;
+    lineDiscounts: string;
+    generalDiscount: string;
   }
 > = {
   mk: {
@@ -41,6 +45,9 @@ const pdfLabels: Record<
     validUntil: "Валидна до",
     poReference: "Референца / PO",
     bankDetails: "Платежни податоци",
+    subtotal: "Меѓузбир",
+    lineDiscounts: "Попуст по ставки",
+    generalDiscount: "Општ попуст",
   },
   sq: {
     documentNo: "Nr. dokumenti",
@@ -52,6 +59,9 @@ const pdfLabels: Record<
     validUntil: "E vlefshme deri",
     poReference: "Referenca / PO",
     bankDetails: "Të dhënat bankare",
+    subtotal: "Nëntotali",
+    lineDiscounts: "Zbritje sipas rreshtave",
+    generalDiscount: "Zbritje e përgjithshme",
   },
   en: {
     documentNo: "Document no.",
@@ -63,6 +73,9 @@ const pdfLabels: Record<
     validUntil: "Valid until",
     poReference: "Reference / PO",
     bankDetails: "Bank details",
+    subtotal: "Subtotal",
+    lineDiscounts: "Line discounts",
+    generalDiscount: "General discount",
   },
 };
 
@@ -149,17 +162,20 @@ export function buildProformaHtml({
   const renderOptions = { ...defaultProformaRenderOptions(), ...options };
   const resolvedDocumentNo = documentNo?.trim() || createDocumentNumber();
   const dateValue = formatDocumentDate(locale, documentDate);
-  const total = items.reduce((sum, item) => sum + (lineTotal(item) ?? 0), 0);
+  const totals = computeProformaTotals(items, renderOptions.generalDiscountPercent);
+  const total = totals.total;
   const clientLines = customerLines(customer);
   const contactLines = [siteName, sitePhone, siteDomain].filter(Boolean);
 
   const rows = items
     .map((item, index) => {
       const line = lineTotal(item);
+      const discountNote =
+        item.discountPercent && item.discountPercent > 0 ? ` (−${item.discountPercent}%)` : "";
       return `
         <tr>
           <td class="num">${String(index + 1).padStart(2, "0")}</td>
-          <td class="name">${escapeHtml(item.name)}</td>
+          <td class="name">${escapeHtml(item.name + discountNote)}</td>
           <td class="qty">${escapeHtml(formatQuantity(item.quantity, item.unit, locale))}</td>
           <td class="price">${escapeHtml(priceLabel(line ?? item.price))}</td>
         </tr>`;
@@ -398,7 +414,9 @@ export function buildProformaHtml({
         }
         .total-wrap {
           display: flex;
-          justify-content: flex-end;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 8px;
           margin-top: 14px;
         }
         .total {
@@ -408,6 +426,18 @@ export function buildProformaHtml({
           padding: 14px 18px;
           width: 260px;
           max-width: 100%;
+        }
+        .total.sub {
+          background: #f4f7f6;
+          color: #1a1a1a;
+          padding: 10px 16px;
+        }
+        .total.sub .label {
+          color: rgba(26, 26, 26, 0.55);
+        }
+        .total.sub .value {
+          font-size: 14px;
+          color: #0f6e56;
         }
         .total .label {
           font-size: 8px;
@@ -546,6 +576,33 @@ export function buildProformaHtml({
             </table>
 
             <div class="total-wrap">
+              ${
+                totals.subtotal > 0 && (totals.lineDiscountAmount > 0 || totals.generalDiscountAmount > 0)
+                  ? `
+              <div class="total sub">
+                <div class="label">${escapeHtml(labels.subtotal)}</div>
+                <div class="value">${escapeHtml(priceLabel(totals.subtotal))}</div>
+              </div>`
+                  : ""
+              }
+              ${
+                totals.lineDiscountAmount > 0
+                  ? `
+              <div class="total sub">
+                <div class="label">${escapeHtml(labels.lineDiscounts)}</div>
+                <div class="value">−${escapeHtml(priceLabel(totals.lineDiscountAmount))}</div>
+              </div>`
+                  : ""
+              }
+              ${
+                totals.generalDiscountAmount > 0
+                  ? `
+              <div class="total sub">
+                <div class="label">${escapeHtml(labels.generalDiscount)} (${totals.generalDiscountPercent}%)</div>
+                <div class="value">−${escapeHtml(priceLabel(totals.generalDiscountAmount))}</div>
+              </div>`
+                  : ""
+              }
               <div class="total">
                 <div class="label">${escapeHtml(dict.quote.total)}</div>
                 <div class="value">${escapeHtml(priceLabel(total > 0 ? total : null))}</div>
