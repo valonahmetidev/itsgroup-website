@@ -105,6 +105,11 @@ export async function submitQuoteInquiry(input: {
   items: QuoteInquiryLine[];
   total: number | null;
 }) {
+  const customerId = await getCustomerSessionId();
+  if (!customerId) {
+    return { ok: false as const, error: "unauthorized" as const };
+  }
+
   const { locale } = await getServerI18n();
   const dict = getDictionary(locale);
   const fieldErrors = validateQuoteCustomer(dict, input.customer);
@@ -124,7 +129,6 @@ export async function submitQuoteInquiry(input: {
     return { ok: false as const, error: "rate_limited" as const };
   }
 
-  const customerId = await getCustomerSessionId();
   const id = crypto.randomUUID();
   const createdAt = new Date().toISOString();
   const payloadJson = JSON.stringify({

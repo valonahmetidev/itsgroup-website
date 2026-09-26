@@ -23,7 +23,7 @@ import { submitQuoteInquiry } from "@/app/inquiry-actions";
 // import type { CustomProductRow } from "@/lib/db";
 // const LOCAL_CUSTOM_KEY = "itsgroup-custom-catalog";
 
-export function QuoteView() {
+export function QuoteView({ customerLoggedIn = false }: { customerLoggedIn?: boolean }) {
   const { items, removeItem, clearItems, setItemUnit } = useInquiry();
   const { dict, locale } = useLocale();
   const { currency, rates, formatPrice } = useCurrency();
@@ -129,6 +129,10 @@ export function QuoteView() {
         total: total > 0 ? total : null,
       });
       if (!result.ok) {
+        if (result.error === "unauthorized") {
+          setFormError(dict.quote.signInToSendRequest);
+          return;
+        }
         if (result.error === "validation" && result.fieldErrors) {
           setFieldErrors(result.fieldErrors);
           setFormError(dict.validation.fixFields);
@@ -256,29 +260,42 @@ export function QuoteView() {
               </Link>
             </p>
           )}
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => void sendRequest()}
-              disabled={!canSubmitToItsGroup || sendingRequest}
-              className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-paper disabled:opacity-40"
-            >
-              {sendingRequest ? dict.quote.sendingRequest : dict.quote.sendRequest}
-            </button>
+          {customerLoggedIn && (
+            <section className="rounded-2xl border border-ink/10 bg-surface/60 px-4 py-4 sm:px-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-tech">{dict.quote.accountActionsTitle}</p>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm text-ink/70">{dict.quote.saveProformaHint}</p>
+                  <button
+                    type="button"
+                    onClick={() => void saveProforma()}
+                    disabled={savingProforma}
+                    className="w-full rounded-full border border-tech/30 bg-card px-5 py-2.5 text-sm font-semibold text-tech hover:border-tech disabled:opacity-40 sm:w-auto sm:self-start"
+                  >
+                    {savingProforma ? dict.quote.savingProforma : dict.quote.saveProforma}
+                  </button>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm text-ink/70">{dict.quote.sendRequestHint}</p>
+                  <button
+                    type="button"
+                    onClick={() => void sendRequest()}
+                    disabled={!canSubmitToItsGroup || sendingRequest}
+                    className="w-full rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-paper disabled:opacity-40 sm:w-auto sm:self-start"
+                  >
+                    {sendingRequest ? dict.quote.sendingRequest : dict.quote.sendRequest}
+                  </button>
+                </div>
+              </div>
+            </section>
+          )}
+          <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
               onClick={() => void downloadPdf()}
               className="rounded-full bg-tech px-5 py-2.5 text-sm font-semibold text-cream disabled:opacity-40"
             >
               {dict.quote.downloadPdf}
-            </button>
-            <button
-              type="button"
-              onClick={() => void saveProforma()}
-              disabled={savingProforma}
-              className="rounded-full border border-tech/30 bg-surface px-5 py-2.5 text-sm font-semibold text-tech hover:border-tech disabled:opacity-40"
-            >
-              {savingProforma ? dict.quote.savingProforma : dict.quote.saveProforma}
             </button>
             <button
               type="button"
@@ -292,6 +309,14 @@ export function QuoteView() {
               {dict.quote.clear}
             </button>
           </div>
+          {!customerLoggedIn && (
+            <p className="text-sm text-ink/55">
+              {dict.quote.guestActionsNote}{" "}
+              <Link href="/najava" className="font-semibold text-tech hover:underline">
+                {dict.customer.loginTitle}
+              </Link>
+            </p>
+          )}
         </div>
       )}
 

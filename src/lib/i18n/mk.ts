@@ -143,6 +143,7 @@ const mk: Dictionary = {
     addToProforma: "Додај на профактура",
     inQuote: "Во понудата",
     inProforma: "На профактурата",
+    viewQuoteList: "Отвори листа за понуда",
     quantity: "Количина",
     unit: "Единица",
     decreaseQuantity: "Намали количина",
@@ -184,6 +185,13 @@ const mk: Dictionary = {
     savingProforma: "Се зачувува…",
     proformaSaved: "Профактурата е зачувана. Најдете ја во профилот.",
     signInToSaveProforma: "Најавете се за да зачувувате профактури на вашата сметка.",
+    signInToSendRequest: "Најавете се за да испратите барање до ITS Group.",
+    accountActionsTitle: "За најавени корисници",
+    saveProformaHint:
+      "Зачувајте ја листата како профактура во профилот — можете да ја уредувате, повторно да преземете PDF или да додавате производи од каталогот.",
+    sendRequestHint:
+      "Испратете ја листата до ITS Group. Ја примаме во админ панелот и ќе ве контактираме за цена и достапност.",
+    guestActionsNote: "Без најава можете да преземете PDF или да испратите листата на WhatsApp.",
     updateProforma: "Зачувај промени на профактура",
     proformaUpdated: "Профактурата е ажурирана.",
     quoteListNote:

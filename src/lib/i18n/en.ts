@@ -143,6 +143,7 @@ const en: Dictionary = {
     addToProforma: "Add to proforma",
     inQuote: "In quote",
     inProforma: "On this proforma",
+    viewQuoteList: "Open quote list",
     quantity: "Quantity",
     unit: "Unit",
     decreaseQuantity: "Decrease quantity",
@@ -184,6 +185,13 @@ const en: Dictionary = {
     savingProforma: "Saving…",
     proformaSaved: "Proforma invoice saved. Open it from your profile.",
     signInToSaveProforma: "Sign in to save proforma invoices to your account.",
+    signInToSendRequest: "Sign in to send a request to ITS Group.",
+    accountActionsTitle: "For your account",
+    saveProformaHint:
+      "Save this list as a proforma invoice in your profile so you can edit it later, download PDFs again, or add more products from the catalog.",
+    sendRequestHint:
+      "Send this list to ITS Group. We receive it in our admin panel and will contact you about price and availability.",
+    guestActionsNote: "Without signing in you can download a PDF or send the list on WhatsApp.",
     updateProforma: "Update saved proforma invoice",
     proformaUpdated: "Proforma invoice updated.",
     quoteListNote:

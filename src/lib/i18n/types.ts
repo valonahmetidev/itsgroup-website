@@ -169,6 +169,7 @@ export type Dictionary = {
     inQuote: string;
     inProforma: string;
     addToProforma: string;
+    viewQuoteList: string;
     quantity: string;
     unit: string;
     decreaseQuantity: string;
@@ -210,6 +211,11 @@ export type Dictionary = {
     savingProforma: string;
     proformaSaved: string;
     signInToSaveProforma: string;
+    signInToSendRequest: string;
+    accountActionsTitle: string;
+    saveProformaHint: string;
+    sendRequestHint: string;
+    guestActionsNote: string;
     updateProforma: string;
     proformaUpdated: string;
     quoteListNote: string;

@@ -143,6 +143,7 @@ const sq: Dictionary = {
     addToProforma: "Shto në profaturë",
     inQuote: "Në ofertë",
     inProforma: "Në këtë profaturë",
+    viewQuoteList: "Hap listën e ofertës",
     quantity: "Sasia",
     unit: "Njësia",
     decreaseQuantity: "Zvogëlo sasinë",
@@ -184,6 +185,13 @@ const sq: Dictionary = {
     savingProforma: "Duke ruajtur…",
     proformaSaved: "Profatura u ruajt. Hapeni nga profili juaj.",
     signInToSaveProforma: "Hyni për të ruajtur profatura në llogarinë tuaj.",
+    signInToSendRequest: "Hyni për të dërguar kërkesën te ITS Group.",
+    accountActionsTitle: "Për llogarinë tuaj",
+    saveProformaHint:
+      "Ruajeni këtë listë si profaturë në profilin tuaj — mund ta redaktoni, të shkarkoni përsëri PDF ose të shtoni produkte nga katalogu.",
+    sendRequestHint:
+      "Dërgoni listën te ITS Group. E marrim në panelin e adminit dhe do t’ju kontaktojmë për çmim dhe disponueshmëri.",
+    guestActionsNote: "Pa u identifikuar mund të shkarkoni PDF ose ta dërgoni listën në WhatsApp.",
     updateProforma: "Përditëso profaturën e ruajtur",
     proformaUpdated: "Profatura u përditësua.",
     quoteListNote:
