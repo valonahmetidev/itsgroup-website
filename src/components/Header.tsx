@@ -17,11 +17,8 @@ import { SearchBox } from "@/components/SearchBox";
 import { useInquiry } from "@/components/Inquiry";
 import { cn } from "@/lib/cn";
 import { useCategoryLabel } from "@/lib/i18n/catalog-labels";
-import type { MenuColumn, MenuGroup } from "@/lib/types";
-
-function flatColumns(groups: MenuGroup[]) {
-  return groups.flatMap((group) => group.columns);
-}
+import { menuGroupTitle } from "@/lib/i18n/menu";
+import type { MenuColumn, MenuGroup, MenuLink } from "@/lib/types";
 
 export function Header({
   treco,
@@ -38,8 +35,6 @@ export function Header({
   const { dict } = useLocale();
   const categoryLabel = useCategoryLabel();
   const [mobile, setMobile] = useState(false);
-  const techCategories = flatColumns(treco);
-  const homeCategories = flatColumns(tremark);
 
   useEffect(() => {
     setMobile(false);
@@ -133,8 +128,8 @@ export function Header({
           <MobileMenu
             customer={customer}
             allLinks={allLinks}
-            techCategories={techCategories}
-            homeCategories={homeCategories}
+            techGroups={treco}
+            homeGroups={tremark}
             categoryLabel={categoryLabel}
             quoteCount={items.length}
             onClose={() => setMobile(false)}
@@ -148,17 +143,17 @@ export function Header({
 function MobileMenu({
   customer,
   allLinks,
-  techCategories,
-  homeCategories,
+  techGroups,
+  homeGroups,
   categoryLabel,
   quoteCount,
   onClose,
 }: {
   customer: { name: string; discountPercent: number | null } | null;
   allLinks: { href: string; label: string }[];
-  techCategories: MenuColumn[];
-  homeCategories: MenuColumn[];
-  categoryLabel: (category: MenuColumn) => string;
+  techGroups: MenuGroup[];
+  homeGroups: MenuGroup[];
+  categoryLabel: (category: MenuColumn | MenuLink) => string;
   quoteCount: number;
   onClose: () => void;
 }) {
@@ -256,14 +251,14 @@ function MobileMenu({
         <MobileCategorySection
           title={dict.nav.technology}
           href="/tehnologija"
-          categories={techCategories}
+          groups={techGroups}
           label={categoryLabel}
           onNavigate={onClose}
         />
         <MobileCategorySection
           title={dict.nav.home}
           href="/dom"
-          categories={homeCategories}
+          groups={homeGroups}
           label={categoryLabel}
           onNavigate={onClose}
         />
@@ -345,38 +340,120 @@ function MoreNav({
 function MobileCategorySection({
   title,
   href,
-  categories,
+  groups,
   label,
   onNavigate,
 }: {
   title: string;
   href: string;
-  categories: MenuColumn[];
-  label: (category: MenuColumn) => string;
+  groups: MenuGroup[];
+  label: (category: MenuColumn | MenuLink) => string;
   onNavigate: () => void;
 }) {
   const { dict } = useLocale();
 
   return (
-    <details className="group mt-3 rounded-2xl bg-paper">
+    <details className="group mt-3 rounded-2xl border border-ink/10 bg-paper">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-semibold [&::-webkit-details-marker]:hidden">
         <span>{title}</span>
         <ChevronDown className="h-4 w-4 shrink-0 text-ink/40 transition group-open:rotate-180" />
       </summary>
-      <div className="space-y-0.5 px-2 pb-3">
-        <Link href={href} onClick={onNavigate} className="mx-2 mb-2 block rounded-xl px-2 py-2 text-sm font-semibold text-tech">
+      <div className="space-y-1 border-t border-ink/10 px-2 pb-3 pt-2">
+        <Link href={href} onClick={onNavigate} className="mx-2 mb-1 block rounded-xl px-2 py-2 text-sm font-semibold text-tech">
           {dict.nav.allDivisions}
         </Link>
-        {categories.map((column) => (
-          <Link
-            key={column.href}
-            href={column.href}
-            onClick={onNavigate}
-            className="flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm hover:bg-surface"
-          >
-            <span className="min-w-0 leading-5">{label(column)}</span>
-            <span className="shrink-0 text-xs tabular-nums text-ink/40">{column.count}</span>
-          </Link>
+        {groups.map((group) => (
+          <details key={group.key} className="group/sub rounded-xl">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold hover:bg-surface [&::-webkit-details-marker]:hidden">
+              <span className="min-w-0">{menuGroupTitle(dict, group.key, group.title)}</span>
+              <ChevronDown className="h-3.5 w-3.5 shrink-0 text-ink/35 transition group-open/sub:rotate-180" />
+            </summary>
+            <div className="space-y-0.5 pb-2 pl-1">
+              {group.columns.map((column) => (
+                <MobileCategoryColumn key={column.href} column={column} label={label} onNavigate={onNavigate} />
+              ))}
+            </div>
+          </details>
+        ))}
+      </div>
+    </details>
+  );
+}
+
+function MobileCategoryColumn({
+  column,
+  label,
+  onNavigate,
+}: {
+  column: MenuColumn;
+  label: (category: MenuColumn | MenuLink) => string;
+  onNavigate: () => void;
+}) {
+  if (column.children.length === 0) {
+    return (
+      <Link
+        href={column.href}
+        onClick={onNavigate}
+        className="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm hover:bg-surface"
+      >
+        <span className="min-w-0 leading-5">{label(column)}</span>
+        <span className="shrink-0 text-xs tabular-nums text-ink/40">{column.count}</span>
+      </Link>
+    );
+  }
+
+  return (
+    <details className="group/col rounded-lg">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm hover:bg-surface [&::-webkit-details-marker]:hidden">
+        <span className="min-w-0 font-medium leading-5">{label(column)}</span>
+        <span className="flex shrink-0 items-center gap-1.5 text-xs text-ink/40">
+          <span className="tabular-nums">{column.count}</span>
+          <ChevronDown className="h-3 w-3 transition group-open/col:rotate-180" />
+        </span>
+      </summary>
+      <div className="space-y-0.5 border-l border-ink/10 py-1 pl-3">
+        {column.children.map((child) => (
+          <MobileCategoryLink key={child.href} link={child} label={label} onNavigate={onNavigate} depth={0} />
+        ))}
+      </div>
+    </details>
+  );
+}
+
+function MobileCategoryLink({
+  link,
+  label,
+  onNavigate,
+  depth,
+}: {
+  link: MenuLink;
+  label: (category: MenuColumn | MenuLink) => string;
+  onNavigate: () => void;
+  depth: number;
+}) {
+  if (link.children.length === 0) {
+    return (
+      <Link
+        href={link.href}
+        onClick={onNavigate}
+        className="flex items-center justify-between gap-2 rounded-lg py-1.5 pr-2 text-[13px] hover:text-tech"
+        style={{ paddingLeft: depth > 0 ? 12 : 8 }}
+      >
+        <span className="min-w-0">{label(link)}</span>
+        <span className="shrink-0 text-xs text-ink/35">{link.count}</span>
+      </Link>
+    );
+  }
+
+  return (
+    <details className="group/link rounded-lg" style={{ marginLeft: depth > 0 ? 8 : 0 }}>
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 py-1.5 pr-2 text-[13px] [&::-webkit-details-marker]:hidden">
+        <span className="min-w-0 font-medium">{label(link)}</span>
+        <ChevronDown className="h-3 w-3 shrink-0 text-ink/35 transition group-open/link:rotate-180" />
+      </summary>
+      <div className="border-l border-ink/10 pl-2">
+        {link.children.map((child) => (
+          <MobileCategoryLink key={child.href} link={child} label={label} onNavigate={onNavigate} depth={depth + 1} />
         ))}
       </div>
     </details>

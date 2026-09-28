@@ -8,10 +8,20 @@ export async function GET(request: Request) {
     return new Response("Forbidden", { status: 403 });
   }
 
+  let referer: string | undefined;
+  try {
+    const host = new URL(raw).hostname.toLowerCase();
+    if (host.includes("tremark.mk")) referer = "https://tremark.mk/";
+    else if (host.includes("treco.mk")) referer = "https://treco.mk/";
+  } catch {
+    /* ignore */
+  }
+
   const upstream = await fetch(raw, {
     headers: {
       "User-Agent": "ITS-Group-Catalog/1.0",
       Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+      ...(referer ? { Referer: referer } : {}),
     },
     redirect: "follow",
   });

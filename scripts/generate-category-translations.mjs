@@ -22,16 +22,35 @@ function hasProducts(category) {
   return productCategoryIds.has(`${category.source}:${category.id}`);
 }
 
+function subtreeIds(category) {
+  const ids = new Set([category.id]);
+  for (const child of childrenByParent.get(`${category.source}:${category.id}`) ?? []) {
+    for (const id of subtreeIds(child)) ids.add(id);
+  }
+  return ids;
+}
+
+function hasProductsInSubtree(category) {
+  const ids = subtreeIds(category);
+  for (const product of catalog.products) {
+    if (product.source !== category.source) continue;
+    for (const entry of product.categories) {
+      if (ids.has(entry.id)) return true;
+    }
+  }
+  return false;
+}
+
 function walk(category, depth) {
   const items = [category];
   if (depth <= 0) return items;
   for (const child of childrenByParent.get(`${category.source}:${category.id}`) ?? []) {
-    if (hasProducts(child)) items.push(...walk(child, depth));
+    if (hasProductsInSubtree(child)) items.push(...walk(child, depth));
   }
   return items;
 }
 
-const roots = catalog.categories.filter((category) => category.parent === 0 && hasProducts(category));
+const roots = catalog.categories.filter((category) => category.parent === 0 && hasProductsInSubtree(category));
 const menuCategories = new Map();
 for (const root of roots) {
   for (const category of walk(root, 3)) {

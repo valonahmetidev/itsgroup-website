@@ -18,6 +18,26 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "en": "Ajax Kit",
     "sq": "Komplet Ajax"
   },
+  "treco:aksesore-per-kompjuter-dhe-laptop": {
+    "mk": "Додатоци за компјутер и лаптоп",
+    "en": "Computer and laptop accessories",
+    "sq": "Aksesorë për kompjuter dhe laptop"
+  },
+  "treco:aksesore": {
+    "mk": "Aksesorë",
+    "en": "Aksesorë",
+    "sq": "Aksesorë"
+  },
+  "treco:maus": {
+    "mk": "Maus",
+    "en": "Maus",
+    "sq": "Maus"
+  },
+  "treco:maus-pa-kabllo": {
+    "mk": "Maus Pa Kabllo",
+    "en": "Maus Pa Kabllo",
+    "sq": "Maus Pa Kabllo"
+  },
   "treco:alarm": {
     "mk": "Аларм",
     "en": "Alarm",
@@ -388,6 +408,21 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "en": "Fiber Patch Panel",
     "sq": "Fiber Patch Panel"
   },
+  "treco:fiber-patch-panel-odf": {
+    "mk": "Fiber Patch Panel & ODF",
+    "en": "Fiber Patch Panel & ODF",
+    "sq": "Fiber Patch Panel & ODF"
+  },
+  "treco:fiber-patch-panel": {
+    "mk": "Fiber Patch Panel",
+    "en": "Fiber Patch Panel",
+    "sq": "Fiber Patch Panel"
+  },
+  "treco:odf": {
+    "mk": "ODF",
+    "en": "ODF",
+    "sq": "ODF"
+  },
   "treco:fiber-testers": {
     "mk": "Fiber Testers",
     "en": "Fiber Testers",
@@ -437,6 +472,21 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "mk": "Splitters",
     "en": "Splitters",
     "sq": "Splitters"
+  },
+  "treco:wdm-otn-pon": {
+    "mk": "WDM, OTN & PON",
+    "en": "WDM, OTN & PON",
+    "sq": "WDM, OTN & PON"
+  },
+  "treco:onu": {
+    "mk": "ONU",
+    "en": "ONU",
+    "sq": "ONU"
+  },
+  "treco:xpon-onu": {
+    "mk": "XPON ONU",
+    "en": "XPON ONU",
+    "sq": "XPON ONU"
   },
   "treco:gaming-monitor": {
     "mk": "Гејминг монитор",
@@ -583,6 +633,21 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "en": "Office Solution",
     "sq": "Zgjidhje zyre"
   },
+  "treco:pasjisje-rrjeti": {
+    "mk": "Мрежни уреди",
+    "en": "Network devices",
+    "sq": "Pajisje rrjeti"
+  },
+  "treco:cudy-pasjisje-rrjeti": {
+    "mk": "Cudy",
+    "en": "Cudy",
+    "sq": "Cudy"
+  },
+  "treco:usb-wireless-cudy-cudy-pasjisje-rrjeti": {
+    "mk": "Usb Wireless - Cudy",
+    "en": "Usb Wireless - Cudy",
+    "sq": "Usb Wireless - Cudy"
+  },
   "treco:rfid-card": {
     "mk": "RFID картички",
     "en": "RFID Card",
@@ -592,6 +657,26 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "mk": "RFID читач",
     "en": "RFID Reader",
     "sq": "Lexues RFID"
+  },
+  "treco:router-switch": {
+    "mk": "Рутери и комутатори",
+    "en": "Router & Switch",
+    "sq": "Routerë dhe switch"
+  },
+  "treco:industrial-switch": {
+    "mk": "Industrial Switch",
+    "en": "Industrial Switch",
+    "sq": "Industrial Switch"
+  },
+  "treco:power-over-ethernet-adapters": {
+    "mk": "Power Over Ethernet Adapters",
+    "en": "Power Over Ethernet Adapters",
+    "sq": "Power Over Ethernet Adapters"
+  },
+  "treco:unmanaged-switches": {
+    "mk": "Unmanaged Switches",
+    "en": "Unmanaged Switches",
+    "sq": "Unmanaged Switches"
   },
   "treco:satelite-reciver": {
     "mk": "Satellite Receiver",
@@ -837,6 +922,66 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "mk": "Managed Switch",
     "en": "Managed Switch",
     "sq": "Managed Switch"
+  },
+  "treco:inverter-ups": {
+    "mk": "UPS , Соларни инвертори , Батерии",
+    "en": "UPS, solar inverters, and batteries",
+    "sq": "UPS, invertorë diellorë dhe bateri"
+  },
+  "treco:battery": {
+    "mk": "Battery",
+    "en": "Battery",
+    "sq": "Battery"
+  },
+  "treco:electric-extension-cord": {
+    "mk": "Electric Extension Cord",
+    "en": "Electric Extension Cord",
+    "sq": "Electric Extension Cord"
+  },
+  "treco:inverters": {
+    "mk": "Inverters",
+    "en": "Inverters",
+    "sq": "Inverters"
+  },
+  "treco:off-grid-power-inverter": {
+    "mk": "Off Grid Power Inverter",
+    "en": "Off Grid Power Inverter",
+    "sq": "Off Grid Power Inverter"
+  },
+  "treco:off-grid-solar-inverter": {
+    "mk": "Off Grid Solar Inverter",
+    "en": "Off Grid Solar Inverter",
+    "sq": "Off Grid Solar Inverter"
+  },
+  "treco:on-off-grid-hybrid-solar-inverter": {
+    "mk": "On/Off Grid Hybrid Solar Inverter",
+    "en": "On/Off Grid Hybrid Solar Inverter",
+    "sq": "On/Off Grid Hybrid Solar Inverter"
+  },
+  "treco:solar-inverter-system": {
+    "mk": "Solar Inverter System",
+    "en": "Solar Inverter System",
+    "sq": "Solar Inverter System"
+  },
+  "treco:solar-panels-accessories": {
+    "mk": "Solar Panels & Accessories",
+    "en": "Solar Panels & Accessories",
+    "sq": "Solar Panels & Accessories"
+  },
+  "treco:ups": {
+    "mk": "UPS",
+    "en": "UPS",
+    "sq": "UPS"
+  },
+  "treco:3-3-phase-ups": {
+    "mk": "3-3 Phase UPS",
+    "en": "3-3 Phase UPS",
+    "sq": "3-3 Phase UPS"
+  },
+  "treco:line-interactive-ups": {
+    "mk": "Line Interactive UPS",
+    "en": "Line Interactive UPS",
+    "sq": "Line Interactive UPS"
   },
   "treco:usb-hubs": {
     "mk": "USB Hubs",
