@@ -170,6 +170,9 @@ export type Dictionary = {
     inProforma: string;
     addToProforma: string;
     viewQuoteList: string;
+    addedToQuoteToast: string;
+    addedToProformaToast: string;
+    toastDismiss: string;
     quantity: string;
     unit: string;
     decreaseQuantity: string;

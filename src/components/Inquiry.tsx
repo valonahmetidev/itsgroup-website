@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { QuoteAddedToast, type QuoteAddedToastPayload } from "@/components/QuoteAddedToast";
 import { Minus, Plus } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import { cn } from "@/lib/cn";
@@ -72,6 +73,19 @@ function normalizeItem(item: InquiryItem): InquiryItem {
 export function InquiryProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<InquiryItem[]>([]);
   const [ready, setReady] = useState(false);
+  const [toast, setToast] = useState<QuoteAddedToastPayload | null>(null);
+  const toastSeq = useRef(0);
+  const dismissToast = useCallback(() => setToast(null), []);
+
+  const notifyProductAdded = useCallback((input: { name: string; href: string; kind: "quote" | "proforma" }) => {
+    toastSeq.current += 1;
+    setToast({
+      id: toastSeq.current,
+      productName: input.name,
+      href: input.href,
+      kind: input.kind,
+    });
+  }, []);
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -100,11 +114,17 @@ export function InquiryProvider({ children }: { children: React.ReactNode }) {
         const unit = normalizeProductUnit(item.unit);
         const amount = clampQuantity(quantity, unit);
         const proformaId = getProformaCatalogTarget();
+        const displayName = item.name?.trim() || "Product";
         if (proformaId) {
           addToProformaDraft(
             proformaId,
             normalizeItem({ ...item, key, quantity: amount, unit, unitLocked }),
           );
+          notifyProductAdded({
+            name: displayName,
+            href: `/profil/ponuda/${proformaId}/uredi`,
+            kind: "proforma",
+          });
           return;
         }
         setItems((current) => {
@@ -123,6 +143,7 @@ export function InquiryProvider({ children }: { children: React.ReactNode }) {
           }
           return [...current, normalizeItem({ ...item, key, quantity: amount, unit, unitLocked })];
         });
+        notifyProductAdded({ name: displayName, href: "/ponuda", kind: "quote" });
       },
       setItemQuantity: (key, quantity) => {
         setItems((current) =>
@@ -144,10 +165,15 @@ export function InquiryProvider({ children }: { children: React.ReactNode }) {
       clearItems: () => setItems([]),
       replaceItems: (next) => setItems(next.map(normalizeItem)),
     }),
-    [items],
+    [items, notifyProductAdded],
   );
 
-  return <InquiryContext.Provider value={value}>{children}</InquiryContext.Provider>;
+  return (
+    <InquiryContext.Provider value={value}>
+      {children}
+      <QuoteAddedToast toast={toast} onDismiss={dismissToast} />
+    </InquiryContext.Provider>
+  );
 }
 
 export function useInquiry() {

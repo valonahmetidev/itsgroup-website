@@ -100,10 +100,15 @@ export function Header({
 
           <Link
             href="/ponuda"
-            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-surface"
+            className={cn(
+              "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-surface",
+              items.length > 0 && "btn-pulse text-tech",
+            )}
             aria-label={dict.nav.quote}
           >
-            <ClipboardList className="h-[1.125rem] w-[1.125rem]" />
+            <ClipboardList
+              className={cn("h-[1.125rem] w-[1.125rem]", items.length > 0 && "quote-icon-pulse")}
+            />
             {items.length > 0 && (
               <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-home px-0.5 text-[10px] font-bold text-white">
                 {items.length}
@@ -218,10 +223,13 @@ function MobileMenu({
         <Link
           href="/ponuda"
           onClick={onClose}
-          className="mb-4 flex items-center justify-between rounded-2xl border border-ink/10 bg-surface px-4 py-3 font-semibold transition hover:border-tech"
+          className={cn(
+            "mb-4 flex items-center justify-between rounded-2xl border border-ink/10 bg-surface px-4 py-3 font-semibold transition hover:border-tech",
+            quoteCount > 0 && "btn-pulse border-tech/25",
+          )}
         >
           <span className="flex items-center gap-2">
-            <ClipboardList className="h-5 w-5 text-tech" />
+            <ClipboardList className={cn("h-5 w-5 text-tech", quoteCount > 0 && "quote-icon-pulse")} />
             {dict.nav.quote}
           </span>
           {quoteCount > 0 && (

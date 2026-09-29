@@ -207,6 +207,20 @@ body:has(.admin-root) > main {
   animation: btn-pulse 1.6s ease-in-out infinite;
 }
 
+@keyframes quote-icon-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
+  }
+}
+
+.quote-icon-pulse {
+  animation: quote-icon-pulse 2s ease-in-out infinite;
+}
+
 .logo-stage {
   perspective: 720px;
   perspective-origin: 50% 45%;
@@ -340,6 +354,7 @@ body:has(.admin-root) > main {
   .search-modal,
   .search-panel,
   .btn-pulse,
+  .quote-icon-pulse,
   .logo-spin {
     animation: none;
   }
