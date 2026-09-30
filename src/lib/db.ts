@@ -218,32 +218,44 @@ export async function insertStoreProduct(
   },
 ) {
   const updatedAt = input.createdAt;
-  await db
-    .prepare(
-      `INSERT INTO custom_products (id, name, name_mk, name_en, name_sq, price, regular_price, note, excerpt_en, excerpt_sq, image_url, in_stock, hidden, unit, tags, category_id, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    )
-    .bind(
-      input.id,
-      input.nameMk,
-      input.nameMk,
-      input.nameEn,
-      input.nameSq,
-      input.price,
-      input.regularPrice,
-      input.note,
-      input.excerptEn,
-      input.excerptSq,
-      input.imageUrl,
-      input.inStock ? 1 : 0,
-      input.hidden ? 1 : 0,
-      input.unit,
-      input.tags,
-      input.categoryId,
-      input.createdAt,
-      updatedAt,
-    )
-    .run();
+  const bindValues = [
+    input.id,
+    input.nameMk,
+    input.nameMk,
+    input.nameEn,
+    input.nameSq,
+    input.price,
+    input.regularPrice,
+    input.note,
+    input.excerptEn,
+    input.excerptSq,
+    input.imageUrl,
+    input.inStock ? 1 : 0,
+    input.hidden ? 1 : 0,
+    input.unit,
+    input.tags,
+    input.categoryId,
+    input.createdAt,
+    updatedAt,
+  ];
+  try {
+    await db
+      .prepare(
+        `INSERT INTO custom_products (id, name, name_mk, name_en, name_sq, price, regular_price, note, excerpt_en, excerpt_sq, image_url, in_stock, hidden, unit, tags, category_id, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .bind(...bindValues)
+      .run();
+  } catch {
+    const legacyBind = [...bindValues.slice(0, 15), bindValues[16], bindValues[17]];
+    await db
+      .prepare(
+        `INSERT INTO custom_products (id, name, name_mk, name_en, name_sq, price, regular_price, note, excerpt_en, excerpt_sq, image_url, in_stock, hidden, unit, tags, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .bind(...legacyBind)
+      .run();
+  }
 }
 
 export async function updateStoreProduct(
@@ -266,47 +278,74 @@ export async function updateStoreProduct(
     categoryId: string | null;
   },
 ) {
-  await db
-    .prepare(
-      `UPDATE custom_products SET
-         name = ?,
-         name_mk = ?,
-         name_en = ?,
-         name_sq = ?,
-         price = ?,
-         regular_price = ?,
-         note = ?,
-         excerpt_en = ?,
-         excerpt_sq = ?,
-         image_url = ?,
-         in_stock = ?,
-         hidden = ?,
-         unit = ?,
-         tags = ?,
-         category_id = ?,
-         updated_at = ?
-       WHERE id = ?`,
-    )
-    .bind(
-      input.nameMk,
-      input.nameMk,
-      input.nameEn,
-      input.nameSq,
-      input.price,
-      input.regularPrice,
-      input.note,
-      input.excerptEn,
-      input.excerptSq,
-      input.imageUrl,
-      input.inStock ? 1 : 0,
-      input.hidden ? 1 : 0,
-      input.unit,
-      input.tags,
-      input.categoryId,
-      new Date().toISOString(),
-      input.id,
-    )
-    .run();
+  const updatedAt = new Date().toISOString();
+  const updateBind = [
+    input.nameMk,
+    input.nameMk,
+    input.nameEn,
+    input.nameSq,
+    input.price,
+    input.regularPrice,
+    input.note,
+    input.excerptEn,
+    input.excerptSq,
+    input.imageUrl,
+    input.inStock ? 1 : 0,
+    input.hidden ? 1 : 0,
+    input.unit,
+    input.tags,
+    input.categoryId,
+    updatedAt,
+    input.id,
+  ];
+  try {
+    await db
+      .prepare(
+        `UPDATE custom_products SET
+           name = ?,
+           name_mk = ?,
+           name_en = ?,
+           name_sq = ?,
+           price = ?,
+           regular_price = ?,
+           note = ?,
+           excerpt_en = ?,
+           excerpt_sq = ?,
+           image_url = ?,
+           in_stock = ?,
+           hidden = ?,
+           unit = ?,
+           tags = ?,
+           category_id = ?,
+           updated_at = ?
+         WHERE id = ?`,
+      )
+      .bind(...updateBind)
+      .run();
+  } catch {
+    await db
+      .prepare(
+        `UPDATE custom_products SET
+           name = ?,
+           name_mk = ?,
+           name_en = ?,
+           name_sq = ?,
+           price = ?,
+           regular_price = ?,
+           note = ?,
+           excerpt_en = ?,
+           excerpt_sq = ?,
+           image_url = ?,
+           in_stock = ?,
+           hidden = ?,
+           unit = ?,
+           tags = ?,
+           updated_at = ?
+         WHERE id = ?`,
+      )
+      .bind(...updateBind.filter((_, index) => index !== 14))
+      .run();
+  }
 }
 
 export async function deleteStoreProduct(db: D1Database, id: string) {

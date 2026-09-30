@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { adminDeleteStoreProduct, adminSaveStoreProduct, type AdminStoreCategoryPickerOption } from "@/app/admin/actions";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
@@ -39,6 +39,10 @@ export function StoreProductForm({
   const [categoryId, setCategoryId] = useState(row?.category_id ?? "");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setCategoryId(row?.category_id ?? "");
+  }, [row?.category_id]);
 
   async function save() {
     setLoading(true);

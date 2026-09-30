@@ -9,6 +9,19 @@ function optionLabel(depth: number, name: string) {
   return `${depth > 0 ? `${"— ".repeat(depth)}` : ""}${name}`;
 }
 
+export function catalogCategoryOptionValue(source: CatalogSource, id: number) {
+  return `${source}-${id}`;
+}
+
+export function parseCatalogCategoryOptionValue(raw: string, productSource: CatalogSource) {
+  if (!raw) return "";
+  const prefix = `${productSource}-`;
+  if (raw.startsWith(prefix)) return raw.slice(prefix.length);
+  const match = raw.match(/^(treco|tremark|alevado)-(\d+)$/);
+  if (match && match[1] === productSource) return match[2];
+  return raw;
+}
+
 function divisionLabel(
   division: CatalogSource,
   dict: ReturnType<typeof useLocale>["dict"],
@@ -41,7 +54,13 @@ export function ProductCategorySelectField({
           divisionLabel(productSource, dict),
         )}
       </p>
-      <select value={value} onChange={(event) => onChange(event.target.value)} className={className}>
+      <select
+        value={value ? catalogCategoryOptionValue(productSource, Number(value)) : ""}
+        onChange={(event) =>
+          onChange(parseCatalogCategoryOptionValue(event.target.value, productSource))
+        }
+        className={className}
+      >
         {groups.map((group) => (
           <optgroup
             key={`${group.division}-${group.menuKey}`}
@@ -50,7 +69,7 @@ export function ProductCategorySelectField({
             {group.options.map((option) => (
               <option
                 key={`${option.source}-${option.id}`}
-                value={String(option.id)}
+                value={catalogCategoryOptionValue(option.source, option.id)}
                 disabled={option.source !== productSource}
               >
                 {optionLabel(option.depth, option.name)}

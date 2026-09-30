@@ -567,10 +567,10 @@ export async function adminSaveStoreProduct(input: {
   const unit = parseAdminUnit(input.unit);
   const tags = serializeProductTags(parseTagsInput(input.tags));
   const categoryTrimmed = input.categoryId.trim();
-  let categoryId: string | null = categoryTrimmed || null;
+  const categoryId: string | null = categoryTrimmed || null;
   if (categoryId) {
     const category = await getStoreCategory(db, categoryId);
-    if (!category) categoryId = null;
+    if (!category) return { ok: false as const, error: "invalid_category" };
   }
 
   if (input.id) {

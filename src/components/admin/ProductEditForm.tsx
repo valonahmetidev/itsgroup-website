@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { adminAssignProductCategory, adminSaveProduct } from "@/app/admin/actions";
 import { CatalogImage } from "@/components/CatalogImage";
@@ -64,6 +64,10 @@ export function ProductEditForm({
     String(assignedCategoryId ?? catalogCategoryId ?? ""),
   );
 
+  useEffect(() => {
+    setCategoryId(String(assignedCategoryId ?? catalogCategoryId ?? ""));
+  }, [assignedCategoryId, catalogCategoryId]);
+
   async function save(reset = false) {
     setLoading(true);
     const result = await adminSaveProduct({
@@ -92,8 +96,8 @@ export function ProductEditForm({
 
     if (typeof product.id === "number" && categoryGroups.length > 0) {
       const selected = categoryId ? Number(categoryId) : null;
-      const defaultId = catalogCategoryId;
-      if (selected != null && selected !== defaultId) {
+      const baseline = storedCategoryAssignment ?? catalogCategoryId ?? null;
+      if (selected !== baseline) {
         const move = await adminAssignProductCategory({
           source: product.source as CatalogSource,
           productId: product.id,
@@ -108,12 +112,6 @@ export function ProductEditForm({
           );
           return;
         }
-      } else if (storedCategoryAssignment != null && selected === defaultId) {
-        await adminAssignProductCategory({
-          source: product.source as CatalogSource,
-          productId: product.id,
-          categoryId: null,
-        });
       }
     }
 
