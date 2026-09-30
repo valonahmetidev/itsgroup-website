@@ -298,10 +298,9 @@ export function CategoryAdmin({
     [router, source],
   );
 
-  const selectCategory = useCallback(
+  const loadCategoryDetail = useCallback(
     (node: AdminMenuCategoryNode) => {
       setSelected(node);
-      pushCategoryUrl(node.id);
       setNameMk(node.override?.name_mk ?? node.name);
       setNameEn(node.override?.name_en ?? "");
       setNameSq(node.override?.name_sq ?? "");
@@ -320,7 +319,15 @@ export function CategoryAdmin({
         setLoadingProducts(false);
       });
     },
-    [pushCategoryUrl, source],
+    [source],
+  );
+
+  const selectCategory = useCallback(
+    (node: AdminMenuCategoryNode) => {
+      loadCategoryDetail(node);
+      pushCategoryUrl(node.id);
+    },
+    [loadCategoryDetail, pushCategoryUrl],
   );
 
   const clearSelection = useCallback(() => {
@@ -332,10 +339,10 @@ export function CategoryAdmin({
   }, [pushCategoryUrl]);
 
   useEffect(() => {
-    if (!initialCategoryId || selected?.id === initialCategoryId) return;
+    if (!initialCategoryId) return;
     const match = flatWithDepth.find((entry) => entry.node.id === initialCategoryId);
-    if (match) selectCategory(match.node);
-  }, [flatWithDepth, initialCategoryId, selectCategory, selected?.id]);
+    if (match) loadCategoryDetail(match.node);
+  }, [flatWithDepth, initialCategoryId, loadCategoryDetail]);
 
   async function saveCategory(reset = false) {
     if (!selected) return;
