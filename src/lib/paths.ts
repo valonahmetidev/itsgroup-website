@@ -9,3 +9,7 @@ export function categoryHref(category: { source: Source; id: number }) {
 export function productHref(product: { source: Source; id: number | string }) {
   return `/proizvod/${product.id}`;
 }
+
+export function storeCategoryHref(slug: string) {
+  return `/katalog?division=its&category=${encodeURIComponent(slug)}`;
+}

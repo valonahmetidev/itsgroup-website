@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ExternalLink } from "lucide-react";
-import { adminDeleteStoreProduct, adminSaveStoreProduct } from "@/app/admin/actions";
+import { adminDeleteStoreProduct, adminSaveStoreProduct, type AdminStoreCategoryPickerOption } from "@/app/admin/actions";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
+import { StoreCategorySelectField } from "@/components/admin/StoreCategorySelectField";
 import { UnitSelectField } from "@/components/admin/UnitSelectField";
 import { useLocale } from "@/components/LocaleProvider";
 import type { StoreProductRow } from "@/lib/db";
@@ -13,7 +14,13 @@ import { TagsInputField } from "@/components/admin/TagsInputField";
 import { formatTagsInput, parseProductTags } from "@/lib/product-tags";
 import { productHref } from "@/lib/paths";
 
-export function StoreProductForm({ row }: { row?: StoreProductRow }) {
+export function StoreProductForm({
+  row,
+  categoryOptions = [],
+}: {
+  row?: StoreProductRow;
+  categoryOptions?: AdminStoreCategoryPickerOption[];
+}) {
   const router = useRouter();
   const { dict } = useLocale();
   const [nameMk, setNameMk] = useState(row?.name_mk ?? row?.name ?? "");
@@ -29,6 +36,7 @@ export function StoreProductForm({ row }: { row?: StoreProductRow }) {
   const [hidden, setHidden] = useState(row ? row.hidden === 1 : false);
   const [unit, setUnit] = useState(row?.unit ?? "");
   const [tags, setTags] = useState(formatTagsInput(parseProductTags(row?.tags)));
+  const [categoryId, setCategoryId] = useState(row?.category_id ?? "");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -49,6 +57,7 @@ export function StoreProductForm({ row }: { row?: StoreProductRow }) {
       hidden,
       unit,
       tags,
+      categoryId,
     });
     setLoading(false);
     if (!result.ok) {
@@ -142,6 +151,12 @@ export function StoreProductForm({ row }: { row?: StoreProductRow }) {
           </label>
         </div>
         <UnitSelectField value={unit} onChange={setUnit} />
+        <StoreCategorySelectField
+          options={categoryOptions}
+          value={categoryId}
+          onChange={setCategoryId}
+          className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech"
+        />
         <TagsInputField value={tags} onChange={setTags} />
         <label className="grid gap-1 text-sm">
           <span>{dict.admin.descriptionMk}</span>

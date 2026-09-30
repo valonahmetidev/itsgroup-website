@@ -14,6 +14,7 @@ export type StoreProductRow = {
   hidden: number;
   unit: string | null;
   tags: string | null;
+  category_id: string | null;
   created_at: string;
   updated_at: string | null;
 };
@@ -32,6 +33,9 @@ export type D1Database = {
 };
 
 const storeColumns =
+  "id, name, name_mk, name_en, name_sq, price, regular_price, note, excerpt_en, excerpt_sq, image_url, in_stock, hidden, unit, tags, category_id, created_at, updated_at";
+
+const preCategoryStoreColumns =
   "id, name, name_mk, name_en, name_sq, price, regular_price, note, excerpt_en, excerpt_sq, image_url, in_stock, hidden, unit, tags, created_at, updated_at";
 
 const preExcerptStoreColumns =
@@ -69,6 +73,7 @@ function toStoreProductRow(row: LegacyStoreProductRow): StoreProductRow {
     hidden: 0,
     unit: null,
     tags: null,
+    category_id: null,
     created_at: row.created_at,
     updated_at: null,
   };
@@ -100,10 +105,17 @@ async function queryStoreProducts(db: D1Database, limit: number, includeHidden: 
   } catch {
     try {
       const sql = includeHidden
+        ? `SELECT ${preCategoryStoreColumns} FROM custom_products ORDER BY updated_at DESC, created_at DESC LIMIT ?`
+        : `SELECT ${preCategoryStoreColumns} FROM custom_products WHERE hidden = 0 ORDER BY created_at DESC LIMIT ?`;
+      const { results } = await db.prepare(sql).bind(limit).all<StoreProductRow>();
+      return results.map((row) => ({ ...row, category_id: null }));
+    } catch {
+      try {
+      const sql = includeHidden
         ? `SELECT ${preExcerptStoreColumns} FROM custom_products ORDER BY updated_at DESC, created_at DESC LIMIT ?`
         : `SELECT ${preExcerptStoreColumns} FROM custom_products WHERE hidden = 0 ORDER BY created_at DESC LIMIT ?`;
       const { results } = await db.prepare(sql).bind(limit).all<StoreProductRow>();
-      return results.map((row) => ({ ...row, excerpt_en: null, excerpt_sq: null }));
+      return results.map((row) => ({ ...row, excerpt_en: null, excerpt_sq: null, category_id: null }));
     } catch {
       try {
         const sql = includeHidden
@@ -117,6 +129,7 @@ async function queryStoreProducts(db: D1Database, limit: number, includeHidden: 
         .bind(limit)
         .all<LegacyStoreProductRow>();
       return results.map(toStoreProductRow);
+      }
       }
     }
   }
@@ -139,10 +152,17 @@ export async function getStoreProduct(db: D1Database, id: string) {
   } catch {
     try {
       const row = await db
+        .prepare(`SELECT ${preCategoryStoreColumns} FROM custom_products WHERE id = ?`)
+        .bind(id)
+        .first<StoreProductRow>();
+      return row ? { ...row, category_id: null } : null;
+    } catch {
+      try {
+      const row = await db
         .prepare(`SELECT ${preExcerptStoreColumns} FROM custom_products WHERE id = ?`)
         .bind(id)
         .first<StoreProductRow>();
-      return row ? { ...row, excerpt_en: null, excerpt_sq: null } : null;
+      return row ? { ...row, excerpt_en: null, excerpt_sq: null, category_id: null } : null;
     } catch {
       try {
         const row = await db
@@ -157,7 +177,22 @@ export async function getStoreProduct(db: D1Database, id: string) {
         .first<LegacyStoreProductRow>();
       return row ? toStoreProductRow(row) : null;
       }
+      }
     }
+  }
+}
+
+export async function listStoreProductsInCategory(db: D1Database, categoryId: string, limit = 500) {
+  try {
+    const { results } = await db
+      .prepare(
+        `SELECT ${storeColumns} FROM custom_products WHERE category_id = ? ORDER BY updated_at DESC, created_at DESC LIMIT ?`,
+      )
+      .bind(categoryId, limit)
+      .all<StoreProductRow>();
+    return results;
+  } catch {
+    return [] as StoreProductRow[];
   }
 }
 
@@ -178,14 +213,15 @@ export async function insertStoreProduct(
     hidden: boolean;
     unit: string | null;
     tags: string | null;
+    categoryId: string | null;
     createdAt: string;
   },
 ) {
   const updatedAt = input.createdAt;
   await db
     .prepare(
-      `INSERT INTO custom_products (id, name, name_mk, name_en, name_sq, price, regular_price, note, excerpt_en, excerpt_sq, image_url, in_stock, hidden, unit, tags, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO custom_products (id, name, name_mk, name_en, name_sq, price, regular_price, note, excerpt_en, excerpt_sq, image_url, in_stock, hidden, unit, tags, category_id, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .bind(
       input.id,
@@ -203,6 +239,7 @@ export async function insertStoreProduct(
       input.hidden ? 1 : 0,
       input.unit,
       input.tags,
+      input.categoryId,
       input.createdAt,
       updatedAt,
     )
@@ -226,6 +263,7 @@ export async function updateStoreProduct(
     hidden: boolean;
     unit: string | null;
     tags: string | null;
+    categoryId: string | null;
   },
 ) {
   await db
@@ -245,6 +283,7 @@ export async function updateStoreProduct(
          hidden = ?,
          unit = ?,
          tags = ?,
+         category_id = ?,
          updated_at = ?
        WHERE id = ?`,
     )
@@ -263,6 +302,7 @@ export async function updateStoreProduct(
       input.hidden ? 1 : 0,
       input.unit,
       input.tags,
+      input.categoryId,
       new Date().toISOString(),
       input.id,
     )
@@ -298,6 +338,7 @@ export async function insertCustomProduct(
     hidden: false,
     unit: null,
     tags: null,
+    categoryId: null,
     createdAt: input.createdAt,
   });
 }

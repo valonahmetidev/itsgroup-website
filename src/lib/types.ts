@@ -36,6 +36,8 @@ export type Product = {
   inStock: boolean;
   stockQuantity?: number | null;
   categories: { id: number; name: string; slug: string }[];
+  /** ITS custom products only — not part of the static catalog tree. */
+  storeCategory?: { id: string; name: string; slug: string };
   excerpt: string;
   excerpts?: ProductNames;
   permalink: string;
@@ -85,4 +87,6 @@ export type CatalogQuery = {
   stock?: StockFilter;
   sale?: SaleFilter;
   priceType?: PriceTypeFilter;
+  /** ITS store category slug when browsing division=its. */
+  category?: string;
 };

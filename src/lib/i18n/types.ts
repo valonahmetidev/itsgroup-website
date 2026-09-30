@@ -451,6 +451,14 @@ export type Dictionary = {
     categories: string;
     categoriesTitle: string;
     categoriesText: string;
+    storeCategoriesText: string;
+    storeCategoryCreate: string;
+    storeCategoryDelete: string;
+    storeCategoryDeleteConfirm: string;
+    storeCategoryNone: string;
+    storeCategorySort: string;
+    storeCategoriesEmpty: string;
+    storeCategoriesSelectHint: string;
     editCategory: string;
     categoryProducts: string;
     moveToCategory: string;

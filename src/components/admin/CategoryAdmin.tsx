@@ -415,7 +415,7 @@ export function CategoryAdmin({
     <div className="lg:grid lg:h-[calc(100vh-7.5rem)] lg:grid-cols-[minmax(260px,320px)_minmax(0,1fr)] lg:gap-4">
       <div className="flex flex-col gap-3 rounded-2xl border border-ink/10 bg-card lg:min-h-0 lg:overflow-hidden">
         <div className="space-y-3 border-b border-ink/10 p-3">
-          <div className="flex gap-1 rounded-xl bg-surface p-1">
+          <div className="flex flex-wrap gap-1 rounded-xl bg-surface p-1">
             {sources.map((value) => (
               <Link
                 key={value}
@@ -428,6 +428,12 @@ export function CategoryAdmin({
                 {catalogSourceName(value)}
               </Link>
             ))}
+            <Link
+              href="/admin/categories?source=its"
+              className="flex-1 rounded-lg px-2 py-2 text-center text-xs font-semibold text-ink/60 transition hover:text-ink sm:text-sm"
+            >
+              {dict.admin.custom}
+            </Link>
           </div>
           <label className="relative block">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/35" />

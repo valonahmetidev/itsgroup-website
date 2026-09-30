@@ -7,6 +7,7 @@ import { ProductGrid } from "@/components/ProductCard";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { useLocale } from "@/components/LocaleProvider";
 import { categoryHref } from "@/lib/catalog";
+import { storeCategoryHref } from "@/lib/paths";
 import { customerDivisionLabel, customerDivisionTone } from "@/lib/division-display";
 import { salePercent } from "@/lib/format";
 import { stockAvailabilityLabel } from "@/lib/stock-label";
@@ -106,8 +107,20 @@ export function ProductView({
           {product.types && product.types.length > 0 && <ProductTypesTable types={product.types} />}
           {product.tags && product.tags.length > 0 && <ProductTags tags={product.tags} className="mt-6" />}
           <div className="mt-6 flex flex-wrap gap-2">
+            {product.storeCategory && (
+              <Link
+                href={storeCategoryHref(product.storeCategory.slug)}
+                className="rounded-full bg-surface px-3 py-1 text-sm hover:text-tech"
+              >
+                {product.storeCategory.name}
+              </Link>
+            )}
             {product.categories.map((item) => (
-              <Link key={item.id} href={categoryHref({ source: product.source, id: item.id })} className="rounded-full bg-surface px-3 py-1 text-sm hover:text-tech">
+              <Link
+                key={item.id}
+                href={categoryHref({ source: product.source, id: item.id })}
+                className="rounded-full bg-surface px-3 py-1 text-sm hover:text-tech"
+              >
                 {categoryLabel({ source: product.source, slug: item.slug, name: item.name })}
               </Link>
             ))}

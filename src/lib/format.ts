@@ -89,6 +89,7 @@ export function catalogSearchParams(query: CatalogQuery | ParsedCatalogQuery = {
   if (query.stock && query.stock !== "all") params.set("stock", query.stock);
   if (query.sale && query.sale !== "all") params.set("sale", query.sale);
   if (query.priceType && query.priceType !== "all") params.set("priceType", query.priceType);
+  if ("category" in query && query.category) params.set("category", query.category);
   return params;
 }
 

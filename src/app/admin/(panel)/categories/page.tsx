@@ -1,6 +1,7 @@
-import { adminGetCategoryMenu } from "@/app/admin/actions";
+import { adminGetCategoryMenu, adminGetStoreCategoryTree } from "@/app/admin/actions";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { CategoryAdmin } from "@/components/admin/CategoryAdmin";
+import { StoreCategoryAdmin } from "@/components/admin/StoreCategoryAdmin";
 import { getDictionary } from "@/lib/i18n";
 import { LOCALE_COOKIE, isLocale } from "@/lib/i18n";
 import { isCatalogSource } from "@/lib/catalog";
@@ -19,11 +20,23 @@ export default async function AdminCategoriesPage({
   const { source: sourceParam, category: categoryParam } = await searchParams;
   const initialCategoryId =
     categoryParam && /^\d+$/.test(categoryParam) ? Number(categoryParam) : null;
+  const isStore = sourceParam === "its";
   const source = sourceParam && isCatalogSource(sourceParam) ? sourceParam : "tremark";
   const cookieStore = await cookies();
   const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value;
   const locale = cookieLocale && isLocale(cookieLocale) ? cookieLocale : "mk";
   const dict = getDictionary(locale);
+
+  if (isStore) {
+    const tree = await adminGetStoreCategoryTree();
+    return (
+      <div className="space-y-4">
+        <AdminPageHeader title={dict.admin.categoriesTitle} description={dict.admin.storeCategoriesText} />
+        <StoreCategoryAdmin tree={tree} />
+      </div>
+    );
+  }
+
   const groups = await adminGetCategoryMenu(source);
 
   return (

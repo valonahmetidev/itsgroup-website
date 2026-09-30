@@ -21,12 +21,20 @@ export default async function AdminCustomPage() {
         title={dict.admin.custom}
         description={dict.admin.customText}
         actions={
-          <Link
-            href="/admin/products/its/new"
-            className="rounded-full bg-tech px-4 py-1.5 text-sm font-semibold text-cream"
-          >
-            {dict.admin.addCustom}
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/admin/categories?source=its"
+              className="rounded-full border border-ink/10 bg-surface px-4 py-1.5 text-sm font-semibold"
+            >
+              {dict.admin.categoriesTitle}
+            </Link>
+            <Link
+              href="/admin/products/its/new"
+              className="rounded-full bg-tech px-4 py-1.5 text-sm font-semibold text-cream"
+            >
+              {dict.admin.addCustom}
+            </Link>
+          </div>
         }
       />
 

@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { adminGetProduct, adminGetStoreProduct, adminProductCategoryPickerForProduct } from "@/app/admin/actions";
+import {
+  adminGetProduct,
+  adminGetStoreProduct,
+  adminListStoreCategoryPickerOptions,
+  adminProductCategoryPickerForProduct,
+} from "@/app/admin/actions";
 import { ProductEditForm } from "@/components/admin/ProductEditForm";
 import { StoreProductForm } from "@/components/admin/StoreProductForm";
 import { isCatalogSource, isSource } from "@/lib/catalog";
@@ -19,12 +24,13 @@ export default async function AdminProductEditPage({
   if (!isSource(source)) notFound();
 
   if (source === "its") {
+    const categoryOptions = await adminListStoreCategoryPickerOptions();
     if (id === "new") {
-      return <StoreProductForm />;
+      return <StoreProductForm categoryOptions={categoryOptions} />;
     }
     const data = await adminGetStoreProduct(id);
     if (!data) notFound();
-    return <StoreProductForm row={data.row} />;
+    return <StoreProductForm row={data.row} categoryOptions={categoryOptions} />;
   }
 
   if (!isCatalogSource(source)) notFound();

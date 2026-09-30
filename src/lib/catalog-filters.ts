@@ -9,6 +9,8 @@ export type PriceTypeFilter = "all" | "priced" | "on-request";
 export type ParsedCatalogQuery = {
   q: string;
   division: CatalogDivision | "all";
+  /** ITS store category slug (division=its). */
+  category: string;
   sort: NonNullable<CatalogQuery["sort"]>;
   page: number;
   min?: number;
@@ -29,6 +31,7 @@ type SearchParams = {
   stock?: string;
   sale?: string;
   priceType?: string;
+  category?: string;
 };
 
 function parseNumber(value?: string) {
@@ -67,6 +70,7 @@ export function parseCatalogSearchParams(search: SearchParams): ParsedCatalogQue
   return {
     q: search.q?.trim() ?? "",
     division,
+    category: search.category?.trim() ?? "",
     sort,
     page: Math.max(1, Number(search.page) || 1),
     min,
@@ -79,6 +83,7 @@ export function parseCatalogSearchParams(search: SearchParams): ParsedCatalogQue
 
 export function hasActiveFilters(query: ParsedCatalogQuery) {
   return (
+    Boolean(query.category) ||
     query.stock !== "all" ||
     query.sale !== "all" ||
     query.priceType !== "all" ||
@@ -152,6 +157,11 @@ export function applyCatalogFilters(products: Product[], query: ParsedCatalogQue
       if (product.price == null || product.price <= 0) return false;
       if (min !== undefined && product.price < min) return false;
       if (max !== undefined && product.price > max) return false;
+    }
+
+    if (query.category) {
+      const slug = product.storeCategory?.slug ?? product.categories[0]?.slug;
+      if (!slug || slug !== query.category) return false;
     }
 
     return true;

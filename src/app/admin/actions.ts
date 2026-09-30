@@ -46,9 +46,23 @@ import {
   getStoreProduct,
   insertStoreProduct,
   listAllStoreProducts,
+  listStoreProductsInCategory,
   updateStoreProduct,
   type StoreProductRow,
 } from "@/lib/db";
+import {
+  buildStoreCategoryTree,
+  deleteStoreCategory,
+  flattenStoreCategoryTree,
+  getStoreCategory,
+  getStoreCategoryBySlug,
+  insertStoreCategory,
+  listStoreCategories,
+  slugifyStoreCategory,
+  storeCategoryProductCounts,
+  updateStoreCategory,
+  type StoreCategoryTreeNode,
+} from "@/lib/store-categories";
 import {
   deleteCustomer,
   deleteCustomerProductDiscount,
@@ -533,6 +547,7 @@ export async function adminSaveStoreProduct(input: {
   hidden: boolean;
   unit: string;
   tags: string;
+  categoryId: string;
 }) {
   await requireAdmin();
   const db = getDb();
@@ -551,6 +566,12 @@ export async function adminSaveStoreProduct(input: {
   const nameSq = input.nameSq.trim() || null;
   const unit = parseAdminUnit(input.unit);
   const tags = serializeProductTags(parseTagsInput(input.tags));
+  const categoryTrimmed = input.categoryId.trim();
+  let categoryId: string | null = categoryTrimmed || null;
+  if (categoryId) {
+    const category = await getStoreCategory(db, categoryId);
+    if (!category) categoryId = null;
+  }
 
   if (input.id) {
     await updateStoreProduct(db, {
@@ -568,6 +589,7 @@ export async function adminSaveStoreProduct(input: {
       hidden: input.hidden,
       unit,
       tags,
+      categoryId,
     });
     revalidateCatalogCache();
     return { ok: true as const, id: input.id };
@@ -590,6 +612,7 @@ export async function adminSaveStoreProduct(input: {
     hidden: input.hidden,
     unit,
     tags,
+    categoryId,
     createdAt,
   });
   revalidateCatalogCache();
@@ -670,6 +693,7 @@ export async function adminCreateCustomProduct(input: { name: string; price: str
     note: input.note,
     excerptEn: "",
     excerptSq: "",
+    categoryId: "",
     inStock: true,
     hidden: false,
     unit: "",
@@ -1211,6 +1235,124 @@ export async function adminSaveCategoryOverride(input: {
     parentId: parentId != null && Number.isFinite(parentId) ? parentId : null,
     hidden: input.hidden,
   });
+  revalidateCatalogCache();
+  return { ok: true as const };
+}
+
+export type AdminStoreCategoryPickerOption = {
+  id: string;
+  name: string;
+  depth: number;
+};
+
+export async function adminListStoreCategoryPickerOptions(): Promise<AdminStoreCategoryPickerOption[]> {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return [];
+  const rows = await listStoreCategories(db, true);
+  const counts = await storeCategoryProductCounts(db);
+  const tree = buildStoreCategoryTree(rows, counts);
+  return flattenStoreCategoryTree(tree).map(({ node, depth }) => ({
+    id: node.id,
+    name: node.name_mk,
+    depth,
+  }));
+}
+
+export async function adminGetStoreCategoryTree(): Promise<StoreCategoryTreeNode[]> {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return [];
+  const rows = await listStoreCategories(db, true);
+  const counts = await storeCategoryProductCounts(db);
+  return buildStoreCategoryTree(rows, counts);
+}
+
+export async function adminListStoreCategoryProducts(categoryId: string) {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return [] as { id: string; name: string }[];
+  const rows = await listStoreProductsInCategory(db, categoryId);
+  return rows.map((row) => ({ id: row.id, name: row.name_mk?.trim() || row.name }));
+}
+
+export async function adminSaveStoreCategory(input: {
+  id?: string;
+  nameMk: string;
+  nameEn: string;
+  nameSq: string;
+  slug: string;
+  parentId: string;
+  hidden: boolean;
+  sortOrder: string;
+}) {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return { ok: false as const, error: "database_unavailable" };
+
+  const nameMk = input.nameMk.trim();
+  if (!nameMk) return { ok: false as const, error: "invalid_name" };
+
+  const slugBase = input.slug.trim() || slugifyStoreCategory(nameMk);
+  const slug = slugifyStoreCategory(slugBase);
+  const existingSlug = await getStoreCategoryBySlug(db, slug);
+  if (existingSlug && existingSlug.id !== input.id) {
+    return { ok: false as const, error: "duplicate_slug" };
+  }
+
+  const parentTrimmed = input.parentId.trim();
+  const parentId = parentTrimmed || null;
+  if (parentId && parentId === input.id) {
+    return { ok: false as const, error: "invalid_parent" };
+  }
+  if (parentId) {
+    const parent = await getStoreCategory(db, parentId);
+    if (!parent) return { ok: false as const, error: "invalid_parent" };
+  }
+
+  const sortOrder = input.sortOrder.trim() ? Math.round(Number(input.sortOrder)) : 0;
+  const nameEn = input.nameEn.trim() || null;
+  const nameSq = input.nameSq.trim() || null;
+
+  if (input.id) {
+    await updateStoreCategory(db, {
+      id: input.id,
+      nameMk,
+      nameEn,
+      nameSq,
+      slug,
+      parentId,
+      hidden: input.hidden,
+      sortOrder: Number.isFinite(sortOrder) ? sortOrder : 0,
+    });
+    revalidateCatalogCache();
+    return { ok: true as const, id: input.id };
+  }
+
+  const id = crypto.randomUUID();
+  const createdAt = new Date().toISOString();
+  await insertStoreCategory(db, {
+    id,
+    nameMk,
+    nameEn,
+    nameSq,
+    slug,
+    parentId,
+    hidden: input.hidden,
+    sortOrder: Number.isFinite(sortOrder) ? sortOrder : 0,
+    createdAt,
+  });
+  revalidateCatalogCache();
+  return { ok: true as const, id };
+}
+
+export async function adminDeleteStoreCategory(id: string) {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return { ok: false as const, error: "database_unavailable" };
+  const row = await getStoreCategory(db, id);
+  if (!row) return { ok: false as const, error: "not_found" };
+  await deleteStoreCategory(db, id);
   revalidateCatalogCache();
   return { ok: true as const };
 }
