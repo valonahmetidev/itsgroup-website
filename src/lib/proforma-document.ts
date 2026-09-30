@@ -1,8 +1,16 @@
 import type { InquiryItem } from "@/components/Inquiry";
+import type { Locale } from "@/lib/i18n";
+import { resolveProductName } from "@/lib/product-names";
+import type { ProductNames } from "@/lib/product-names";
 import type { ProformaCustomer } from "@/lib/proforma-types";
 import type { DisplayCurrency } from "@/lib/currency";
-import type { Locale } from "@/lib/i18n";
 import type { ProductUnit } from "@/lib/units";
+
+export function proformaLineDescription(item: InquiryItem, locale: Locale): string {
+  const fallback = item.description?.trim() ?? "";
+  if (item.descriptions) return resolveProductName(item.descriptions, fallback, locale);
+  return fallback;
+}
 
 export type ProformaStatus = "draft" | "sent";
 
@@ -108,8 +116,11 @@ export function proformaLineFromProduct(input: {
   image: string | null;
   unit?: ProductUnit;
   unitLocked?: boolean;
+  description?: string;
+  descriptions?: ProductNames;
 }): ProformaLineItem {
   const unit = input.unit ?? "pc";
+  const description = input.description?.trim() || undefined;
   return {
     key: newProformaLineKey(),
     source: input.source,
@@ -120,5 +131,7 @@ export function proformaLineFromProduct(input: {
     quantity: 1,
     unit,
     unitLocked: Boolean(input.unitLocked),
+    ...(description ? { description } : {}),
+    ...(input.descriptions ? { descriptions: input.descriptions } : {}),
   };
 }

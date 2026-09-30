@@ -435,6 +435,7 @@ const sq: Dictionary = {
     proformaAddLine: "Shto artikull të personalizuar",
     proformaAddPreset: "Shërbime (preset)",
     proformaManualLine: "p.sh. instalim, punë dorë, transport…",
+    proformaLineDescription: "Përshkrim",
     proformaCustomLinesTitle: "Rreshta të personalizuar (shërbime & punë)",
     proformaCustomLinesHint: "Shtoni përshkrim dhe çmim — shfaqen në profaturë dhe PDF si produktet e katalogut.",
     proformaGeneralDiscount: "Zbritje e përgjithshme në dokument (%)",

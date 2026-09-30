@@ -4,7 +4,11 @@ import type { Dictionary, Locale } from "@/lib/i18n";
 import type { DisplayCurrency, ExchangeRateSnapshot } from "@/lib/currency";
 import { formatPrice } from "@/lib/format";
 import { formatQuantity } from "@/lib/units";
-import { defaultProformaRenderOptions, type ProformaRenderOptions } from "@/lib/proforma-document";
+import {
+  defaultProformaRenderOptions,
+  proformaLineDescription,
+  type ProformaRenderOptions,
+} from "@/lib/proforma-document";
 import type { ProformaCustomer } from "@/lib/proforma-types";
 
 /** A4 at 96dpi — matches jsPDF portrait page when margins are 0. */
@@ -172,10 +176,14 @@ export function buildProformaHtml({
       const line = lineTotal(item);
       const discountNote =
         item.discountPercent && item.discountPercent > 0 ? ` (−${item.discountPercent}%)` : "";
+      const lineDescription = proformaLineDescription(item, locale);
+      const nameCell = lineDescription
+        ? `<div class="line-title">${escapeHtml(item.name + discountNote)}</div><div class="line-desc">${escapeHtml(lineDescription)}</div>`
+        : escapeHtml(item.name + discountNote);
       return `
         <tr>
           <td class="num">${String(index + 1).padStart(2, "0")}</td>
-          <td class="name">${escapeHtml(item.name + discountNote)}</td>
+          <td class="name">${nameCell}</td>
           <td class="qty">${escapeHtml(formatQuantity(item.quantity, item.unit, locale))}</td>
           <td class="price">${escapeHtml(priceLabel(line ?? item.price))}</td>
         </tr>`;
@@ -393,6 +401,16 @@ export function buildProformaHtml({
           font-weight: 500;
           word-break: break-word;
           overflow-wrap: anywhere;
+        }
+        .line-title {
+          font-weight: 600;
+        }
+        .line-desc {
+          margin-top: 3px;
+          font-size: 8.5px;
+          font-weight: 400;
+          line-height: 1.35;
+          color: #6e737d;
         }
         tbody td.qty {
           text-align: right;

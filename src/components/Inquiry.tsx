@@ -38,6 +38,9 @@ export type InquiryItem = {
   unitLocked: boolean;
   /** Line-level discount on this proforma row (0–100). */
   discountPercent?: number;
+  /** Free-text or catalog excerpt shown under the line name on proformas. */
+  description?: string;
+  descriptions?: ProductNames;
 };
 
 type InquiryState = {

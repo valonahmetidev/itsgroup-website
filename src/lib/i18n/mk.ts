@@ -435,6 +435,7 @@ const mk: Dictionary = {
     proformaAddLine: "Додај сопствена ставка",
     proformaAddPreset: "Услуги (пресети)",
     proformaManualLine: "на пр. монтажа, рачна работа, транспорт…",
+    proformaLineDescription: "Опис",
     proformaCustomLinesTitle: "Сопствени ставки (услуги и работа)",
     proformaCustomLinesHint: "Додајте опис и цена — се печатат на профактурата и PDF како останатите производи.",
     proformaGeneralDiscount: "Општ попуст на документ (%)",

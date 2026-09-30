@@ -25,6 +25,7 @@ import {
   defaultProformaRenderOptions,
   emptyProformaCustomer,
   newProformaLineKey,
+  proformaLineDescription,
   proformaLineFromProduct,
   type ProformaDocumentPayload,
   type ProformaLineItem,
@@ -95,6 +96,7 @@ export function ProformaEditor({
   const [results, setResults] = useState<AdminProductListItem[]>([]);
   const [searching, setSearching] = useState(false);
   const [manualName, setManualName] = useState("");
+  const [manualDescription, setManualDescription] = useState("");
   const [manualPrice, setManualPrice] = useState("");
 
   const docDict = useMemo(() => getDictionary(docLocale), [docLocale]);
@@ -165,6 +167,7 @@ export function ProformaEditor({
     const name = manualName.trim();
     if (!name) return;
     const price = manualPrice.trim() ? Number(manualPrice) : null;
+    const description = manualDescription.trim();
     setItems((current) => [
       ...current,
       {
@@ -177,9 +180,11 @@ export function ProformaEditor({
         quantity: 1,
         unit: "pc",
         unitLocked: false,
+        ...(description ? { description } : {}),
       },
     ]);
     setManualName("");
+    setManualDescription("");
     setManualPrice("");
   }
 
@@ -379,29 +384,38 @@ export function ProformaEditor({
                 ))}
               </div>
 
-            <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_8rem_auto]">
+            <div className="mt-3 grid gap-2">
               <input
                 value={manualName}
                 onChange={(event) => setManualName(event.target.value)}
                 placeholder={dict.admin.proformaManualLine}
                 className="rounded-2xl border border-ink/10 bg-surface px-3 py-2 text-sm"
               />
-              <input
-                value={manualPrice}
-                onChange={(event) => setManualPrice(event.target.value)}
-                placeholder={dict.admin.price}
-                type="number"
-                min={0}
+              <textarea
+                value={manualDescription}
+                onChange={(event) => setManualDescription(event.target.value)}
+                placeholder={dict.admin.proformaLineDescription}
+                rows={2}
                 className="rounded-2xl border border-ink/10 bg-surface px-3 py-2 text-sm"
               />
-              <button
-                type="button"
-                onClick={addManualLine}
-                className="inline-flex items-center justify-center gap-1 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-paper"
-              >
-                <Plus className="h-4 w-4" />
-                {dict.admin.proformaAddLine}
-              </button>
+              <div className="grid gap-2 sm:grid-cols-[8rem_auto]">
+                <input
+                  value={manualPrice}
+                  onChange={(event) => setManualPrice(event.target.value)}
+                  placeholder={dict.admin.price}
+                  type="number"
+                  min={0}
+                  className="rounded-2xl border border-ink/10 bg-surface px-3 py-2 text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={addManualLine}
+                  className="inline-flex items-center justify-center gap-1 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-paper"
+                >
+                  <Plus className="h-4 w-4" />
+                  {dict.admin.proformaAddLine}
+                </button>
+              </div>
             </div>
             </div>
 
@@ -455,6 +469,24 @@ export function ProformaEditor({
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
+                    <label className="mt-2 grid gap-0.5 text-xs">
+                      <span className="text-ink/45">{dict.admin.proformaLineDescription}</span>
+                      <textarea
+                        value={
+                          item.descriptions
+                            ? proformaLineDescription(item, docLocale)
+                            : (item.description ?? "")
+                        }
+                        onChange={(event) =>
+                          updateItem(item.key, {
+                            description: event.target.value,
+                            descriptions: undefined,
+                          })
+                        }
+                        rows={2}
+                        className="rounded-lg border border-ink/10 bg-surface px-2 py-1 text-sm"
+                      />
+                    </label>
                     <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
                       <label className="grid gap-0.5 text-xs">
                         <span className="text-ink/45">{dict.product.quantity}</span>
@@ -611,7 +643,7 @@ export function ProformaEditor({
                   const raw = event.target.value;
                   patchOption(
                     "generalDiscountPercent",
-                    raw === "" ? 0 : clampDiscountPercent(raw),
+                    raw === "" ? undefined : clampDiscountPercent(raw),
                   );
                 }}
                 className="rounded-2xl border border-ink/10 bg-surface px-3 py-2"

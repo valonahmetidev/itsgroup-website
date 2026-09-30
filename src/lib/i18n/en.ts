@@ -435,6 +435,7 @@ const en: Dictionary = {
     proformaAddLine: "Add custom line",
     proformaAddPreset: "Service presets",
     proformaManualLine: "e.g. Installation, labor, transport…",
+    proformaLineDescription: "Description",
     proformaCustomLinesTitle: "Custom lines (services & labor)",
     proformaCustomLinesHint: "Add free-text items with price — they appear on the saved proforma and PDF like catalog products.",
     proformaGeneralDiscount: "General discount on document (%)",

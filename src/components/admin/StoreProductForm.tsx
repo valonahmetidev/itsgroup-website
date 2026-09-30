@@ -23,6 +23,8 @@ export function StoreProductForm({ row }: { row?: StoreProductRow }) {
   const [price, setPrice] = useState(row?.price?.toString() ?? "");
   const [regularPrice, setRegularPrice] = useState(row?.regular_price?.toString() ?? "");
   const [note, setNote] = useState(row?.note ?? "");
+  const [excerptEn, setExcerptEn] = useState(row?.excerpt_en ?? "");
+  const [excerptSq, setExcerptSq] = useState(row?.excerpt_sq ?? "");
   const [inStock, setInStock] = useState(row ? row.in_stock === 1 : true);
   const [hidden, setHidden] = useState(row ? row.hidden === 1 : false);
   const [unit, setUnit] = useState(row?.unit ?? "");
@@ -41,6 +43,8 @@ export function StoreProductForm({ row }: { row?: StoreProductRow }) {
       price,
       regularPrice,
       note,
+      excerptEn,
+      excerptSq,
       inStock,
       hidden,
       unit,
@@ -140,10 +144,29 @@ export function StoreProductForm({ row }: { row?: StoreProductRow }) {
         <UnitSelectField value={unit} onChange={setUnit} />
         <TagsInputField value={tags} onChange={setTags} />
         <label className="grid gap-1 text-sm">
-          <span>{dict.quote.productNote}</span>
-          <input
+          <span>{dict.admin.descriptionMk}</span>
+          <textarea
             value={note}
             onChange={(event) => setNote(event.target.value)}
+            rows={3}
+            className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech"
+          />
+        </label>
+        <label className="grid gap-1 text-sm">
+          <span>{dict.admin.descriptionEn}</span>
+          <textarea
+            value={excerptEn}
+            onChange={(event) => setExcerptEn(event.target.value)}
+            rows={3}
+            className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech"
+          />
+        </label>
+        <label className="grid gap-1 text-sm">
+          <span>{dict.admin.descriptionSq}</span>
+          <textarea
+            value={excerptSq}
+            onChange={(event) => setExcerptSq(event.target.value)}
+            rows={3}
             className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 outline-none focus:border-tech"
           />
         </label>

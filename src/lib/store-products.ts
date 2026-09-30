@@ -1,7 +1,7 @@
 import type { Locale } from "@/lib/i18n";
 import { getDbAsync } from "@/lib/cloudflare";
 import { getStoreProduct, listStoreProducts, type StoreProductRow } from "@/lib/db";
-import { resolveProductName } from "@/lib/product-names";
+import { excerptsFromOverride, resolveProductName } from "@/lib/product-names";
 import { parseProductTags } from "@/lib/product-tags";
 import { normalizeProductUnit } from "@/lib/units";
 import type { Product } from "@/lib/types";
@@ -15,6 +15,12 @@ function rowToProduct(row: StoreProductRow, locale: Locale): Product {
   const price = row.price;
   const regularPrice = row.regular_price;
   const onSale = price != null && regularPrice != null && price < regularPrice;
+  const excerpts = excerptsFromOverride({
+    excerpt_mk: row.note,
+    excerpt_en: row.excerpt_en,
+    excerpt_sq: row.excerpt_sq,
+  });
+  const excerptFallback = row.note?.trim() || "";
 
   return {
     id: row.id,
@@ -29,7 +35,8 @@ function rowToProduct(row: StoreProductRow, locale: Locale): Product {
     image: row.image_url,
     inStock: row.in_stock === 1,
     categories: [],
-    excerpt: row.note?.trim() || "",
+    excerpt: excerpts ? resolveProductName(excerpts, excerptFallback, locale) : excerptFallback,
+    excerpts,
     permalink: `/proizvod/${row.id}`,
     unit: row.unit ? normalizeProductUnit(row.unit) : undefined,
     tags: (() => {

@@ -527,6 +527,8 @@ export async function adminSaveStoreProduct(input: {
   price: string;
   regularPrice: string;
   note: string;
+  excerptEn: string;
+  excerptSq: string;
   inStock: boolean;
   hidden: boolean;
   unit: string;
@@ -543,6 +545,8 @@ export async function adminSaveStoreProduct(input: {
   const regularPrice = input.regularPrice.trim() ? Math.max(0, Math.round(Number(input.regularPrice))) : null;
   const imageUrl = input.imageUrl.trim() || null;
   const note = input.note.trim() || null;
+  const excerptEn = input.excerptEn.trim() || null;
+  const excerptSq = input.excerptSq.trim() || null;
   const nameEn = input.nameEn.trim() || null;
   const nameSq = input.nameSq.trim() || null;
   const unit = parseAdminUnit(input.unit);
@@ -557,6 +561,8 @@ export async function adminSaveStoreProduct(input: {
       price: Number.isFinite(price) ? price : null,
       regularPrice: Number.isFinite(regularPrice) ? regularPrice : null,
       note,
+      excerptEn,
+      excerptSq,
       imageUrl,
       inStock: input.inStock,
       hidden: input.hidden,
@@ -577,6 +583,8 @@ export async function adminSaveStoreProduct(input: {
     price: Number.isFinite(price) ? price : null,
     regularPrice: Number.isFinite(regularPrice) ? regularPrice : null,
     note,
+    excerptEn,
+    excerptSq,
     imageUrl,
     inStock: input.inStock,
     hidden: input.hidden,
@@ -660,6 +668,8 @@ export async function adminCreateCustomProduct(input: { name: string; price: str
     price: input.price,
     regularPrice: "",
     note: input.note,
+    excerptEn: "",
+    excerptSq: "",
     inStock: true,
     hidden: false,
     unit: "",
@@ -873,6 +883,8 @@ async function resolveProductForProforma(
       image: priced.image,
       unit: normalizeProductUnit(store.unit),
       unitLocked: Boolean(store.unit),
+      description: priced.excerpt || undefined,
+      descriptions: priced.excerpts,
     });
   }
 
@@ -889,6 +901,8 @@ async function resolveProductForProforma(
     image: priced.image,
     unit: normalizeProductUnit(priced.unit),
     unitLocked: Boolean(priced.unit),
+    description: priced.excerpt || undefined,
+    descriptions: priced.excerpts,
   });
 }
 
