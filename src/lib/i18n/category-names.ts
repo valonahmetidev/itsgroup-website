@@ -1188,6 +1188,11 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "en": "Rice cookers",
     "sq": "Aparatë për oriz"
   },
+  "tremark:гасни-решоа": {
+    "mk": "Гасни решоа",
+    "en": "Гасни Решоа",
+    "sq": "Гасни Решоа"
+  },
   "tremark:експрес-лонци": {
     "mk": "Експрес лонци",
     "en": "Pressure cookers",
@@ -1197,6 +1202,16 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "mk": "Електрични печки",
     "en": "Electric ovens",
     "sq": "Furrë elektrike"
+  },
+  "tremark:електрични-решоа": {
+    "mk": "Електрични решоа",
+    "en": "Електрични Решоа",
+    "sq": "Електрични Решоа"
+  },
+  "tremark:електрични-тави": {
+    "mk": "Електрични тави",
+    "en": "Електрични Тави",
+    "sq": "Електрични Тави"
   },
   "tremark:класични-фритези": {
     "mk": "Класични фритези",
@@ -1243,6 +1258,11 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "en": "Personal care accessories",
     "sq": "Aksesorë për kujdes personal"
   },
+  "tremark:кујнски-додатоци": {
+    "mk": "Кујнски додатоци",
+    "en": "Кујнски Додатоци",
+    "sq": "Кујнски Додатоци"
+  },
   "tremark:тв-додатоци": {
     "mk": "ТВ додатоци",
     "en": "TV accessories",
@@ -1268,10 +1288,30 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "en": "Fans",
     "sq": "Ventilatorë"
   },
+  "tremark:греалки": {
+    "mk": "Греалки",
+    "en": "Греалки",
+    "sq": "Греалки"
+  },
+  "tremark:греалки-и-радијатори": {
+    "mk": "Греалки и радијатори",
+    "en": "Греалки И Радијатори",
+    "sq": "Греалки И Радијатори"
+  },
+  "tremark:електрични-ќебиња": {
+    "mk": "Електрични ќебиња",
+    "en": "Електрични Ќебиња",
+    "sq": "Електрични Ќебиња"
+  },
   "tremark:кујнски-ваги": {
     "mk": "Кујнски ваги",
     "en": "Kitchen scales",
     "sq": "Peshore kuzhine"
+  },
+  "tremark:мини-фрижидери": {
+    "mk": "Мини фрижидери",
+    "en": "Мини Фрижидери",
+    "sq": "Мини Фрижидери"
   },
   "tremark:кафе-и-пијалаци": {
     "mk": "Кафе и пијалаци",
@@ -1318,6 +1358,11 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "en": "Shaving",
     "sq": "Rruajtje"
   },
+  "tremark:масажери": {
+    "mk": "Масажери",
+    "en": "Масажери",
+    "sq": "Масажери"
+  },
   "tremark:машинки-и-тримери": {
     "mk": "Машинки и тримери",
     "en": "Trimmers and clippers",
@@ -1333,6 +1378,11 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "en": "Hair care",
     "sq": "Kujdes për flokët"
   },
+  "tremark:нега-на-лице-и-нокти": {
+    "mk": "Нега на лице и нокти",
+    "en": "Нега На Лице И Нокти",
+    "sq": "Нега На Лице И Нокти"
+  },
   "tremark:телесни-ваги": {
     "mk": "Телесни ваги",
     "en": "Body scales",
@@ -1342,6 +1392,11 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "mk": "Пеглање",
     "en": "Ironing",
     "sq": "Hekurim"
+  },
+  "tremark:отстранувачи-на-влакненца": {
+    "mk": "Отстранувачи на влакненца",
+    "en": "Отстранувачи На Влакненца",
+    "sq": "Отстранувачи На Влакненца"
   },
   "tremark:парни-станици": {
     "mk": "Парни станици",
@@ -1362,6 +1417,11 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "mk": "Блендери",
     "en": "Blenders",
     "sq": "Blenderë"
+  },
+  "tremark:мелници-за-зачини": {
+    "mk": "Мелници за зачини",
+    "en": "Мелници За Зачини",
+    "sq": "Мелници За Зачини"
   },
   "tremark:миксери": {
     "mk": "Миксери",
@@ -1393,10 +1453,20 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "en": "Home cleaning",
     "sq": "Pastrim shtëpie"
   },
+  "tremark:машини-за-длабинско-чистење": {
+    "mk": "Машини за длабинско чистење",
+    "en": "Машини За Длабинско Чистење",
+    "sq": "Машини За Длабинско Чистење"
+  },
   "tremark:правосмукалки": {
     "mk": "Правосмукалки",
     "en": "Vacuum cleaners",
     "sq": "Fshesa me korrent"
+  },
+  "tremark:чистачи-за-прозорци": {
+    "mk": "Чистачи за прозорци",
+    "en": "Чистачи За Прозорци",
+    "sq": "Чистачи За Прозорци"
   },
   "alevado:lan-cables": {
     "mk": "LAN Кабли",
