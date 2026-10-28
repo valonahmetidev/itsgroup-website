@@ -69,7 +69,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen min-w-0 bg-paper">
       <header className="sticky top-0 z-20 border-b border-ink/10 bg-card/95 backdrop-blur supports-[padding:max(0px)]:pt-[max(0px,env(safe-area-inset-top))]">
         <div className="shell flex min-w-0 items-center gap-2 py-2 sm:gap-3">
-          <p className="min-w-0 shrink font-display text-sm sm:text-base">{dict.admin.panel}</p>
+          <p className="min-w-0 shrink-0 font-display text-sm sm:text-base">{dict.admin.panel}</p>
 
           <nav className="hidden min-w-0 flex-1 flex-wrap items-center gap-1 lg:flex" aria-label={dict.admin.panel}>
             {links.map((link) => (
