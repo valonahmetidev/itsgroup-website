@@ -159,7 +159,7 @@ export function ProductSearch({
           />
         </label>
 
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5 gap-y-2">
           <button
             type="button"
             onClick={() => setEditedOnly((current) => !current)}
@@ -186,7 +186,7 @@ export function ProductSearch({
             </button>
           ))}
           {!loading && total > 0 && (
-            <span className="ml-auto text-xs text-ink/45">
+            <span className="w-full text-xs text-ink/45 sm:ml-auto sm:w-auto">
               {results.length} / {total}
             </span>
           )}

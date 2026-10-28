@@ -38,13 +38,13 @@ export function InquiryDetail({ inquiry }: { inquiry: InquiryRow }) {
       <Link href="/admin/inquiries" className="text-sm font-semibold text-tech hover:underline">
         ← {dict.admin.inquiries}
       </Link>
-      <div className="rounded-2xl border border-ink/10 bg-card p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
+      <div className="rounded-2xl border border-ink/10 bg-card p-4 sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+          <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink/45">
               {inquiry.type === "contact" ? dict.admin.inquiryTypeContact : dict.admin.inquiryTypeQuote}
             </p>
-            <h1 className="mt-1 font-display text-2xl">{inquiry.name}</h1>
+            <h1 className="mt-1 font-display text-xl sm:text-2xl">{inquiry.name}</h1>
             <p className="mt-2 text-sm text-ink/60">
               {new Date(inquiry.created_at).toLocaleString(locale)} ·{" "}
               {inquiry.status === "new" ? dict.admin.inquiryStatusNew : dict.admin.inquiryStatusRead}

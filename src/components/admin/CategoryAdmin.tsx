@@ -127,7 +127,7 @@ function CategoryDetailBody({
   const inputClass = "w-full rounded-xl border border-ink/10 bg-paper px-3 py-2.5 text-sm outline-none transition focus:border-tech";
 
   return (
-    <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+    <div className="grid min-w-0 gap-5 lg:grid-cols-2 lg:items-start">
       <form
         className="rounded-2xl border border-ink/10 bg-surface/40 p-4"
         onSubmit={(event) => {
@@ -402,7 +402,7 @@ export function CategoryAdmin({
     <div className="flex items-start justify-between gap-3 border-b border-ink/10 px-4 py-4 sm:px-5">
       <div className="min-w-0">
         <p className="text-xs font-medium text-ink/45">ID {selected.id}</p>
-        <h3 className="mt-0.5 font-display text-2xl leading-tight">{selected.name}</h3>
+        <h3 className="mt-0.5 font-display text-xl leading-tight sm:text-2xl">{selected.name}</h3>
         <p className="mt-1 text-sm text-ink/55">
           {loadingProducts ? dict.admin.loadingProducts : countProducts(productTotal, dict)}
         </p>
@@ -422,13 +422,13 @@ export function CategoryAdmin({
     <div className="lg:grid lg:h-[calc(100vh-7.5rem)] lg:grid-cols-[minmax(260px,320px)_minmax(0,1fr)] lg:gap-4">
       <div className="flex flex-col gap-3 rounded-2xl border border-ink/10 bg-card lg:min-h-0 lg:overflow-hidden">
         <div className="space-y-3 border-b border-ink/10 p-3">
-          <div className="flex flex-wrap gap-1 rounded-xl bg-surface p-1">
+          <div className="grid grid-cols-2 gap-1 rounded-xl bg-surface p-1 sm:flex sm:flex-wrap">
             {sources.map((value) => (
               <Link
                 key={value}
                 href={`/admin/categories?source=${value}`}
                 className={cn(
-                  "flex-1 rounded-lg px-2 py-2 text-center text-xs font-semibold transition sm:text-sm",
+                  "rounded-lg px-2 py-2 text-center text-xs font-semibold transition sm:flex-1 sm:text-sm",
                   source === value ? "bg-ink text-paper shadow-sm" : "text-ink/60 hover:text-ink",
                 )}
               >
@@ -437,7 +437,7 @@ export function CategoryAdmin({
             ))}
             <Link
               href="/admin/categories?source=its"
-              className="flex-1 rounded-lg px-2 py-2 text-center text-xs font-semibold text-ink/60 transition hover:text-ink sm:text-sm"
+              className="col-span-2 rounded-lg px-2 py-2 text-center text-xs font-semibold text-ink/60 transition hover:text-ink sm:col-span-1 sm:flex-1 sm:text-sm"
             >
               {dict.admin.custom}
             </Link>
@@ -499,8 +499,8 @@ export function CategoryAdmin({
 
       {/* Mobile detail drawer */}
       {selected && detailProps ? (
-        <div className="fixed inset-0 z-50 flex flex-col bg-paper lg:hidden">
-          <div className="flex items-center gap-2 border-b border-ink/10 px-3 py-3">
+        <div className="fixed inset-0 z-50 flex flex-col bg-paper pt-[env(safe-area-inset-top)] lg:hidden">
+          <div className="flex shrink-0 items-center gap-2 border-b border-ink/10 px-3 py-3">
             <button
               type="button"
               onClick={clearSelection}
@@ -511,7 +511,9 @@ export function CategoryAdmin({
             </button>
           </div>
           {detailHeader}
-          <div className="min-h-0 flex-1 overflow-y-auto p-4">{<CategoryDetailBody {...detailProps} />}</div>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+            {<CategoryDetailBody {...detailProps} />}
+          </div>
         </div>
       ) : (
         <p className="mt-3 text-center text-sm text-ink/45 lg:hidden">{dict.admin.categorySelectHint}</p>

@@ -298,7 +298,7 @@ export function ProformaEditor({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-2xl">{initial ? dict.admin.editProforma : dict.admin.newProforma}</h2>
+          <h2 className="font-display text-xl sm:text-2xl">{initial ? dict.admin.editProforma : dict.admin.newProforma}</h2>
           {documentNo && <p className="mt-1 text-sm text-ink/55">{documentNo}</p>}
         </div>
         <Link href={backHref} className="rounded-full border border-ink/10 px-4 py-1.5 text-sm font-semibold hover:border-tech hover:text-tech">
@@ -585,7 +585,7 @@ export function ProformaEditor({
           </section>
         </div>
 
-        <aside className="space-y-4">
+        <aside className="space-y-4 xl:sticky xl:top-20 xl:self-start">
           <section className="rounded-2xl border border-ink/10 bg-card p-4">
             <h3 className="font-display text-lg">{dict.admin.proformaLocale}</h3>
             <div className="mt-3 grid gap-3">
@@ -717,12 +717,12 @@ export function ProformaEditor({
             </label>
           </section>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 max-xl:sticky max-xl:bottom-0 max-xl:z-10 max-xl:-mx-1 max-xl:border-t max-xl:border-ink/10 max-xl:bg-paper/95 max-xl:p-3 max-xl:backdrop-blur-sm max-xl:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             <button
               type="button"
               disabled={saving}
               onClick={() => void saveDocument()}
-              className="rounded-full bg-ink px-4 py-2.5 text-sm font-semibold text-paper disabled:opacity-60"
+              className="w-full rounded-full bg-ink px-4 py-2.5 text-sm font-semibold text-paper disabled:opacity-60 sm:w-auto"
             >
               {saving ? dict.admin.loggingIn : dict.admin.proformaSave}
             </button>
@@ -730,14 +730,14 @@ export function ProformaEditor({
               type="button"
               disabled={saving}
               onClick={() => void saveDocument("sent")}
-              className="rounded-full border border-ink/10 px-4 py-2.5 text-sm font-semibold hover:border-tech hover:text-tech"
+              className="w-full rounded-full border border-ink/10 px-4 py-2.5 text-sm font-semibold hover:border-tech hover:text-tech sm:w-auto"
             >
               {dict.admin.proformaMarkSent}
             </button>
             <button
               type="button"
               onClick={() => void downloadPdf()}
-              className="rounded-full border border-tech/30 px-4 py-2.5 text-sm font-semibold text-tech"
+              className="w-full rounded-full border border-tech/30 px-4 py-2.5 text-sm font-semibold text-tech sm:w-auto"
             >
               {dict.admin.proformaDownloadPdf}
             </button>
@@ -745,7 +745,7 @@ export function ProformaEditor({
               <button
                 type="button"
                 onClick={() => void onDelete()}
-                className={cn("rounded-full border border-home/30 px-4 py-2.5 text-sm font-semibold text-home")}
+                className={cn("w-full rounded-full border border-home/30 px-4 py-2.5 text-sm font-semibold text-home sm:w-auto")}
               >
                 {dict.admin.proformaDelete}
               </button>

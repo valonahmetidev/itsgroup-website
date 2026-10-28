@@ -173,7 +173,7 @@ export function StoreCategoryAdmin({ tree }: { tree: StoreCategoryTreeNode[] }) 
       <div className="flex items-start justify-between gap-3 border-b border-ink/10 px-4 py-4 sm:px-5">
         <div className="min-w-0">
           <p className="text-xs font-medium text-ink/45">ID {selected.id}</p>
-          <h3 className="mt-0.5 font-display text-2xl leading-tight">{selected.name_mk}</h3>
+          <h3 className="mt-0.5 font-display text-xl leading-tight sm:text-2xl">{selected.name_mk}</h3>
           <p className="mt-1 text-sm text-ink/55">
             {loadingProducts ? dict.admin.loadingProducts : `${selected.productCount} products`}
           </p>
@@ -294,17 +294,17 @@ export function StoreCategoryAdmin({ tree }: { tree: StoreCategoryTreeNode[] }) 
     <div className="lg:grid lg:min-h-[calc(100vh-7.5rem)] lg:grid-cols-[minmax(260px,320px)_minmax(0,1fr)] lg:gap-4">
       <div className="flex flex-col gap-3 rounded-2xl border border-ink/10 bg-card lg:min-h-0 lg:overflow-hidden">
         <div className="space-y-3 border-b border-ink/10 p-3">
-          <div className="flex flex-wrap gap-1 rounded-xl bg-surface p-1">
+          <div className="grid grid-cols-2 gap-1 rounded-xl bg-surface p-1 sm:flex sm:flex-wrap">
             {catalogSources.map((value) => (
               <Link
                 key={value}
                 href={`/admin/categories?source=${value}`}
-                className="flex-1 rounded-lg px-2 py-2 text-center text-xs font-semibold text-ink/60 transition hover:text-ink sm:text-sm"
+                className="rounded-lg px-2 py-2 text-center text-xs font-semibold text-ink/60 transition hover:text-ink sm:flex-1 sm:text-sm"
               >
                 {catalogSourceName(value)}
               </Link>
             ))}
-            <span className="flex-1 rounded-lg bg-ink px-2 py-2 text-center text-xs font-semibold text-paper shadow-sm sm:text-sm">
+            <span className="col-span-2 rounded-lg bg-ink px-2 py-2 text-center text-xs font-semibold text-paper shadow-sm sm:col-span-1 sm:flex-1 sm:text-sm">
               {dict.admin.custom}
             </span>
           </div>
@@ -343,8 +343,8 @@ export function StoreCategoryAdmin({ tree }: { tree: StoreCategoryTreeNode[] }) 
       </div>
 
       {showForm ? (
-        <div className="fixed inset-0 z-50 flex flex-col bg-paper lg:hidden">
-          <div className="flex items-center gap-2 border-b border-ink/10 px-3 py-3">
+        <div className="fixed inset-0 z-50 flex flex-col bg-paper pt-[env(safe-area-inset-top)] lg:hidden">
+          <div className="flex shrink-0 items-center gap-2 border-b border-ink/10 px-3 py-3">
             <button
               type="button"
               onClick={clearSelection}
@@ -355,7 +355,9 @@ export function StoreCategoryAdmin({ tree }: { tree: StoreCategoryTreeNode[] }) 
             </button>
           </div>
           {detailHeader}
-          <div className="min-h-0 flex-1 overflow-y-auto">{detailBody}</div>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[max(1rem,env(safe-area-inset-bottom))]">
+            {detailBody}
+          </div>
         </div>
       ) : (
         <p className="mt-3 text-center text-sm text-ink/45 lg:hidden">{dict.admin.categorySelectHint}</p>

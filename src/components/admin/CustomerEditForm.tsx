@@ -182,14 +182,14 @@ export function CustomerEditForm({
         </Link>
       </div>
 
-      <div className="flex flex-wrap gap-1.5 rounded-xl border border-ink/10 bg-card p-1.5">
+      <div className="flex gap-1.5 overflow-x-auto overscroll-x-contain rounded-xl border border-ink/10 bg-card p-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {tabs.map((item) => (
           <button
             key={item.id}
             type="button"
             onClick={() => setTab(item.id)}
             className={cn(
-              "rounded-lg px-3 py-1.5 text-sm font-semibold transition",
+              "shrink-0 rounded-lg px-3 py-1.5 text-sm font-semibold transition",
               tab === item.id ? "bg-ink text-paper" : "text-ink/70 hover:bg-surface",
             )}
           >

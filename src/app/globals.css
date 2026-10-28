@@ -150,6 +150,15 @@ body:has(.admin-root) > main {
   overflow: visible;
 }
 
+.admin-root {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+.admin-root .shell {
+  @apply px-4 sm:px-5;
+}
+
 @keyframes search-backdrop-in {
   from {
     opacity: 0;

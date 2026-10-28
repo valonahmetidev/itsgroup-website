@@ -71,10 +71,10 @@ export function CustomerAdmin({ initial }: { initial: CustomerRow[] }) {
           <p className="text-ink/60">{dict.admin.noCustomers}</p>
         ) : (
           initial.map((customer) => (
-            <article key={customer.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-ink/10 bg-card px-3 py-2.5">
-              <div>
+            <article key={customer.id} className="flex flex-col gap-3 rounded-xl border border-ink/10 bg-card px-3 py-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+              <div className="min-w-0">
                 <p className="font-medium">{customer.name}</p>
-                <p className="text-sm text-ink/55">
+                <p className="break-all text-sm text-ink/55">
                   {customer.email}
                   {customer.discount_percent != null ? ` · -${customer.discount_percent}%` : ""}
                 </p>
