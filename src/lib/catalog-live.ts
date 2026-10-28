@@ -160,15 +160,23 @@ export async function liveCatalogTotals(locale: Locale = "mk"): Promise<CatalogT
   return buildCatalogTotals(live, staticCounts().categories, itsCount);
 }
 
-export async function liveProductsInCategory(source: CatalogSource, id: number, locale: Locale = "mk") {
-  const pricing = await getCustomerPricing();
-  if (pricing) noStore();
-
-  const ctx = await overrideContextForRequest(Boolean(pricing));
+async function loadPublicCategoryProducts(source: CatalogSource, id: number) {
+  const ctx = await cachedOverrideContext();
   const { subtree, products: candidates } = collectCategoryBaseCandidates(source, id, ctx);
-  const withOverrides = applyOverridesToList(candidates, locale, ctx);
-  const inCategory = filterLiveCategoryProducts(withOverrides, source, id, subtree);
-  return finalizeProducts(inCategory, pricing);
+  const withOverrides = applyOverridesToList(candidates, "mk", ctx);
+  return filterLiveCategoryProducts(withOverrides, source, id, subtree);
+}
+
+/**
+ * Public category lists are cached and shared by every visitor.
+ * Customer discounts are applied in the browser, so this path never reads cookies.
+ */
+export function liveProductsInCategory(source: CatalogSource, id: number) {
+  return unstable_cache(
+    () => loadPublicCategoryProducts(source, id),
+    ["category-products", source, String(id)],
+    { revalidate: CATALOG_CACHE_SECONDS, tags: ["catalog"] },
+  )();
 }
 
 export async function liveGetProduct(source: string, id: string | number, locale: Locale = "mk") {

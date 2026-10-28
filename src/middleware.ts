@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const AI_CRAWLER_UA =
-  /GPTBot|ChatGPT-User|OAI-SearchBot|ClaudeBot|anthropic-ai|Bytespider|CCBot|Google-Extended/i;
+  /GPTBot|ChatGPT-User|OAI-SearchBot|ClaudeBot|anthropic-ai|Bytespider|CCBot|Google-Extended|meta-externalagent/i;
 
 function isCatalogFilterRequest(pathname: string, search: string) {
   if (search.length <= 1) return false;

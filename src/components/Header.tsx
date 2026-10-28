@@ -12,6 +12,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Logo } from "@/components/Logo";
 import { WhatsAppCta } from "@/components/WhatsAppCta";
+import { useCustomerSession } from "@/components/CustomerSessionProvider";
 import { useLocale } from "@/components/LocaleProvider";
 import { SearchBox } from "@/components/SearchBox";
 import { useInquiry } from "@/components/Inquiry";
@@ -23,12 +24,11 @@ import type { MenuColumn, MenuGroup, MenuLink } from "@/lib/types";
 export function Header({
   treco,
   tremark,
-  customer,
 }: {
   treco: MenuGroup[];
   tremark: MenuGroup[];
-  customer: { name: string; discountPercent: number | null } | null;
 }) {
+  const { profile } = useCustomerSession();
   const pathname = usePathname();
   const headerRef = useRef<HTMLElement>(null);
   const { items } = useInquiry();
@@ -92,7 +92,7 @@ export function Header({
         <div className="ml-auto flex items-center gap-1">
           <SearchBox expandable onNavigate={() => setMobile(false)} />
 
-          <CustomerNav profile={customer} />
+          <CustomerNav profile={profile} />
           <WhatsAppCta variant="header" />
           <CurrencySwitcher className="hidden shrink-0 lg:flex" compact />
           <LanguageSwitcher className="hidden shrink-0 lg:flex" compact />
@@ -131,7 +131,7 @@ export function Header({
       {mobile &&
         createPortal(
           <MobileMenu
-            customer={customer}
+            customer={profile}
             allLinks={allLinks}
             techGroups={treco}
             homeGroups={tremark}

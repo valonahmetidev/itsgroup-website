@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 import { CategoryView } from "@/components/CategoryView";
 import { categories, categoryTrail, getCategory, productsInCategory } from "@/lib/catalog";
 import { liveProductsInCategory } from "@/lib/catalog-live";
 import { catalogDivisionToSource, isCatalogDivision, sourceToCatalogDivision } from "@/lib/divisions";
 import { categoryDisplayName } from "@/lib/i18n/catalog-labels";
-import { getServerI18n, getServerLocale } from "@/lib/i18n/server";
 
 export function generateStaticParams() {
   return categories
@@ -17,9 +15,13 @@ export function generateStaticParams() {
     }));
 }
 
+export const dynamic = "force-static";
 export const dynamicParams = false;
 
-/** Filters/pagination use URL search params on the client so filter URLs stay static at the edge. */
+/**
+ * One cached document per category. Sort and stock filters stay in the query string
+ * and are applied in the browser, so those URLs do not render again.
+ */
 export const revalidate = 120;
 
 export async function generateMetadata({
@@ -33,8 +35,7 @@ export async function generateMetadata({
   if (source === "all") return { title: "Category" };
   const category = getCategory(source, Number(id));
   if (!category) return { title: "Category" };
-  const locale = await getServerLocale();
-  return { title: categoryDisplayName(category, locale) };
+  return { title: categoryDisplayName(category, "mk") };
 }
 
 export default async function CategoryPage({
@@ -50,8 +51,7 @@ export default async function CategoryPage({
   const category = getCategory(source, Number(id));
   if (!category) notFound();
 
-  const { locale } = await getServerI18n();
-  const products = await liveProductsInCategory(category.source, category.id, locale);
+  const products = await liveProductsInCategory(category.source, category.id);
   const trail = categoryTrail(category);
   const children = categories.filter(
     (item) =>
@@ -60,9 +60,5 @@ export default async function CategoryPage({
       productsInCategory(item.source, item.id).length > 0,
   );
 
-  return (
-    <Suspense fallback={<div className="shell py-10 text-sm text-ink/55">…</div>}>
-      <CategoryView category={category} trail={trail} children={children} products={products} />
-    </Suspense>
-  );
+  return <CategoryView category={category} trail={trail} children={children} products={products} />;
 }

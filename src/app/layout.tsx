@@ -8,7 +8,8 @@ import { InquiryProvider } from "@/components/Inquiry";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import { SiteHeader } from "@/components/SiteHeader";
-import { getServerCurrencyContext } from "@/lib/currency-server";
+import { CustomerSessionProvider } from "@/components/CustomerSessionProvider";
+import { getExchangeRates } from "@/lib/exchange-rates";
 import { OrganizationJsonLd } from "@/components/OrganizationJsonLd";
 import { site } from "@/lib/site";
 import "./globals.css";
@@ -55,7 +56,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const { currency, rates } = await getServerCurrencyContext();
+  const rates = await getExchangeRates();
   const gaId = publicGaId();
 
   return (
@@ -68,13 +69,15 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           }}
         />
         <LocaleProvider>
-          <CurrencyProvider initialCurrency={currency} initialRates={rates}>
-            <InquiryProvider>
-              <SiteHeader />
-              <main>{children}</main>
-              <Footer />
-              <CookieConsent />
-            </InquiryProvider>
+          <CurrencyProvider initialCurrency="MKD" initialRates={rates}>
+            <CustomerSessionProvider>
+              <InquiryProvider>
+                <SiteHeader />
+                <main>{children}</main>
+                <Footer />
+                <CookieConsent />
+              </InquiryProvider>
+            </CustomerSessionProvider>
           </CurrencyProvider>
         </LocaleProvider>
         <Analytics gaId={gaId} />
