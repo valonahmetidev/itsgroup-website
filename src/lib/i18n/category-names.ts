@@ -583,6 +583,11 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "en": "Tiandy POE Switch",
     "sq": "Tiandy POE Switch"
   },
+  "treco:mbajtese-per-kamera": {
+    "mk": "Mbajtese Per Kamera",
+    "en": "Mbajtese Per Kamera",
+    "sq": "Mbajtese Per Kamera"
+  },
   "treco:microphone-wireless-system": {
     "mk": "Безжичен микрофонски систем",
     "en": "Microphone Wireless System",
@@ -647,6 +652,11 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "mk": "Usb Wireless - Cudy",
     "en": "Usb Wireless - Cudy",
     "sq": "Usb Wireless - Cudy"
+  },
+  "treco:poe-injektor": {
+    "mk": "Poe Injektor",
+    "en": "Poe Injektor",
+    "sq": "Poe Injektor"
   },
   "treco:rfid-card": {
     "mk": "RFID картички",
