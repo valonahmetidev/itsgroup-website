@@ -1378,11 +1378,6 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "en": "Trimmers and clippers",
     "sq": "Makina rrojeje dhe trimera"
   },
-  "tremark:мерачи-за-крвен-притисок": {
-    "mk": "Мерачи за крвен притисок",
-    "en": "Blood pressure monitors",
-    "sq": "Matës tensioni"
-  },
   "tremark:нега-на-коса": {
     "mk": "Нега на коса",
     "en": "Hair care",
