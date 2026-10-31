@@ -878,6 +878,11 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "en": "Time Attendance",
     "sq": "Regjistrim i kohës"
   },
+  "treco:truewave": {
+    "mk": "Truewave",
+    "en": "Truewave",
+    "sq": "Truewave"
+  },
   "treco:ubiquiti": {
     "mk": "Ubiquiti",
     "en": "Ubiquiti",
