@@ -43,6 +43,11 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "en": "Alarm",
     "sq": "Alarm"
   },
+  "treco:b9000": {
+    "mk": "B9000",
+    "en": "B9000",
+    "sq": "B9000"
+  },
   "treco:barcode-scanner": {
     "mk": "Баркод скенер",
     "en": "Barcode Scanner",
@@ -227,6 +232,11 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "mk": "Display и видео адаптери",
     "en": "Display & Video Adapters",
     "sq": "Adapterë display dhe video"
+  },
+  "treco:dm-fp-9000l-8": {
+    "mk": "DM-FP 9000L-8",
+    "en": "DM-FP 9000L-8",
+    "sq": "DM-FP 9000L-8"
   },
   "treco:door-entry-system": {
     "mk": "Систем за влезна врата",
