@@ -12,6 +12,7 @@ export type CustomerHeaderProfile = {
 type SessionPricingJson = {
   generalDiscountPercent: number | null;
   productDiscounts: Record<string, number>;
+  categoryDiscounts?: Record<string, number>;
 };
 
 type SessionResponse = {
@@ -34,6 +35,7 @@ function toCustomerPricing(pricing: SessionPricingJson | null): CustomerPricing 
     customerId: "",
     generalDiscountPercent: pricing.generalDiscountPercent,
     productDiscounts: new Map(Object.entries(pricing.productDiscounts)),
+    categoryDiscounts: new Map(Object.entries(pricing.categoryDiscounts ?? {})),
   };
 }
 

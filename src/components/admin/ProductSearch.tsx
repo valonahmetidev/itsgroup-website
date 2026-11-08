@@ -18,6 +18,7 @@ export type AdminCategoryOption = {
   source: Source;
   slug: string;
   name: string;
+  id?: number | string;
 };
 
 const PAGE_SIZE = 24;

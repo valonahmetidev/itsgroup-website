@@ -5,14 +5,23 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Check, CheckSquare, Loader2, Pencil, Plus, Search, Trash2, XCircle } from "lucide-react";
 import {
+  adminRemoveCustomerCategoryDiscount,
   adminRemoveCustomerProductDiscount,
   adminSaveCustomer,
+  adminSaveCustomerCategoryDiscount,
   adminSaveCustomerProductDiscount,
   adminSaveCustomerProductDiscounts,
   adminSearchProducts,
+  type AdminCategoryPickerOption,
   type AdminProductListItem,
 } from "@/app/admin/actions";
-import type { AdminProformaSummary, CustomerDiscountView, CustomerRow } from "@/app/admin/actions";
+import type {
+  AdminProformaSummary,
+  CustomerCategoryDiscountView,
+  CustomerDiscountView,
+  CustomerRow,
+} from "@/app/admin/actions";
+import { AdminCategoryPicker } from "@/components/admin/AdminCategoryPicker";
 import { ProformaAdminList } from "@/components/admin/ProformaAdminList";
 import { CatalogImage } from "@/components/CatalogImage";
 import { useLocale } from "@/components/LocaleProvider";
@@ -26,15 +35,23 @@ function productKey(source: Source, id: string | number) {
   return `${source}-${id}`;
 }
 
+function categoryDiscountKey(source: Source, id: string) {
+  return `${source}:${id}`;
+}
+
 type Tab = "details" | "discounts" | "proformas";
 
 export function CustomerEditForm({
   customer,
   discounts,
+  categoryDiscounts = [],
+  categories = [],
   proformas = [],
 }: {
   customer: CustomerRow;
   discounts: CustomerDiscountView[];
+  categoryDiscounts?: CustomerCategoryDiscountView[];
+  categories?: AdminCategoryPickerOption[];
   proformas?: AdminProformaSummary[];
 }) {
   const router = useRouter();
@@ -55,6 +72,10 @@ export function CustomerEditForm({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [status, setStatus] = useState("");
   const [adding, setAdding] = useState(false);
+  const [category, setCategory] = useState<AdminCategoryPickerOption | null>(null);
+  const [categoryDiscountPercent, setCategoryDiscountPercent] = useState("10");
+  const [categoryDiscountValues, setCategoryDiscountValues] = useState<Record<string, string>>({});
+  const [addingCategory, setAddingCategory] = useState(false);
 
   const discountedKeys = useMemo(
     () => new Set(discounts.map((row) => productKey(row.source as Source, row.product_id))),
@@ -73,6 +94,17 @@ export function CustomerEditForm({
       ),
     );
   }, [discounts]);
+
+  useEffect(() => {
+    setCategoryDiscountValues(
+      Object.fromEntries(
+        categoryDiscounts.map((row) => [
+          categoryDiscountKey(row.source as Source, row.category_id),
+          String(row.discount_percent),
+        ]),
+      ),
+    );
+  }, [categoryDiscounts]);
 
   async function saveCustomer() {
     const result = await adminSaveCustomer({
@@ -164,6 +196,41 @@ export function CustomerEditForm({
     router.refresh();
   }
 
+  async function addCategoryDiscount() {
+    if (!category || category.id == null) return;
+    setAddingCategory(true);
+    const result = await adminSaveCustomerCategoryDiscount({
+      customerId: customer.id,
+      source: category.source,
+      categoryId: String(category.id),
+      discountPercent: categoryDiscountPercent,
+    });
+    setAddingCategory(false);
+    if (!result.ok) {
+      setStatus(dict.admin.saveError);
+      return;
+    }
+    setCategory(null);
+    setStatus(dict.admin.saveDone);
+    router.refresh();
+  }
+
+  async function updateCategoryDiscount(row: CustomerCategoryDiscountView) {
+    const key = categoryDiscountKey(row.source as Source, row.category_id);
+    await adminSaveCustomerCategoryDiscount({
+      customerId: customer.id,
+      source: row.source as Source,
+      categoryId: row.category_id,
+      discountPercent: categoryDiscountValues[key] ?? String(row.discount_percent),
+    });
+    router.refresh();
+  }
+
+  async function removeCategoryDiscount(source: Source, categoryId: string) {
+    await adminRemoveCustomerCategoryDiscount({ customerId: customer.id, source, categoryId });
+    router.refresh();
+  }
+
   const tabs: { id: Tab; label: string }[] = [
     { id: "details", label: dict.admin.tabDetails },
     { id: "discounts", label: dict.admin.tabDiscounts },
@@ -194,8 +261,10 @@ export function CustomerEditForm({
             )}
           >
             {item.label}
-            {item.id === "discounts" && discounts.length > 0 && (
-              <span className="ml-2 rounded-full bg-tech/20 px-2 py-0.5 text-xs text-tech">{discounts.length}</span>
+            {item.id === "discounts" && discounts.length + categoryDiscounts.length > 0 && (
+              <span className="ml-2 rounded-full bg-tech/20 px-2 py-0.5 text-xs text-tech">
+                {discounts.length + categoryDiscounts.length}
+              </span>
             )}
             {item.id === "proformas" && proformas.length > 0 && (
               <span className="ml-2 rounded-full bg-tech/20 px-2 py-0.5 text-xs text-tech">{proformas.length}</span>
@@ -240,7 +309,117 @@ export function CustomerEditForm({
 
       {tab === "discounts" && (
         <section className="space-y-4 rounded-xl border border-ink/10 bg-card p-4">
-          <div>
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-display text-lg">{dict.admin.categoryDiscounts}</h3>
+              <p className="mt-1 text-sm text-ink/55">{dict.admin.categoryDiscountHint}</p>
+            </div>
+
+            {categoryDiscounts.length === 0 ? (
+              <p className="text-sm text-ink/55">{dict.admin.noCategoryDiscounts}</p>
+            ) : (
+              <div className="space-y-2">
+                {categoryDiscounts.map((row) => {
+                  const key = categoryDiscountKey(row.source as Source, row.category_id);
+                  return (
+                    <article
+                      key={key}
+                      className="flex flex-wrap items-center gap-3 rounded-2xl border border-ink/10 bg-surface px-3 py-2.5"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <span className="inline-block rounded-full bg-ink/10 px-2 py-0.5 text-[10px] font-semibold">
+                          {catalogSourceName(row.source as Source)}
+                        </span>
+                        <p className="mt-1 text-sm font-medium">{row.categoryName}</p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <input
+                          type="number"
+                          min={1}
+                          max={100}
+                          value={categoryDiscountValues[key] ?? String(row.discount_percent)}
+                          onChange={(event) =>
+                            setCategoryDiscountValues((current) => ({ ...current, [key]: event.target.value }))
+                          }
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+                              void updateCategoryDiscount(row);
+                            }
+                          }}
+                          className="w-16 rounded-xl border border-ink/10 bg-card px-2 py-1.5 text-sm"
+                          aria-label={dict.admin.discountPercent}
+                        />
+                        <span className="text-xs text-ink/45">%</span>
+                        <button
+                          type="button"
+                          onClick={() => void updateCategoryDiscount(row)}
+                          className="rounded-full bg-tech px-3 py-1.5 text-xs font-semibold text-cream"
+                        >
+                          {dict.admin.save}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void removeCategoryDiscount(row.source as Source, row.category_id)}
+                          className="flex h-8 w-8 items-center justify-center rounded-full text-ink/40 hover:bg-home/10 hover:text-home"
+                          aria-label={dict.quote.remove}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+              <div className="min-w-0 flex-1 sm:min-w-[16rem]">
+                <AdminCategoryPicker
+                  categories={categories}
+                  source="all"
+                  value={category}
+                  allowAll={false}
+                  emptyLabel={dict.admin.selectCategory}
+                  onChange={(item) => {
+                    if (!item || item.id == null) {
+                      setCategory(null);
+                      return;
+                    }
+                    setCategory({
+                      source: item.source,
+                      slug: item.slug,
+                      name: item.name,
+                      id: item.id,
+                    });
+                  }}
+                />
+              </div>
+              <label className="flex items-center gap-2">
+                <span className="shrink-0 text-sm text-ink/55">{dict.admin.discountPercent}</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={categoryDiscountPercent}
+                  onChange={(event) => setCategoryDiscountPercent(event.target.value)}
+                  className="w-20 rounded-2xl border border-ink/10 bg-surface px-3 py-2.5 text-sm"
+                  aria-label={dict.admin.discountPercent}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => void addCategoryDiscount()}
+                disabled={!category || addingCategory}
+                className="inline-flex items-center gap-2 rounded-full bg-tech px-4 py-2.5 text-sm font-semibold text-cream disabled:opacity-40"
+              >
+                <Plus className="h-4 w-4" />
+                {dict.admin.addCategoryDiscount}
+              </button>
+            </div>
+          </div>
+
+          <div className="border-t border-ink/10 pt-6">
             <h3 className="font-display text-lg">{dict.admin.productDiscounts}</h3>
             <p className="mt-1 text-sm text-ink/55">
               {discounts.length === 1

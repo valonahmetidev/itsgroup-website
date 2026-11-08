@@ -386,6 +386,11 @@ export type Dictionary = {
     generalDiscount: string;
     activeCustomer: string;
     productDiscounts: string;
+    categoryDiscounts: string;
+    categoryDiscountHint: string;
+    addCategoryDiscount: string;
+    noCategoryDiscounts: string;
+    selectCategory: string;
     discountPercent: string;
     addProductDiscount: string;
     addSelectedDiscounts: string;

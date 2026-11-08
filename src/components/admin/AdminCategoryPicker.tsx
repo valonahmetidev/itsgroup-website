@@ -18,11 +18,15 @@ export function AdminCategoryPicker({
   source,
   value,
   onChange,
+  allowAll = true,
+  emptyLabel,
 }: {
   categories: AdminCategoryOption[];
   source: "all" | Source;
   value: AdminCategoryOption | null;
   onChange: (category: AdminCategoryOption | null) => void;
+  allowAll?: boolean;
+  emptyLabel?: string;
 }) {
   const { dict, locale } = useLocale();
   const [open, setOpen] = useState(false);
@@ -80,7 +84,8 @@ export function AdminCategoryPicker({
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, []);
 
-  const sources: Source[] = source === "all" ? ["treco", "tremark", "its", "alevado"] : [source];
+  const sources: Source[] =
+    source === "all" ? ["treco", "tremark", "alevado", "its"] : [source];
 
   return (
     <div ref={rootRef} className="relative">
@@ -92,7 +97,9 @@ export function AdminCategoryPicker({
         aria-haspopup="listbox"
       >
         <span className={cn("min-w-0 truncate", !value && "text-ink/55")}>
-          {value ? categoryDisplayName(value, locale) : dict.admin.allCategories}
+          {value
+            ? categoryDisplayName(value, locale)
+            : emptyLabel ?? (allowAll ? dict.admin.allCategories : dict.admin.selectCategory)}
         </span>
         <ChevronDown className={cn("h-4 w-4 shrink-0 text-ink/40 transition", open && "rotate-180")} />
       </button>
@@ -123,21 +130,23 @@ export function AdminCategoryPicker({
           </div>
 
           <div className="max-h-72 overflow-y-auto p-2" role="listbox">
-            <button
-              type="button"
-              role="option"
-              aria-selected={!value}
-              onClick={() => {
-                onChange(null);
-                setOpen(false);
-              }}
-              className={cn(
-                "flex w-full rounded-xl px-3 py-2.5 text-left text-sm transition hover:bg-surface",
-                !value && "bg-tech/10 font-semibold text-tech",
-              )}
-            >
-              {dict.admin.allCategories}
-            </button>
+            {allowAll && (
+              <button
+                type="button"
+                role="option"
+                aria-selected={!value}
+                onClick={() => {
+                  onChange(null);
+                  setOpen(false);
+                }}
+                className={cn(
+                  "flex w-full rounded-xl px-3 py-2.5 text-left text-sm transition hover:bg-surface",
+                  !value && "bg-tech/10 font-semibold text-tech",
+                )}
+              >
+                {dict.admin.allCategories}
+              </button>
+            )}
 
             {filteredCategories.length === 0 ? (
               <p className="px-3 py-4 text-sm text-ink/50">{dict.admin.noCategories}</p>

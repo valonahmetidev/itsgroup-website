@@ -30,6 +30,7 @@ export async function GET() {
           ? {
               generalDiscountPercent: pricing.generalDiscountPercent,
               productDiscounts: Object.fromEntries(pricing.productDiscounts),
+              categoryDiscounts: Object.fromEntries(pricing.categoryDiscounts),
             }
           : null,
       },

@@ -1,4 +1,5 @@
 import type { D1Database } from "@/lib/db";
+import { listStoreCategories } from "@/lib/store-categories";
 import type { Source } from "@/lib/types";
 
 export type CustomerRow = {
@@ -16,6 +17,13 @@ export type CustomerProductDiscountRow = {
   customer_id: string;
   source: string;
   product_id: string;
+  discount_percent: number;
+};
+
+export type CustomerCategoryDiscountRow = {
+  customer_id: string;
+  source: string;
+  category_id: string;
   discount_percent: number;
 };
 
@@ -108,6 +116,11 @@ export async function updateCustomer(
 
 export async function deleteCustomer(db: D1Database, id: string) {
   await db.prepare("DELETE FROM customer_product_discounts WHERE customer_id = ?").bind(id).run();
+  try {
+    await db.prepare("DELETE FROM customer_category_discounts WHERE customer_id = ?").bind(id).run();
+  } catch {
+    // Table may be missing before migration 0014.
+  }
   await db.prepare("DELETE FROM customers WHERE id = ?").bind(id).run();
 }
 
@@ -147,15 +160,125 @@ export async function deleteCustomerProductDiscount(
     .run();
 }
 
+export async function listCustomerCategoryDiscounts(db: D1Database, customerId: string) {
+  try {
+    const { results } = await db
+      .prepare(
+        "SELECT customer_id, source, category_id, discount_percent FROM customer_category_discounts WHERE customer_id = ? ORDER BY source, category_id",
+      )
+      .bind(customerId)
+      .all<CustomerCategoryDiscountRow>();
+    return results;
+  } catch {
+    return [] as CustomerCategoryDiscountRow[];
+  }
+}
+
+export async function upsertCustomerCategoryDiscount(
+  db: D1Database,
+  input: { customerId: string; source: Source; categoryId: string; discountPercent: number },
+) {
+  await db
+    .prepare(
+      `INSERT INTO customer_category_discounts (customer_id, source, category_id, discount_percent)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(customer_id, source, category_id) DO UPDATE SET discount_percent = excluded.discount_percent`,
+    )
+    .bind(input.customerId, input.source, input.categoryId, input.discountPercent)
+    .run();
+}
+
+export async function deleteCustomerCategoryDiscount(
+  db: D1Database,
+  customerId: string,
+  source: Source,
+  categoryId: string,
+) {
+  await db
+    .prepare("DELETE FROM customer_category_discounts WHERE customer_id = ? AND source = ? AND category_id = ?")
+    .bind(customerId, source, categoryId)
+    .run();
+}
+
 export function productDiscountKey(source: Source, productId: string | number) {
   return `${source}:${String(productId)}`;
+}
+
+export function categoryDiscountKey(source: Source, categoryId: string | number) {
+  return `${source}:${String(categoryId)}`;
 }
 
 export type CustomerPricing = {
   customerId: string;
   generalDiscountPercent: number | null;
   productDiscounts: Map<string, number>;
+  categoryDiscounts: Map<string, number>;
 };
+
+function storeCategoryDepth(parentById: Map<string, string | null>, id: string) {
+  let depth = 0;
+  const seen = new Set<string>();
+  let current: string | null | undefined = id;
+  while (current && !seen.has(current)) {
+    seen.add(current);
+    current = parentById.get(current) ?? null;
+    if (current) depth += 1;
+  }
+  return depth;
+}
+
+function storeCategoryDescendants(childrenByParent: Map<string, string[]>, id: string) {
+  const ids = [id];
+  const queue = [id];
+  const seen = new Set<string>([id]);
+  while (queue.length > 0) {
+    const current = queue.pop()!;
+    for (const child of childrenByParent.get(current) ?? []) {
+      if (seen.has(child)) continue;
+      seen.add(child);
+      ids.push(child);
+      queue.push(child);
+    }
+  }
+  return ids;
+}
+
+/** Copy parent ITS discounts onto descendant store categories, keeping the deepest match. */
+export function expandItsCategoryDiscounts(
+  categoryDiscounts: Map<string, number>,
+  storeCategories: { id: string; parent_id: string | null }[],
+) {
+  const itsDiscounts: { id: string; percent: number; depth: number }[] = [];
+  const parentById = new Map(storeCategories.map((row) => [row.id, row.parent_id]));
+  const childrenByParent = new Map<string, string[]>();
+  for (const row of storeCategories) {
+    if (!row.parent_id) continue;
+    const list = childrenByParent.get(row.parent_id) ?? [];
+    list.push(row.id);
+    childrenByParent.set(row.parent_id, list);
+  }
+
+  for (const [key, percent] of categoryDiscounts) {
+    if (!key.startsWith("its:")) continue;
+    const id = key.slice(4);
+    itsDiscounts.push({ id, percent, depth: storeCategoryDepth(parentById, id) });
+  }
+
+  if (itsDiscounts.length === 0) return categoryDiscounts;
+
+  const expanded = new Map(categoryDiscounts);
+  itsDiscounts.sort((a, b) => b.depth - a.depth);
+  const assigned = new Set<string>();
+  for (const discount of itsDiscounts) {
+    for (const id of storeCategoryDescendants(childrenByParent, discount.id)) {
+      const key = categoryDiscountKey("its", id);
+      if (assigned.has(key)) continue;
+      expanded.set(key, discount.percent);
+      assigned.add(key);
+    }
+  }
+  return expanded;
+}
 
 export async function loadCustomerPricing(db: D1Database, customerId: string): Promise<CustomerPricing | null> {
   const customer = await getCustomerById(db, customerId);
@@ -167,9 +290,24 @@ export async function loadCustomerPricing(db: D1Database, customerId: string): P
     productDiscounts.set(`${row.source}:${row.product_id}`, row.discount_percent);
   }
 
+  const categoryRows = await listCustomerCategoryDiscounts(db, customerId);
+  let categoryDiscounts = new Map<string, number>();
+  for (const row of categoryRows) {
+    categoryDiscounts.set(categoryDiscountKey(row.source as Source, row.category_id), row.discount_percent);
+  }
+
+  if ([...categoryDiscounts.keys()].some((key) => key.startsWith("its:"))) {
+    const storeCategories = await listStoreCategories(db, true);
+    categoryDiscounts = expandItsCategoryDiscounts(
+      categoryDiscounts,
+      storeCategories.map((row) => ({ id: row.id, parent_id: row.parent_id })),
+    );
+  }
+
   return {
     customerId,
     generalDiscountPercent: customer.discount_percent,
     productDiscounts,
+    categoryDiscounts,
   };
 }

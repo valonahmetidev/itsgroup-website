@@ -65,13 +65,17 @@ import {
 } from "@/lib/store-categories";
 import {
   deleteCustomer,
+  deleteCustomerCategoryDiscount,
   deleteCustomerProductDiscount,
   getCustomerById,
   insertCustomer,
+  listCustomerCategoryDiscounts,
   listCustomerProductDiscounts,
   listCustomers,
   updateCustomer,
+  upsertCustomerCategoryDiscount,
   upsertCustomerProductDiscount,
+  type CustomerCategoryDiscountRow,
   type CustomerProductDiscountRow,
   type CustomerRow,
 } from "@/lib/customers";
@@ -137,6 +141,11 @@ export type CustomerDiscountView = CustomerProductDiscountRow & {
   inStock: boolean;
 };
 
+export type CustomerCategoryDiscountView = CustomerCategoryDiscountRow & {
+  categoryName: string;
+  slug: string;
+};
+
 const BROWSE_PAGE_SIZE = 24;
 
 function storeRowHaystack(row: StoreProductRow) {
@@ -167,6 +176,22 @@ function mergeAdminProductItems(storeItems: AdminProductListItem[], catalogItems
     merged.push(item);
   }
   return merged;
+}
+
+async function resolveCategoryDiscountDetails(db: D1Database, row: CustomerCategoryDiscountRow) {
+  if (row.source === "its") {
+    const store = await getStoreCategory(db, row.category_id);
+    return {
+      categoryName: store?.name_mk ?? row.category_id,
+      slug: store?.slug ?? row.category_id,
+    };
+  }
+
+  const category = getCategory(row.source, Number(row.category_id));
+  return {
+    categoryName: category?.name ?? row.category_id,
+    slug: category?.slug ?? "",
+  };
 }
 
 async function resolveDiscountProductDetails(db: D1Database, row: CustomerProductDiscountRow) {
@@ -738,7 +763,14 @@ export async function adminGetCustomer(id: string) {
         ...(await resolveDiscountProductDetails(db, row)),
       })),
     );
-    return { customer, discounts };
+    const categoryRows = await listCustomerCategoryDiscounts(db, id);
+    const categoryDiscounts: CustomerCategoryDiscountView[] = await Promise.all(
+      categoryRows.map(async (row) => ({
+        ...row,
+        ...(await resolveCategoryDiscountDetails(db, row)),
+      })),
+    );
+    return { customer, discounts, categoryDiscounts };
   } catch {
     return null;
   }
@@ -851,6 +883,49 @@ export async function adminRemoveCustomerProductDiscount(input: {
   const db = getDb();
   if (!db) return { ok: false as const, error: "database_unavailable" };
   await deleteCustomerProductDiscount(db, input.customerId, input.source, input.productId);
+  return { ok: true as const };
+}
+
+export async function adminSaveCustomerCategoryDiscount(input: {
+  customerId: string;
+  source: Source;
+  categoryId: string;
+  discountPercent: string;
+}) {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return { ok: false as const, error: "database_unavailable" };
+  const percent = parseDiscount(input.discountPercent);
+  if (percent == null) return { ok: false as const, error: "invalid_discount" };
+  const categoryId = input.categoryId.trim();
+  if (!categoryId) return { ok: false as const, error: "invalid_category" };
+
+  if (input.source === "its") {
+    const store = await getStoreCategory(db, categoryId);
+    if (!store) return { ok: false as const, error: "invalid_category" };
+  } else {
+    const category = getCategory(input.source, Number(categoryId));
+    if (!category) return { ok: false as const, error: "invalid_category" };
+  }
+
+  await upsertCustomerCategoryDiscount(db, {
+    customerId: input.customerId,
+    source: input.source,
+    categoryId,
+    discountPercent: percent,
+  });
+  return { ok: true as const };
+}
+
+export async function adminRemoveCustomerCategoryDiscount(input: {
+  customerId: string;
+  source: Source;
+  categoryId: string;
+}) {
+  await requireAdmin();
+  const db = getDb();
+  if (!db) return { ok: false as const, error: "database_unavailable" };
+  await deleteCustomerCategoryDiscount(db, input.customerId, input.source, input.categoryId);
   return { ok: true as const };
 }
 
@@ -1144,9 +1219,10 @@ export async function adminListCategories(source: CatalogSource) {
 }
 
 export type AdminCategoryPickerOption = {
-  source: CatalogSource;
+  source: Source;
   slug: string;
   name: string;
+  id: number | string;
 };
 
 export type AdminProductCategoryPickerOption = {
@@ -1198,10 +1274,28 @@ export async function adminCategoryPickerOptions(source: CatalogSource | "all") 
   for (const catalogSource of sources) {
     const groups = await adminGetCategoryMenu(catalogSource);
     for (const node of flattenAdminCategoryMenu(groups)) {
-      options.push({ source: node.source, slug: node.slug, name: node.name });
+      options.push({ source: node.source, slug: node.slug, name: node.name, id: node.id });
     }
   }
   return options;
+}
+
+export async function adminCustomerDiscountCategoryOptions() {
+  await requireAdmin();
+  const catalog = await adminCategoryPickerOptions("all");
+  const db = getDb();
+  if (!db) return catalog;
+
+  const rows = await listStoreCategories(db, true);
+  const counts = await storeCategoryProductCounts(db);
+  const tree = buildStoreCategoryTree(rows, counts);
+  const storeOptions: AdminCategoryPickerOption[] = flattenStoreCategoryTree(tree).map(({ node, depth }) => ({
+    source: "its",
+    id: node.id,
+    slug: node.slug,
+    name: depth > 0 ? `${"— ".repeat(depth)}${node.name_mk}` : node.name_mk,
+  }));
+  return [...catalog, ...storeOptions];
 }
 
 export async function adminSaveCategoryOverride(input: {
@@ -1438,4 +1532,4 @@ export async function adminMarkInquiryRead(id: string) {
   }
 }
 
-export type { CustomerProductDiscountRow, CustomerRow };
+export type { CustomerCategoryDiscountRow, CustomerProductDiscountRow, CustomerRow };
