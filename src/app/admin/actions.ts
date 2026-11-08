@@ -68,6 +68,7 @@ import {
   deleteCustomerCategoryDiscount,
   deleteCustomerProductDiscount,
   getCustomerById,
+  getCustomerByUsername,
   insertCustomer,
   listCustomerCategoryDiscounts,
   listCustomerProductDiscounts,
@@ -780,7 +781,8 @@ export async function adminGetCustomer(id: string) {
 export async function adminSaveCustomer(input: {
   id?: string;
   name: string;
-  email: string;
+  username: string;
+  contactEmail?: string;
   password: string;
   generalDiscount: string;
   active: boolean;
@@ -791,15 +793,25 @@ export async function adminSaveCustomer(input: {
   if (!db || !secret) return { ok: false as const, error: "database_unavailable" };
 
   const name = input.name.trim();
-  const email = input.email.trim();
-  if (!name || !email) return { ok: false as const, error: "invalid_input" };
+  const username = input.username.trim();
+  if (!name || !username) return { ok: false as const, error: "invalid_input" };
   const discountPercent = parseDiscount(input.generalDiscount);
+  const contactEmail = input.contactEmail?.trim() ?? "";
+
+  const duplicate = await getCustomerByUsername(db, username);
+  if (duplicate && duplicate.id !== input.id) {
+    return { ok: false as const, error: "duplicate_username" };
+  }
 
   if (input.id) {
+    const existing = await getCustomerById(db, input.id);
+    if (!existing) return { ok: false as const, error: "invalid_input" };
     const passwordHash = input.password.trim() ? hashPassword(input.password, secret) : undefined;
     await updateCustomer(db, {
       id: input.id,
-      email,
+      username,
+      contactEmail: contactEmail || undefined,
+      existingEmail: existing.email,
       name,
       passwordHash,
       discountPercent,
@@ -813,7 +825,8 @@ export async function adminSaveCustomer(input: {
   const createdAt = new Date().toISOString();
   await insertCustomer(db, {
     id,
-    email,
+    username,
+    contactEmail: contactEmail || undefined,
     passwordHash: hashPassword(input.password, secret),
     name,
     discountPercent,

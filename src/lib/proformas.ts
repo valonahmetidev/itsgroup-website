@@ -1,3 +1,4 @@
+import { customerContactEmailFromRow } from "@/lib/customer-account";
 import type { D1Database } from "@/lib/db";
 import type { ProformaCustomer } from "@/lib/proforma-types";
 import {
@@ -24,9 +25,10 @@ export function mergeProformaCustomerWithAccount(
   account: { name: string; email: string } | null | undefined,
 ): ProformaCustomer {
   if (!account) return form;
+  const accountContact = customerContactEmailFromRow(account.email);
   return {
     name: form.name.trim() || account.name,
-    email: form.email.trim() || account.email,
+    email: form.email.trim() || accountContact,
     phone: form.phone,
     company: form.company,
   };

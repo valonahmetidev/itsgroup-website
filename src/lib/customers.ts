@@ -1,9 +1,15 @@
+import {
+  customerContactEmailFromRow,
+  normalizeCustomerUsername,
+  placeholderContactEmail,
+} from "@/lib/customer-account";
 import type { D1Database } from "@/lib/db";
 import { listStoreCategories } from "@/lib/store-categories";
 import type { Source } from "@/lib/types";
 
 export type CustomerRow = {
   id: string;
+  username: string | null;
   email: string;
   password_hash: string;
   name: string;
@@ -27,7 +33,15 @@ export type CustomerCategoryDiscountRow = {
   discount_percent: number;
 };
 
-const customerColumns = "id, email, password_hash, name, discount_percent, active, created_at, updated_at";
+const customerColumns = "id, username, email, password_hash, name, discount_percent, active, created_at, updated_at";
+
+function resolveContactEmail(contactEmail: string | undefined, customerId: string, existingEmail?: string) {
+  const next = contactEmail?.trim().toLowerCase() ?? "";
+  if (next) return next;
+  const kept = customerContactEmailFromRow(existingEmail);
+  if (kept) return kept;
+  return placeholderContactEmail(customerId);
+}
 
 export async function listCustomers(db: D1Database, limit = 200) {
   const { results } = await db
@@ -41,10 +55,16 @@ export async function getCustomerById(db: D1Database, id: string) {
   return db.prepare(`SELECT ${customerColumns} FROM customers WHERE id = ?`).bind(id).first<CustomerRow>();
 }
 
-export async function getCustomerByEmail(db: D1Database, email: string) {
+export async function getCustomerByUsername(db: D1Database, username: string) {
+  const normalized = normalizeCustomerUsername(username);
+  const byUsername = await db
+    .prepare(`SELECT ${customerColumns} FROM customers WHERE lower(username) = ?`)
+    .bind(normalized)
+    .first<CustomerRow>();
+  if (byUsername) return byUsername;
   return db
-    .prepare(`SELECT ${customerColumns} FROM customers WHERE lower(email) = lower(?)`)
-    .bind(email.trim())
+    .prepare(`SELECT ${customerColumns} FROM customers WHERE username IS NULL AND lower(email) = ?`)
+    .bind(normalized)
     .first<CustomerRow>();
 }
 
@@ -52,7 +72,8 @@ export async function insertCustomer(
   db: D1Database,
   input: {
     id: string;
-    email: string;
+    username: string;
+    contactEmail?: string;
     passwordHash: string;
     name: string;
     discountPercent: number | null;
@@ -60,14 +81,17 @@ export async function insertCustomer(
     createdAt: string;
   },
 ) {
+  const username = normalizeCustomerUsername(input.username);
+  const email = resolveContactEmail(input.contactEmail, input.id);
   await db
     .prepare(
-      `INSERT INTO customers (id, email, password_hash, name, discount_percent, active, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO customers (id, username, email, password_hash, name, discount_percent, active, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .bind(
       input.id,
-      input.email.trim().toLowerCase(),
+      username,
+      email,
       input.passwordHash,
       input.name.trim(),
       input.discountPercent,
@@ -82,7 +106,9 @@ export async function updateCustomer(
   db: D1Database,
   input: {
     id: string;
-    email: string;
+    username: string;
+    contactEmail?: string;
+    existingEmail?: string;
     passwordHash?: string;
     name: string;
     discountPercent: number | null;
@@ -90,13 +116,16 @@ export async function updateCustomer(
   },
 ) {
   const updatedAt = new Date().toISOString();
+  const username = normalizeCustomerUsername(input.username);
+  const email = resolveContactEmail(input.contactEmail, input.id, input.existingEmail);
   if (input.passwordHash) {
     await db
       .prepare(
-        `UPDATE customers SET email = ?, password_hash = ?, name = ?, discount_percent = ?, active = ?, updated_at = ? WHERE id = ?`,
+        `UPDATE customers SET username = ?, email = ?, password_hash = ?, name = ?, discount_percent = ?, active = ?, updated_at = ? WHERE id = ?`,
       )
       .bind(
-        input.email.trim().toLowerCase(),
+        username,
+        email,
         input.passwordHash,
         input.name.trim(),
         input.discountPercent,
@@ -109,8 +138,10 @@ export async function updateCustomer(
   }
 
   await db
-    .prepare(`UPDATE customers SET email = ?, name = ?, discount_percent = ?, active = ?, updated_at = ? WHERE id = ?`)
-    .bind(input.email.trim().toLowerCase(), input.name.trim(), input.discountPercent, input.active ? 1 : 0, updatedAt, input.id)
+    .prepare(
+      `UPDATE customers SET username = ?, email = ?, name = ?, discount_percent = ?, active = ?, updated_at = ? WHERE id = ?`,
+    )
+    .bind(username, email, input.name.trim(), input.discountPercent, input.active ? 1 : 0, updatedAt, input.id)
     .run();
 }
 

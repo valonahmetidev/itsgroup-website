@@ -22,6 +22,7 @@ import type {
   CustomerRow,
 } from "@/app/admin/actions";
 import { AdminCategoryPicker } from "@/components/admin/AdminCategoryPicker";
+import { customerContactEmailFromRow, customerLoginName } from "@/lib/customer-account";
 import { ProformaAdminList } from "@/components/admin/ProformaAdminList";
 import { CatalogImage } from "@/components/CatalogImage";
 import { useLocale } from "@/components/LocaleProvider";
@@ -58,7 +59,8 @@ export function CustomerEditForm({
   const { dict, locale } = useLocale();
   const [tab, setTab] = useState<Tab>("details");
   const [name, setName] = useState(customer.name);
-  const [email, setEmail] = useState(customer.email);
+  const [username, setUsername] = useState(customer.username?.trim() || customer.email);
+  const [contactEmail, setContactEmail] = useState(customerContactEmailFromRow(customer.email));
   const [password, setPassword] = useState("");
   const [generalDiscount, setGeneralDiscount] = useState(customer.discount_percent?.toString() ?? "");
   const [active, setActive] = useState(customer.active === 1);
@@ -110,7 +112,8 @@ export function CustomerEditForm({
     const result = await adminSaveCustomer({
       id: customer.id,
       name,
-      email,
+      username,
+      contactEmail,
       password,
       generalDiscount,
       active,
@@ -242,7 +245,10 @@ export function CustomerEditForm({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-display text-xl">{customer.name}</h2>
-          <p className="text-sm text-ink/55">{customer.email}</p>
+          <p className="text-sm text-ink/55">
+            @{customerLoginName(customer)}
+            {customerContactEmailFromRow(customer.email) ? ` · ${customerContactEmailFromRow(customer.email)}` : ""}
+          </p>
         </div>
         <Link href="/admin/customers" className="rounded-full border border-ink/10 px-4 py-1.5 text-sm font-semibold hover:border-tech hover:text-tech">
           {dict.admin.back}
@@ -288,8 +294,27 @@ export function CustomerEditForm({
             <input value={name} onChange={(e) => setName(e.target.value)} required className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5" />
           </label>
           <label className="grid gap-1 text-sm">
-            <span>{dict.admin.customerEmail}</span>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5" />
+            <span>{dict.admin.customerUsername}</span>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+              className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5"
+            />
+          </label>
+          <label className="grid gap-1 text-sm">
+            <span>{dict.admin.customerContactEmail}</span>
+            <input
+              type="email"
+              value={contactEmail}
+              onChange={(e) => setContactEmail(e.target.value)}
+              placeholder={dict.admin.customerContactEmailHint}
+              className="rounded-2xl border border-ink/10 bg-surface px-4 py-2.5"
+            />
           </label>
           <label className="grid gap-1 text-sm">
             <span>{dict.admin.customerPassword}</span>

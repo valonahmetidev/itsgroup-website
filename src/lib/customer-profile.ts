@@ -1,5 +1,6 @@
 import { getCustomerSessionId } from "@/lib/customer-auth";
 import { getDbAsync } from "@/lib/cloudflare";
+import { customerContactEmailFromRow } from "@/lib/customer-account";
 import { getCustomerById } from "@/lib/customers";
 
 export async function getCustomerProfile() {
@@ -15,7 +16,7 @@ export async function getCustomerProfile() {
     return {
       id: customer.id,
       name: customer.name,
-      email: customer.email,
+      email: customerContactEmailFromRow(customer.email),
       discountPercent: customer.discount_percent,
     };
   } catch {

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCustomerSessionId, clearCustomerSession, setCustomerSession } from "@/lib/customer-auth";
 import { getDbAsync } from "@/lib/cloudflare";
-import { getCustomerByEmail, getCustomerById } from "@/lib/customers";
+import { getCustomerById, getCustomerByUsername } from "@/lib/customers";
 import { getAuthSecretAsync, verifyPassword } from "@/lib/password";
 import type { DisplayCurrency } from "@/lib/currency";
 import { validateEmail } from "@/lib/form-validation";
@@ -46,13 +46,13 @@ function summaryFromProforma(row: Awaited<ReturnType<typeof getProformaById>> & 
   };
 }
 
-export async function customerLogin(email: string, password: string) {
+export async function customerLogin(username: string, password: string) {
   try {
     const db = await getDbAsync();
     const secret = await getAuthSecretAsync();
     if (!db || !secret) return { ok: false as const, error: "unavailable" };
 
-    const customer = await getCustomerByEmail(db, email);
+    const customer = await getCustomerByUsername(db, username);
     if (!customer || customer.active !== 1) return { ok: false as const, error: "invalid" };
     if (!verifyPassword(password, customer.password_hash, secret)) {
       return { ok: false as const, error: "invalid" };

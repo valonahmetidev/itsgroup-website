@@ -21,6 +21,7 @@ import {
 } from "@/lib/proforma-pricing";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { useLocale } from "@/components/LocaleProvider";
+import { customerContactEmailFromRow, customerLoginName } from "@/lib/customer-account";
 import { cn } from "@/lib/cn";
 import type { DisplayCurrency } from "@/lib/currency";
 import { formatPrice } from "@/lib/format";
@@ -86,7 +87,12 @@ export function ProformaEditor({
   const [customer, setCustomer] = useState(
     initial?.customer ??
       (presetCustomer
-        ? { name: presetCustomer.name, email: presetCustomer.email, phone: "", company: presetCustomer.name }
+        ? {
+            name: presetCustomer.name,
+            email: customerContactEmailFromRow(presetCustomer.email),
+            phone: "",
+            company: presetCustomer.name,
+          }
         : emptyProformaCustomer()),
   );
   const [items, setItems] = useState<ProformaLineItem[]>(initial?.items ?? []);
@@ -217,7 +223,7 @@ export function ProformaEditor({
     setCustomer((current) => ({
       ...current,
       name: row.name,
-      email: row.email,
+      email: customerContactEmailFromRow(row.email),
       company: current.company || row.name,
     }));
   }
@@ -327,7 +333,7 @@ export function ProformaEditor({
                   <option value="">—</option>
                   {customers.map((row) => (
                     <option key={row.id} value={row.id}>
-                      {row.name} ({row.email})
+                      {row.name} (@{customerLoginName(row)})
                     </option>
                   ))}
                 </select>

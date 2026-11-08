@@ -1,9 +1,18 @@
 import type { Dictionary } from "@/lib/i18n";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const USERNAME_RE = /^[a-z0-9][a-z0-9._-]{2,63}$/;
 
 export function validateRequired(value: string, dict: Dictionary) {
   if (!value.trim()) return dict.validation.required;
+  return "";
+}
+
+export function validateUsername(value: string, dict: Dictionary, required = false) {
+  const trimmed = value.trim();
+  if (!trimmed) return required ? dict.validation.required : "";
+  const normalized = trimmed.toLowerCase();
+  if (!USERNAME_RE.test(normalized)) return dict.validation.usernameInvalid;
   return "";
 }
 

@@ -19,7 +19,8 @@
     "db:migrate:categories": "wrangler d1 execute itsgroup-db --remote --file=./migrations/0010_category_overrides.sql",
     "db:migrate:excerpts": "wrangler d1 execute itsgroup-db --remote --file=./migrations/0007_product_excerpts.sql",
     "db:migrate:tags": "wrangler d1 execute itsgroup-db --remote --file=./migrations/0008_product_tags.sql",
-    "db:migrate:customer-category-discounts": "wrangler d1 execute itsgroup-db --remote --file=./migrations/0014_customer_category_discounts.sql"
+    "db:migrate:customer-category-discounts": "wrangler d1 execute itsgroup-db --remote --file=./migrations/0014_customer_category_discounts.sql",
+    "db:migrate:customer-username": "wrangler d1 execute itsgroup-db --remote --file=./migrations/0015_customer_username.sql"
   },
   "dependencies": {
     "@next/third-parties": "^16.3.6",

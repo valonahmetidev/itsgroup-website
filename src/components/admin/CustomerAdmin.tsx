@@ -6,12 +6,14 @@ import { useState } from "react";
 import { adminDeleteCustomer, adminSaveCustomer } from "@/app/admin/actions";
 import type { CustomerRow } from "@/app/admin/actions";
 import { useLocale } from "@/components/LocaleProvider";
+import { customerContactEmailFromRow, customerLoginName } from "@/lib/customer-account";
 
 export function CustomerAdmin({ initial }: { initial: CustomerRow[] }) {
   const router = useRouter();
   const { dict } = useLocale();
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
   const [password, setPassword] = useState("");
   const [generalDiscount, setGeneralDiscount] = useState("");
   const [status, setStatus] = useState("");
@@ -20,7 +22,8 @@ export function CustomerAdmin({ initial }: { initial: CustomerRow[] }) {
     event.preventDefault();
     const result = await adminSaveCustomer({
       name,
-      email,
+      username,
+      contactEmail,
       password,
       generalDiscount,
       active: true,
@@ -30,7 +33,8 @@ export function CustomerAdmin({ initial }: { initial: CustomerRow[] }) {
       return;
     }
     setName("");
-    setEmail("");
+    setUsername("");
+    setContactEmail("");
     setPassword("");
     setGeneralDiscount("");
     setStatus(dict.admin.saveDone);
@@ -51,8 +55,27 @@ export function CustomerAdmin({ initial }: { initial: CustomerRow[] }) {
           <input value={name} onChange={(e) => setName(e.target.value)} required className="rounded-xl border border-ink/10 bg-surface px-3 py-2 text-sm" />
         </label>
         <label className="grid gap-1 text-sm">
-          <span>{dict.admin.customerEmail}</span>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="rounded-xl border border-ink/10 bg-surface px-3 py-2 text-sm" />
+          <span>{dict.admin.customerUsername}</span>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+            className="rounded-xl border border-ink/10 bg-surface px-3 py-2 text-sm"
+          />
+        </label>
+        <label className="grid gap-1 text-sm">
+          <span>{dict.admin.customerContactEmail}</span>
+          <input
+            type="email"
+            value={contactEmail}
+            onChange={(e) => setContactEmail(e.target.value)}
+            placeholder={dict.admin.customerContactEmailHint}
+            className="rounded-xl border border-ink/10 bg-surface px-3 py-2 text-sm"
+          />
         </label>
         <label className="grid gap-1 text-sm">
           <span>{dict.admin.customerPassword}</span>
@@ -75,7 +98,8 @@ export function CustomerAdmin({ initial }: { initial: CustomerRow[] }) {
               <div className="min-w-0">
                 <p className="font-medium">{customer.name}</p>
                 <p className="break-all text-sm text-ink/55">
-                  {customer.email}
+                  @{customerLoginName(customer)}
+                  {customerContactEmailFromRow(customer.email) ? ` · ${customerContactEmailFromRow(customer.email)}` : ""}
                   {customer.discount_percent != null ? ` · -${customer.discount_percent}%` : ""}
                 </p>
               </div>

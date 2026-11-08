@@ -52,6 +52,7 @@ export type Dictionary = {
   };
   validation: {
     required: string;
+    usernameInvalid: string;
     emailInvalid: string;
     phoneInvalid: string;
     minLength: string;
@@ -97,6 +98,7 @@ export type Dictionary = {
   customer: {
     loginTitle: string;
     loginText: string;
+    username: string;
     email: string;
     password: string;
     loginButton: string;
@@ -382,6 +384,9 @@ export type Dictionary = {
     editCustomer: string;
     customerName: string;
     customerEmail: string;
+    customerUsername: string;
+    customerContactEmail: string;
+    customerContactEmailHint: string;
     customerPassword: string;
     generalDiscount: string;
     activeCustomer: string;
