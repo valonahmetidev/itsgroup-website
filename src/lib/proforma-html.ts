@@ -2,9 +2,7 @@ import type { InquiryItem } from "@/components/Inquiry";
 import {
   computeProformaTotals,
   lineAccountDiscountPercent,
-  lineCatalogSubtotal,
   lineListUnitPrice,
-  lineSubtotal,
   lineTotal,
 } from "@/lib/proforma-pricing";
 import type { Dictionary, Locale } from "@/lib/i18n";
@@ -138,32 +136,9 @@ function renderPdfUnitPrice(
   return `<div class="price-stack">${blocks.join("")}</div>`;
 }
 
-function renderPdfLineAmount(
-  item: InquiryItem,
-  priceLabel: (amount: number | null) => string,
-  labels: (typeof pdfLabels)[Locale],
-) {
+function renderPdfLineAmount(item: InquiryItem, priceLabel: (amount: number | null) => string) {
   const net = lineTotal(item);
-  const catalog = lineCatalogSubtotal(item);
-  const beforeManual = lineSubtotal(item);
-  const accountPct = lineAccountDiscountPercent(item);
-  const manualPct = item.discountPercent && item.discountPercent > 0 ? item.discountPercent : 0;
-  const hasAccount =
-    accountPct > 0 && catalog != null && beforeManual != null && catalog > beforeManual;
-  const blocks: string[] = [];
-
-  if (hasAccount) {
-    blocks.push(`<div class="price-list">${escapeHtml(priceLabel(catalog))}</div>`);
-  } else if (manualPct > 0 && beforeManual != null && net != null && beforeManual > net) {
-    blocks.push(`<div class="price-list">${escapeHtml(priceLabel(beforeManual))}</div>`);
-  }
-  blocks.push(`<div class="price-net">${escapeHtml(priceLabel(net ?? null))}</div>`);
-  if (manualPct > 0 && beforeManual != null && net != null && beforeManual > net) {
-    blocks.push(
-      `<div class="price-extra">−${manualPct}% · ${escapeHtml(priceLabel(Math.max(0, beforeManual - net)))}</div>`,
-    );
-  }
-  return `<div class="price-stack align-right">${blocks.join("")}</div>`;
+  return `<div class="price-net line-amount-only">${escapeHtml(priceLabel(net ?? null))}</div>`;
 }
 
 function escapeHtml(value: string) {
@@ -272,7 +247,7 @@ export function buildProformaHtml({
           <td class="name">${nameCell}</td>
           <td class="qty">${escapeHtml(formatQuantity(item.quantity, item.unit, locale))}</td>
           <td class="unit">${renderPdfUnitPrice(item, priceLabel, labels)}</td>
-          <td class="amount">${renderPdfLineAmount(item, priceLabel, labels)}</td>
+          <td class="amount">${renderPdfLineAmount(item, priceLabel)}</td>
         </tr>`;
     })
     .join("");
