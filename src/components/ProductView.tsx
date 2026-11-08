@@ -108,6 +108,8 @@ export function ProductView({
                 name={productName}
                 names={pricedProduct.names}
                 price={pricedProduct.price}
+                listPrice={pricedProduct.regularPrice}
+                accountDiscountPercent={pricedProduct.customerDiscountPercent}
                 image={pricedProduct.image}
                 unit={pricedProduct.unit}
                 unitLocked={Boolean(pricedProduct.unit)}

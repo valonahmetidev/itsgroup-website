@@ -91,6 +91,7 @@ import {
   type ProformaDocumentPayload,
   type ProformaStatus,
   proformaLineFromProduct,
+  proformaPricingFromProduct,
 } from "@/lib/proforma-document";
 import { computeProformaTotals } from "@/lib/proforma-pricing";
 import {
@@ -974,11 +975,14 @@ async function resolveProductForProforma(
     if (!store) return null;
     const product = storeRowToProduct(store, locale);
     const priced = applyCustomerPricing(product, pricing);
+    const extra = proformaPricingFromProduct(priced);
     return proformaLineFromProduct({
       source: "its",
       id: store.id,
       name: priced.name,
       price: priced.price,
+      listPrice: extra.listPrice,
+      accountDiscountPercent: extra.accountDiscountPercent,
       image: priced.image,
       unit: normalizeProductUnit(store.unit),
       unitLocked: Boolean(store.unit),
@@ -992,11 +996,14 @@ async function resolveProductForProforma(
   const override = await getProductOverride(db, base.source as CatalogSource, base.id as number);
   const effective = applyProductOverride(base, override, locale) ?? base;
   const priced = applyCustomerPricing(effective, pricing);
+  const extra = proformaPricingFromProduct(priced);
   return proformaLineFromProduct({
     source: priced.source,
     id: priced.id,
     name: priced.name,
     price: priced.price,
+    listPrice: extra.listPrice,
+    accountDiscountPercent: extra.accountDiscountPercent,
     image: priced.image,
     unit: normalizeProductUnit(priced.unit),
     unitLocked: Boolean(priced.unit),

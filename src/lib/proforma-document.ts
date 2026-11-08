@@ -113,6 +113,8 @@ export function proformaLineFromProduct(input: {
   id: number | string;
   name: string;
   price: number | null;
+  listPrice?: number | null;
+  accountDiscountPercent?: number;
   image: string | null;
   unit?: ProductUnit;
   unitLocked?: boolean;
@@ -121,6 +123,14 @@ export function proformaLineFromProduct(input: {
 }): ProformaLineItem {
   const unit = input.unit ?? "pc";
   const description = input.description?.trim() || undefined;
+  const listPrice =
+    input.listPrice != null && input.price != null && input.listPrice > input.price ? input.listPrice : undefined;
+  const accountDiscountPercent =
+    input.accountDiscountPercent != null && input.accountDiscountPercent > 0
+      ? input.accountDiscountPercent
+      : listPrice != null && input.price != null && listPrice > input.price
+        ? Math.min(100, Math.round((1 - input.price / listPrice) * 100))
+        : undefined;
   return {
     key: newProformaLineKey(),
     source: input.source,
@@ -131,7 +141,28 @@ export function proformaLineFromProduct(input: {
     quantity: 1,
     unit,
     unitLocked: Boolean(input.unitLocked),
+    ...(listPrice != null ? { listPrice } : {}),
+    ...(accountDiscountPercent != null && accountDiscountPercent > 0 ? { accountDiscountPercent } : {}),
     ...(description ? { description } : {}),
     ...(input.descriptions ? { descriptions: input.descriptions } : {}),
+  };
+}
+
+export function proformaPricingFromProduct(product: {
+  price: number | null;
+  regularPrice?: number | null;
+  customerDiscountPercent?: number;
+}) {
+  const net = product.price;
+  if (net == null || product.customerDiscountPercent == null || product.customerDiscountPercent <= 0) {
+    return { listPrice: undefined as number | undefined, accountDiscountPercent: undefined as number | undefined };
+  }
+  const list =
+    product.regularPrice != null && product.regularPrice > net
+      ? product.regularPrice
+      : Math.round((net * 100) / (100 - product.customerDiscountPercent));
+  return {
+    listPrice: list > net ? list : undefined,
+    accountDiscountPercent: product.customerDiscountPercent,
   };
 }

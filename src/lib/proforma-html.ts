@@ -1,5 +1,11 @@
 import type { InquiryItem } from "@/components/Inquiry";
-import { computeProformaTotals, lineTotal } from "@/lib/proforma-pricing";
+import {
+  computeProformaTotals,
+  lineAccountDiscountPercent,
+  lineListUnitPrice,
+  lineSubtotal,
+  lineTotal,
+} from "@/lib/proforma-pricing";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import type { DisplayCurrency, ExchangeRateSnapshot } from "@/lib/currency";
 import { formatPrice } from "@/lib/format";
@@ -35,6 +41,11 @@ const pdfLabels: Record<
     poReference: string;
     bankDetails: string;
     subtotal: string;
+    catalogSubtotal: string;
+    accountDiscount: string;
+    unitPrice: string;
+    lineAmount: string;
+    discount: string;
     lineDiscounts: string;
     generalDiscount: string;
   }
@@ -50,6 +61,11 @@ const pdfLabels: Record<
     poReference: "Референца / PO",
     bankDetails: "Платежни податоци",
     subtotal: "Меѓузбир",
+    catalogSubtotal: "Каталошка вредност",
+    accountDiscount: "Попуст на клиент",
+    unitPrice: "Единечна цена",
+    lineAmount: "Износ",
+    discount: "Попуст",
     lineDiscounts: "Попуст по ставки",
     generalDiscount: "Општ попуст",
   },
@@ -64,6 +80,11 @@ const pdfLabels: Record<
     poReference: "Referenca / PO",
     bankDetails: "Të dhënat bankare",
     subtotal: "Nëntotali",
+    catalogSubtotal: "Vlera katalogu",
+    accountDiscount: "Zbritja e klientit",
+    unitPrice: "Çmimi për njësi",
+    lineAmount: "Shuma",
+    discount: "Zbritje",
     lineDiscounts: "Zbritje sipas rreshtave",
     generalDiscount: "Zbritje e përgjithshme",
   },
@@ -78,10 +99,65 @@ const pdfLabels: Record<
     poReference: "Reference / PO",
     bankDetails: "Bank details",
     subtotal: "Subtotal",
+    catalogSubtotal: "Catalog value",
+    accountDiscount: "Customer discount",
+    unitPrice: "Unit price",
+    lineAmount: "Amount",
+    discount: "Discount",
     lineDiscounts: "Line discounts",
     generalDiscount: "General discount",
   },
 };
+
+function renderPdfUnitPrice(
+  item: InquiryItem,
+  priceLabel: (amount: number | null) => string,
+  labels: (typeof pdfLabels)[Locale],
+) {
+  const listUnit = lineListUnitPrice(item);
+  const unit = item.price;
+  const accountPct = lineAccountDiscountPercent(item);
+  const manualPct = item.discountPercent && item.discountPercent > 0 ? item.discountPercent : 0;
+  const hasAccount = accountPct > 0 && listUnit != null && unit != null && listUnit > unit;
+  const blocks: string[] = [];
+
+  if (hasAccount) {
+    blocks.push(`<div class="price-list">${escapeHtml(priceLabel(listUnit))}</div>`);
+    blocks.push(`<div class="price-badge">−${accountPct}%</div>`);
+  }
+  if (unit != null) {
+    blocks.push(`<div class="price-net">${escapeHtml(priceLabel(unit))}</div>`);
+  } else {
+    blocks.push(`<div class="price-net muted">${escapeHtml("—")}</div>`);
+  }
+  if (manualPct > 0) {
+    blocks.push(`<div class="price-extra">${escapeHtml(labels.lineDiscounts)}: −${manualPct}%</div>`);
+  }
+  return `<div class="price-stack">${blocks.join("")}</div>`;
+}
+
+function renderPdfLineAmount(
+  item: InquiryItem,
+  priceLabel: (amount: number | null) => string,
+  labels: (typeof pdfLabels)[Locale],
+) {
+  const net = lineTotal(item);
+  const gross = lineSubtotal(item);
+  const accountPct = lineAccountDiscountPercent(item);
+  const manualPct = item.discountPercent && item.discountPercent > 0 ? item.discountPercent : 0;
+  const blocks: string[] = [];
+
+  if (accountPct > 0 && gross != null && gross > (net ?? 0)) {
+    blocks.push(`<div class="price-list">${escapeHtml(priceLabel(gross))}</div>`);
+  }
+  blocks.push(`<div class="price-net">${escapeHtml(priceLabel(net ?? null))}</div>`);
+  if (manualPct > 0 && gross != null && net != null && gross > net) {
+    blocks.push(
+      `<div class="price-extra">−${manualPct}% · ${escapeHtml(priceLabel(Math.max(0, gross - net)))}</div>`,
+    );
+  }
+  return `<div class="price-stack align-right">${blocks.join("")}</div>`;
+}
 
 function escapeHtml(value: string) {
   return value
@@ -130,6 +206,11 @@ function customerLines(customer: ProformaCustomer) {
   return [customer.company.trim(), customer.name.trim(), customer.phone.trim(), customer.email.trim()].filter(Boolean);
 }
 
+function effectiveAccountDiscountPercent(catalogSubtotal: number, discountAmount: number): number | null {
+  if (catalogSubtotal <= 0 || discountAmount <= 0) return null;
+  return Math.min(100, Math.round((discountAmount / catalogSubtotal) * 100));
+}
+
 export function buildProformaHtml({
   customer,
   items,
@@ -168,24 +249,23 @@ export function buildProformaHtml({
   const dateValue = formatDocumentDate(locale, documentDate);
   const totals = computeProformaTotals(items, renderOptions.generalDiscountPercent);
   const total = totals.total;
+  const accountDiscountPct = effectiveAccountDiscountPercent(totals.catalogSubtotal, totals.accountDiscountAmount);
   const clientLines = customerLines(customer);
   const contactLines = [siteName, sitePhone, siteDomain].filter(Boolean);
 
   const rows = items
     .map((item, index) => {
-      const line = lineTotal(item);
-      const discountNote =
-        item.discountPercent && item.discountPercent > 0 ? ` (−${item.discountPercent}%)` : "";
       const lineDescription = proformaLineDescription(item, locale);
       const nameCell = lineDescription
-        ? `<div class="line-title">${escapeHtml(item.name + discountNote)}</div><div class="line-desc">${escapeHtml(lineDescription)}</div>`
-        : escapeHtml(item.name + discountNote);
+        ? `<div class="line-title">${escapeHtml(item.name)}</div><div class="line-desc">${escapeHtml(lineDescription)}</div>`
+        : escapeHtml(item.name);
       return `
         <tr>
           <td class="num">${String(index + 1).padStart(2, "0")}</td>
           <td class="name">${nameCell}</td>
           <td class="qty">${escapeHtml(formatQuantity(item.quantity, item.unit, locale))}</td>
-          <td class="price">${escapeHtml(priceLabel(line ?? item.price))}</td>
+          <td class="unit">${renderPdfUnitPrice(item, priceLabel, labels)}</td>
+          <td class="amount">${renderPdfLineAmount(item, priceLabel, labels)}</td>
         </tr>`;
     })
     .join("");
@@ -362,9 +442,10 @@ export function buildProformaHtml({
           table-layout: fixed;
         }
         col.num { width: 4%; }
-        col.name { width: 58%; }
-        col.qty { width: 12%; }
-        col.price { width: 26%; }
+        col.name { width: 42%; }
+        col.qty { width: 10%; }
+        col.unit { width: 22%; }
+        col.amount { width: 22%; }
         thead th {
           background: #0f6e56;
           color: #fff;
@@ -378,9 +459,10 @@ export function buildProformaHtml({
         thead th:first-child { border-radius: 10px 0 0 10px; }
         thead th:last-child { border-radius: 0 10px 10px 0; }
         thead th.num { width: 4%; padding-left: 8px; padding-right: 4px; text-align: left; }
-        thead th.name { width: 58%; text-align: left; }
-        thead th.qty { width: 12%; padding-left: 4px; padding-right: 8px; text-align: right; }
-        thead th.price { width: 26%; text-align: right; }
+        thead th.name { width: 42%; text-align: left; }
+        thead th.qty { width: 10%; padding-left: 4px; padding-right: 8px; text-align: right; }
+        thead th.unit { width: 22%; text-align: right; }
+        thead th.amount { width: 22%; text-align: right; }
         tbody td {
           padding: 8px 8px;
           vertical-align: middle;
@@ -421,14 +503,49 @@ export function buildProformaHtml({
           white-space: nowrap;
           font-size: 9.5px;
         }
-        tbody td.price {
+        tbody td.unit,
+        tbody td.amount {
           text-align: right;
+          vertical-align: middle;
+          font-size: 9px;
+          line-height: 1.35;
+        }
+        .price-stack {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 2px;
+        }
+        .price-stack.align-right { align-items: flex-end; }
+        .price-list {
+          color: #9aa0a9;
+          text-decoration: line-through;
+          font-weight: 600;
+          font-size: 8.5px;
+        }
+        .price-badge {
+          display: inline-block;
+          background: #e8f6f1;
+          color: #0f6e56;
+          border-radius: 999px;
+          padding: 1px 6px;
+          font-size: 8px;
+          font-weight: 700;
+          letter-spacing: 0.02em;
+        }
+        .price-net {
           font-weight: 700;
           color: #0f6e56;
-          word-break: break-word;
-          overflow-wrap: anywhere;
           font-size: 9.5px;
-          line-height: 1.35;
+        }
+        .price-net.muted {
+          color: #9aa0a9;
+          font-weight: 600;
+        }
+        .price-extra {
+          color: #b45309;
+          font-size: 7.5px;
+          font-weight: 600;
         }
         .total-wrap {
           display: flex;
@@ -456,6 +573,13 @@ export function buildProformaHtml({
         .total.sub .value {
           font-size: 14px;
           color: #0f6e56;
+        }
+        .total.sub.accent {
+          background: #edf8f4;
+          border: 1px solid #cfe9df;
+        }
+        .total.sub.accent .value {
+          color: #0b5c47;
         }
         .total .label {
           font-size: 8px;
@@ -580,14 +704,16 @@ export function buildProformaHtml({
                 <col class="num" />
                 <col class="name" />
                 <col class="qty" />
-                <col class="price" />
+                <col class="unit" />
+                <col class="amount" />
               </colgroup>
               <thead>
                 <tr>
                   <th class="num">#</th>
                   <th class="name">${escapeHtml(dict.quote.itemsHeading)}</th>
                   <th class="qty">${escapeHtml(dict.product.quantity)}</th>
-                  <th class="price">${escapeHtml(dict.quote.productPrice)}</th>
+                  <th class="unit">${escapeHtml(labels.unitPrice)}</th>
+                  <th class="amount">${escapeHtml(labels.lineAmount)}</th>
                 </tr>
               </thead>
               <tbody>${rows}</tbody>
@@ -595,7 +721,25 @@ export function buildProformaHtml({
 
             <div class="total-wrap">
               ${
-                totals.subtotal > 0 && (totals.lineDiscountAmount > 0 || totals.generalDiscountAmount > 0)
+                totals.catalogSubtotal > 0 && totals.accountDiscountAmount > 0
+                  ? `
+              <div class="total sub">
+                <div class="label">${escapeHtml(labels.catalogSubtotal)}</div>
+                <div class="value">${escapeHtml(priceLabel(totals.catalogSubtotal))}</div>
+              </div>
+              <div class="total sub accent">
+                <div class="label">${escapeHtml(labels.accountDiscount)}${
+                  accountDiscountPct != null ? ` (−${accountDiscountPct}%)` : ""
+                }</div>
+                <div class="value">−${escapeHtml(priceLabel(totals.accountDiscountAmount))}</div>
+              </div>`
+                  : ""
+              }
+              ${
+                totals.subtotal > 0 &&
+                (totals.accountDiscountAmount > 0 ||
+                  totals.lineDiscountAmount > 0 ||
+                  totals.generalDiscountAmount > 0)
                   ? `
               <div class="total sub">
                 <div class="label">${escapeHtml(labels.subtotal)}</div>

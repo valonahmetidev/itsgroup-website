@@ -14,7 +14,11 @@ import {
 } from "@/app/admin/actions";
 import type { CustomerRow } from "@/app/admin/actions";
 import { lineSubtotal, lineTotal } from "@/components/Inquiry";
-import { clampDiscountPercent, computeProformaTotals } from "@/lib/proforma-pricing";
+import {
+  clampDiscountPercent,
+  computeProformaTotals,
+  lineAccountDiscountPercent,
+} from "@/lib/proforma-pricing";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { useLocale } from "@/components/LocaleProvider";
 import { cn } from "@/lib/cn";
@@ -548,6 +552,17 @@ export function ProformaEditor({
                         />
                       </label>
                     </div>
+                    {item.listPrice != null &&
+                      item.price != null &&
+                      item.listPrice > item.price &&
+                      lineAccountDiscountPercent(item) > 0 && (
+                        <p className="mt-1 text-xs text-tech">
+                          {dict.customer.yourDiscount}: −{lineAccountDiscountPercent(item)}% ·{" "}
+                          <span className="text-ink/45 line-through">
+                            {formatPrice(item.listPrice, docLocale, docDict)}
+                          </span>
+                        </p>
+                      )}
                     {item.discountPercent && item.discountPercent > 0 && lineSubtotal(item) != null && (
                       <p className="mt-1 text-xs text-ink/45 line-through">
                         {formatPrice(lineSubtotal(item), docLocale, docDict)}
@@ -562,7 +577,14 @@ export function ProformaEditor({
             )}
 
             <div className="mt-4 space-y-1 text-right text-sm">
-              {totals.subtotal > 0 && totals.lineDiscountAmount + totals.generalDiscountAmount > 0 && (
+              {totals.accountDiscountAmount > 0 && (
+                <p className="text-ink/55">
+                  {dict.customer.yourDiscount}: −{formatPrice(totals.accountDiscountAmount, docLocale, docDict)}
+                </p>
+              )}
+              {totals.subtotal > 0 &&
+                (totals.accountDiscountAmount > 0 ||
+                  totals.lineDiscountAmount + totals.generalDiscountAmount > 0) && (
                 <p className="text-ink/55">
                   {dict.admin.proformaSubtotal}: {formatPrice(totals.subtotal, docLocale, docDict)}
                 </p>

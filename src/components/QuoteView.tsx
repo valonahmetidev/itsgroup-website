@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { CatalogImage } from "@/components/CatalogImage";
 import { lineTotal, QuoteQuantityControl, useInquiry, type InquiryItem } from "@/components/Inquiry";
+import { lineAccountDiscountPercent, lineSubtotal } from "@/lib/proforma-pricing";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { useLocale } from "@/components/LocaleProvider";
 import { UnitSelect } from "@/components/UnitSelect";
@@ -336,6 +337,10 @@ function QuoteItemRow({
   const { dict, locale } = useLocale();
   const { formatPrice } = useCurrency();
   const itemName = useResolvedName(item.name, item.names);
+  const accountPct = lineAccountDiscountPercent(item);
+  const hasAccountDiscount =
+    accountPct > 0 && item.listPrice != null && item.price != null && item.listPrice > item.price;
+  const lineGross = lineSubtotal(item);
 
   return (
     <article className="relative rounded-3xl border border-ink/10 bg-card p-4 sm:p-5">
@@ -369,12 +374,24 @@ function QuoteItemRow({
                 </Link>
               )}
               <p className="mt-1 text-sm text-ink/55">
-                {formatPrice(item.price)} / {unitLabel(item.unit, locale)}
+                {hasAccountDiscount && item.listPrice != null && (
+                  <span className="mr-2 text-ink/40 line-through">{formatPrice(item.listPrice)}</span>
+                )}
+                <span className="font-medium text-ink">{formatPrice(item.price)}</span>
+                {hasAccountDiscount && (
+                  <span className="ml-2 rounded-full bg-tech/15 px-2 py-0.5 text-xs font-semibold text-tech">
+                    −{accountPct}%
+                  </span>
+                )}
+                <span className="text-ink/45"> / {unitLabel(item.unit, locale)}</span>
               </p>
             </div>
-            <p className="shrink-0 text-right text-sm font-semibold tabular-nums">
-              {formatPrice(lineTotal(item))}
-            </p>
+            <div className="shrink-0 text-right text-sm font-semibold tabular-nums">
+              {hasAccountDiscount && lineGross != null && (
+                <p className="text-xs font-medium text-ink/40 line-through">{formatPrice(lineGross)}</p>
+              )}
+              <p>{formatPrice(lineTotal(item))}</p>
+            </div>
           </div>
         </div>
       </div>

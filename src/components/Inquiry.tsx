@@ -36,7 +36,11 @@ export type InquiryItem = {
   quantity: number;
   unit: ProductUnit;
   unitLocked: boolean;
-  /** Line-level discount on this proforma row (0–100). */
+  /** Catalog/list unit price before the customer account discount (for PDF display). */
+  listPrice?: number | null;
+  /** Customer account discount on this line (0–100), from product/category rules. */
+  accountDiscountPercent?: number;
+  /** Extra line-level discount on this proforma row (0–100), applied in the editor. */
   discountPercent?: number;
   /** Free-text or catalog excerpt shown under the line name on proformas. */
   description?: string;
@@ -287,6 +291,8 @@ export function AddButton({
   name,
   names,
   price,
+  listPrice,
+  accountDiscountPercent,
   image,
   unit,
   unitLocked = false,
@@ -299,6 +305,8 @@ export function AddButton({
   name: string;
   names?: ProductNames;
   price: number | null;
+  listPrice?: number | null;
+  accountDiscountPercent?: number;
   image: string | null;
   unit?: ProductUnit;
   unitLocked?: boolean;
@@ -402,6 +410,12 @@ export function AddButton({
                   name: quoteName,
                   names,
                   price,
+                  listPrice:
+                    listPrice != null && price != null && listPrice > price ? listPrice : undefined,
+                  accountDiscountPercent:
+                    accountDiscountPercent != null && accountDiscountPercent > 0
+                      ? accountDiscountPercent
+                      : undefined,
                   image,
                   unit: productUnit,
                   unitLocked: locked,
@@ -439,7 +453,24 @@ export function AddButton({
       </div>
       <button
         type="button"
-        onClick={() => addItem({ source, id, name, names, price, image, unit: productUnit, unitLocked: locked }, quantity)}
+        onClick={() =>
+          addItem(
+            {
+              source,
+              id,
+              name,
+              names,
+              price,
+              listPrice: listPrice != null && price != null && listPrice > price ? listPrice : undefined,
+              accountDiscountPercent:
+                accountDiscountPercent != null && accountDiscountPercent > 0 ? accountDiscountPercent : undefined,
+              image,
+              unit: productUnit,
+              unitLocked: locked,
+            },
+            quantity,
+          )
+        }
         className="w-full rounded-full border border-ink/10 px-3 py-2 text-sm font-semibold transition hover:border-tech hover:text-tech"
       >
         {addLabel}
