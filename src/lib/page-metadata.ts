@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getDictionary, type Dictionary } from "@/lib/i18n";
+import { getDictionary, type Dictionary, type Locale } from "@/lib/i18n";
 import { getServerLocale } from "@/lib/i18n/server";
 import { site } from "@/lib/site";
 
@@ -20,8 +20,7 @@ const pagePaths: Record<PageMetaKey, string> = {
   notFound: "/",
 };
 
-export async function createPageMetadata(page: PageMetaKey): Promise<Metadata> {
-  const locale = await getServerLocale();
+function metadataFor(page: PageMetaKey, locale: Locale): Metadata {
   const dict = getDictionary(locale);
   const { title, description } = dict.meta.pages[page];
   const path = pagePaths[page];
@@ -48,4 +47,13 @@ export async function createPageMetadata(page: PageMetaKey): Promise<Metadata> {
       description,
     },
   };
+}
+
+/** Public pages that must stay cached. Does not read cookies. */
+export function createStaticPageMetadata(page: PageMetaKey, locale: Locale = "mk"): Metadata {
+  return metadataFor(page, locale);
+}
+
+export async function createPageMetadata(page: PageMetaKey): Promise<Metadata> {
+  return metadataFor(page, await getServerLocale());
 }

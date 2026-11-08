@@ -1,11 +1,9 @@
 import { AboutView } from "@/components/AboutView";
-import { createPageMetadata } from "@/lib/page-metadata";
+import { createStaticPageMetadata } from "@/lib/page-metadata";
 
-export async function generateMetadata() {
-  return createPageMetadata("about");
-}
-
-export const dynamic = "force-dynamic";
+export const dynamic = "force-static";
+export const revalidate = 120;
+export const metadata = createStaticPageMetadata("about");
 
 export default function AboutPage() {
   return <AboutView />;

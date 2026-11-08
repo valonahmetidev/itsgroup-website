@@ -3,8 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { ProductJsonLd } from "@/components/ProductJsonLd";
 import { ProductView } from "@/components/ProductView";
 import { getCategory, getProductById, products, resolveLegacyProductId } from "@/lib/catalog";
-import { liveGetProduct, liveProducts } from "@/lib/catalog-live";
-import { getServerI18n } from "@/lib/i18n/server";
+import { publicProductPage } from "@/lib/catalog-live";
 import { productJsonLd, productOgImageUrl, productSeoSiteUrl } from "@/lib/product-seo";
 import { site } from "@/lib/site";
 
@@ -12,20 +11,21 @@ export function generateStaticParams() {
   return products.map((product) => ({ id: String(product.id) }));
 }
 
+export const dynamic = "force-static";
 export const dynamicParams = true;
+export const revalidate = 120;
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const { locale } = await getServerI18n();
   const { id } = await params;
   const resolved = resolveLegacyProductId(id);
   const base = resolved?.product ?? getProductById(id);
   const source = base?.source ?? "its";
   const productId = base ? String(base.id) : id;
-  const product = await liveGetProduct(source, productId, locale);
+  const { product } = await publicProductPage(source, productId);
   const title = product?.name ?? "Product";
   const description = product?.excerpt || undefined;
   const ogImage = product ? productOgImageUrl(product.image, productSeoSiteUrl) : undefined;
@@ -39,7 +39,7 @@ export async function generateMetadata({
       description,
       url: `${site.url}/proizvod/${productId}`,
       siteName: site.name,
-      locale,
+      locale: "mk",
       type: "website",
       images: ogImage ? [{ url: ogImage, alt: title }] : undefined,
     },
@@ -54,14 +54,10 @@ export async function generateMetadata({
 
 export default async function ProductPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const { locale } = await getServerI18n();
   const { id } = await params;
-  const query = await searchParams;
   const resolved = resolveLegacyProductId(id);
 
   if (resolved && String(resolved.product.id) !== id) {
@@ -72,34 +68,17 @@ export default async function ProductPage({
   const base = resolved?.product ?? getProductById(id);
   const source = base?.source ?? "its";
   const productId = base ? String(base.id) : id;
-  const product = await liveGetProduct(source, productId, locale);
+  const { product, related } = await publicProductPage(source, productId);
   if (!product) notFound();
 
-  const initialTypeId = query.type ?? resolved?.typeId ?? undefined;
   const primaryCategory = base?.categories[0];
   const category = primaryCategory ? getCategory(product.source, primaryCategory.id) : undefined;
-  const catalog = await liveProducts(locale);
-  const relatedPool = primaryCategory
-    ? catalog.filter(
-        (item) =>
-          item.source === product.source &&
-          item.id !== product.id &&
-          item.categories.some((entry) => entry.id === primaryCategory.id),
-      )
-    : catalog.filter((item) => item.source === product.source && item.id !== product.id);
-  const related = relatedPool.slice(0, 4);
-
-  const jsonLd = productJsonLd(product, locale, productSeoSiteUrl);
+  const jsonLd = productJsonLd(product, "mk", productSeoSiteUrl);
 
   return (
     <>
       <ProductJsonLd data={jsonLd} />
-      <ProductView
-        product={product}
-        category={category}
-        related={related}
-        initialTypeId={initialTypeId}
-      />
+      <ProductView product={product} category={category} related={related} initialTypeId={resolved?.typeId ?? undefined} />
     </>
   );
 }

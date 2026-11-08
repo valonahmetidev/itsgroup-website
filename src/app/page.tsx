@@ -1,25 +1,22 @@
 import { Hero } from "@/components/Hero";
 import { WebSiteJsonLd } from "@/components/WebSiteJsonLd";
-import { createPageMetadata } from "@/lib/page-metadata";
-
-export async function generateMetadata() {
-  return createPageMetadata("home");
-}
+import { createStaticPageMetadata } from "@/lib/page-metadata";
 import { HomeSections } from "@/components/HomeSections";
 import { HomeTicker } from "@/components/HomeTicker";
-import { divisionCategories, products, technologyMenuGroups } from "@/lib/catalog";
-import { liveCatalogTotals, liveFeaturedProducts, liveStoreProducts } from "@/lib/catalog-live";
-import { buildBalancedHeroShots } from "@/lib/hero-shots";
-import { getServerI18n } from "@/lib/i18n/server";
+import { divisionCategories, technologyMenuGroups } from "@/lib/catalog";
+import { publicHomeData } from "@/lib/catalog-live";
+
+export const dynamic = "force-static";
+
+/** One cached homepage. Repeat visits do not rebuild the catalog. */
+export const revalidate = 120;
+
+export function generateMetadata() {
+  return createStaticPageMetadata("home");
+}
 
 export default async function HomePage() {
-  const { locale } = await getServerI18n();
-  const totals = await liveCatalogTotals(locale);
-  const techFeatured = await liveFeaturedProducts("treco", 8, locale);
-  const homeFeatured = await liveFeaturedProducts("tremark", 8, locale);
-  const itsFeatured = await liveStoreProducts(locale, 8);
-  const alevadoFeatured = await liveFeaturedProducts("alevado", 8, locale);
-  const storeProducts = await liveStoreProducts(locale, 24);
+  const { totals, techFeatured, homeFeatured, itsFeatured, alevadoFeatured, shots } = await publicHomeData();
   const techCategories = divisionCategories("treco").slice(0, 8);
   const homeCategories = divisionCategories("tremark");
   const ticker = technologyMenuGroups()
@@ -40,18 +37,11 @@ export default async function HomePage() {
       })),
     );
 
-  const heroShots = buildBalancedHeroShots({
-    treco: products.filter((product) => product.source === "treco"),
-    tremark: products.filter((product) => product.source === "tremark"),
-    its: storeProducts,
-    alevado: products.filter((product) => product.source === "alevado"),
-  });
-
   return (
     <>
       <WebSiteJsonLd />
       <div className="flex flex-col lg:h-[calc(100dvh-4.75rem)] lg:overflow-hidden">
-        <Hero techCount={totals.technology} homeCount={totals.home} shots={heroShots} />
+        <Hero techCount={totals.technology} homeCount={totals.home} shots={shots} />
         <HomeTicker items={ticker} />
       </div>
 

@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "itsgroup-website-edge",
+  "workers_dev": false,
+  "main": "workers/front.js",
+  "compatibility_date": "2026-09-22",
+  "compatibility_flags": ["global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/public",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "services": [
+    {
+      "binding": "APP",
+      "service": "itsgroup-website"
+    }
+  ],
+  "routes": [
+    { "pattern": "itsgroup.mk/*", "zone_name": "itsgroup.mk" },
+    { "pattern": "www.itsgroup.mk/*", "zone_name": "itsgroup.mk" }
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "itsgroup-db",
+      "database_id": "8e3d518b-88e2-49eb-b813-5f055232fcd3"
+    }
+  ]
+}

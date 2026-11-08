@@ -1,9 +1,7 @@
 import { NotFoundView } from "@/components/NotFoundView";
-import { createPageMetadata } from "@/lib/page-metadata";
+import { createStaticPageMetadata } from "@/lib/page-metadata";
 
-export async function generateMetadata() {
-  return createPageMetadata("notFound");
-}
+export const metadata = createStaticPageMetadata("notFound");
 
 export default function NotFound() {
   return <NotFoundView />;

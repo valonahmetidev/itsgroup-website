@@ -5,6 +5,7 @@ import {
   featuredProducts as baseFeaturedProducts,
   getProduct as baseGetProduct,
   products as baseProducts,
+  productsInCategory,
 } from "@/lib/catalog";
 import {
   collectCategoryBaseCandidates,
@@ -20,6 +21,7 @@ import { getCustomerSessionId } from "@/lib/customer-auth";
 import { applyCustomerPricing, applyCustomerPricingList } from "@/lib/customer-pricing";
 import { loadCustomerPricing, type CustomerPricing } from "@/lib/customers";
 import { getDbAsync } from "@/lib/cloudflare";
+import { buildBalancedHeroShots } from "@/lib/hero-shots";
 import type { Locale } from "@/lib/i18n";
 import { searchAndRankProducts } from "@/lib/product-search";
 import { getStoreProductAsCatalog, loadStoreProducts } from "@/lib/store-products";
@@ -92,6 +94,11 @@ const cachedPublicCatalog = (locale: Locale) =>
     revalidate: CATALOG_CACHE_SECONDS,
     tags: ["catalog"],
   });
+
+/** Shared public catalog. Callers must not read cookies around this. */
+export function publicCatalog() {
+  return cachedPublicCatalog("mk")();
+}
 
 async function buildPersonalizedCatalog(locale: Locale) {
   const ctx = await loadCatalogOverrideContext();
@@ -177,6 +184,96 @@ export function liveProductsInCategory(source: CatalogSource, id: number) {
     ["category-products", source, String(id)],
     { revalidate: CATALOG_CACHE_SECONDS, tags: ["catalog"] },
   )();
+}
+
+function withPublicOverrides(list: Product[], ctx: CatalogOverrideContext) {
+  return applyOverridesToList(list, "mk", ctx);
+}
+
+async function loadPublicHome() {
+  const ctx = await cachedOverrideContext();
+  const store = await loadStoreProducts("mk");
+  const staticTotals = staticCounts();
+  const totals = {
+    ...staticTotals,
+    its: store.length,
+    technology: staticTotals.technology - staticTotals.its + store.length,
+  };
+
+  const techPool = withPublicOverrides(baseFeaturedProducts("treco", 24), ctx);
+  const homePool = withPublicOverrides(baseFeaturedProducts("tremark", 24), ctx);
+  const cablePool = withPublicOverrides(baseFeaturedProducts("alevado", 24), ctx);
+
+  return {
+    totals,
+    techFeatured: techPool.slice(0, 8),
+    homeFeatured: homePool.slice(0, 8),
+    alevadoFeatured: cablePool.slice(0, 8),
+    itsFeatured: store.slice(0, 8),
+    shots: buildBalancedHeroShots({
+      treco: techPool,
+      tremark: homePool,
+      alevado: cablePool,
+      its: store.slice(0, 24),
+    }),
+  };
+}
+
+async function loadPublicTotals() {
+  const store = await loadStoreProducts("mk");
+  const staticTotals = staticCounts();
+  return {
+    ...staticTotals,
+    its: store.length,
+    technology: staticTotals.technology - staticTotals.its + store.length,
+  };
+}
+
+/** Counts for division pages without cloning the catalog. */
+export function publicCatalogTotals() {
+  return unstable_cache(loadPublicTotals, ["public-totals"], {
+    revalidate: CATALOG_CACHE_SECONDS,
+    tags: ["catalog"],
+  })();
+}
+
+async function loadPublicProductPage(source: string, id: string) {
+  if (source === "its") {
+    const store = await loadStoreProducts("mk");
+    const product = store.find((item) => String(item.id) === id);
+    const related = store.filter((item) => String(item.id) !== id).slice(0, 4);
+    return { product, related };
+  }
+
+  const base = baseGetProduct(source, id);
+  if (!base) return { product: undefined, related: [] as Product[] };
+
+  const categoryId = base.categories[0]?.id;
+  const pool =
+    categoryId != null ? productsInCategory(base.source, categoryId) : baseFeaturedProducts(base.source, 8);
+  const relatedBase = pool.filter((item) => String(item.id) !== String(base.id)).slice(0, 4);
+  const ctx = await cachedOverrideContext();
+  const visible = withPublicOverrides([base, ...relatedBase], ctx);
+  return {
+    product: visible.find((item) => String(item.id) === String(base.id)),
+    related: visible.filter((item) => String(item.id) !== String(base.id)),
+  };
+}
+
+/** One product plus a few related rows. Does not load the rest of the catalog. */
+export function publicProductPage(source: string, id: string) {
+  return unstable_cache(() => loadPublicProductPage(source, id), ["public-product", source, id], {
+    revalidate: CATALOG_CACHE_SECONDS,
+    tags: ["catalog"],
+  })();
+}
+
+/** One shared homepage payload. Never reads cookies or copies the full catalog. */
+export function publicHomeData() {
+  return unstable_cache(loadPublicHome, ["public-home"], {
+    revalidate: CATALOG_CACHE_SECONDS,
+    tags: ["catalog"],
+  })();
 }
 
 export async function liveGetProduct(source: string, id: string | number, locale: Locale = "mk") {

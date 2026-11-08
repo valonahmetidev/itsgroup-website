@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { CatalogImage } from "@/components/CatalogImage";
+import { useEffect, useMemo, useState } from "react";
+import { useCustomerSession } from "@/components/CustomerSessionProvider";
+import { applyCustomerPricing, applyCustomerPricingList } from "@/lib/customer-pricing";
 import { AddButton } from "@/components/Inquiry";
+import { CatalogImage } from "@/components/CatalogImage";
 import { ProductGrid } from "@/components/ProductCard";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { useLocale } from "@/components/LocaleProvider";
@@ -29,22 +32,32 @@ export function ProductView({
   related: Product[];
   initialTypeId?: string;
 }) {
+  const { pricing } = useCustomerSession();
+  const pricedProduct = useMemo(() => applyCustomerPricing(product, pricing), [product, pricing]);
+  const pricedRelated = useMemo(() => applyCustomerPricingList(related, pricing), [related, pricing]);
+  const [typeId, setTypeId] = useState(initialTypeId);
+
+  useEffect(() => {
+    const type = new URLSearchParams(window.location.search).get("type");
+    if (type) setTypeId(type);
+  }, []);
+
   const { dict, locale } = useLocale();
   const { formatPrice } = useCurrency();
-  const productName = useProductName(product);
-  const productExcerpt = useProductExcerpt(product);
+  const productName = useProductName(pricedProduct);
+  const productExcerpt = useProductExcerpt(pricedProduct);
   const categoryLabel = useCategoryLabel();
-  const discount = product.onSale ? salePercent(product.price, product.regularPrice) : null;
-  const divisionLabel = customerDivisionLabel(product.source, locale, dict);
-  const tone = customerDivisionTone(product.source);
+  const discount = pricedProduct.onSale ? salePercent(pricedProduct.price, pricedProduct.regularPrice) : null;
+  const divisionLabel = customerDivisionLabel(pricedProduct.source, locale, dict);
+  const tone = customerDivisionTone(pricedProduct.source);
   const categoryMk = category ? categoryDisplayName(category, "mk") : null;
   const categorySq = category ? categoryDisplayName(category, "sq") : null;
   const divisionHref =
-    product.source === "tremark"
+    pricedProduct.source === "tremark"
       ? "/dom"
-      : product.source === "its"
+      : pricedProduct.source === "its"
         ? "/katalog?division=its"
-        : product.source === "alevado"
+        : pricedProduct.source === "alevado"
           ? "/tehnologija"
           : "/tehnologija";
 
@@ -61,8 +74,8 @@ export function ProductView({
       </nav>
       <div className="grid min-w-0 items-start gap-6 sm:gap-8 lg:grid-cols-[1.05fr_0.95fr]">
         <div className="rise flex min-h-[min(280px,55vw)] items-center justify-center rounded-2xl border border-ink/10 bg-white p-4 sm:min-h-[420px] sm:rounded-[2rem] sm:p-8">
-          {product.image ? (
-            <CatalogImage src={product.image} alt={productName} className="max-h-[520px] w-full object-contain" />
+          {pricedProduct.image ? (
+            <CatalogImage src={pricedProduct.image} alt={productName} className="max-h-[520px] w-full object-contain" />
           ) : (
             <span className="font-display text-4xl text-ink/20">ITS</span>
           )}
@@ -77,61 +90,61 @@ export function ProductView({
           )}
           <div className="mt-4 rounded-2xl border border-ink/10 bg-surface/60 p-4 sm:mt-6 sm:rounded-3xl sm:p-5">
             <div className="flex flex-wrap items-end gap-2 sm:gap-3">
-              <p className="font-display text-3xl leading-none sm:text-4xl">{formatPrice(product.price)}</p>
-              {discount && product.regularPrice != null && (
-                <p className="pb-1 text-ink/40 line-through">{formatPrice(product.regularPrice)}</p>
+              <p className="font-display text-3xl leading-none sm:text-4xl">{formatPrice(pricedProduct.price)}</p>
+              {discount && pricedProduct.regularPrice != null && (
+                <p className="pb-1 text-ink/40 line-through">{formatPrice(pricedProduct.regularPrice)}</p>
               )}
               {discount && <span className="mb-1 rounded-full bg-home px-2 py-1 text-xs font-bold text-white">-{discount}%</span>}
             </div>
-            {product.customerDiscountPercent && (
+            {pricedProduct.customerDiscountPercent && (
               <p className="mt-2 text-sm font-semibold text-tech">{dict.customer.yourDiscount}</p>
             )}
-            <p className="mt-2 text-sm text-ink/55">{stockAvailabilityLabel(product, dict)}</p>
+            <p className="mt-2 text-sm text-ink/55">{stockAvailabilityLabel(pricedProduct, dict)}</p>
             <div className="mt-5">
               <AddButton
                 variant="detail"
-                source={product.source}
-                id={product.id}
+                source={pricedProduct.source}
+                id={pricedProduct.id}
                 name={productName}
-                names={product.names}
-                price={product.price}
-                image={product.image}
-                unit={product.unit}
-                unitLocked={Boolean(product.unit)}
-                types={product.types}
-                initialTypeId={initialTypeId}
+                names={pricedProduct.names}
+                price={pricedProduct.price}
+                image={pricedProduct.image}
+                unit={pricedProduct.unit}
+                unitLocked={Boolean(pricedProduct.unit)}
+                types={pricedProduct.types}
+                initialTypeId={typeId}
               />
             </div>
           </div>
           {productExcerpt && <p className="mt-6 max-w-xl leading-7 text-ink/75">{productExcerpt}</p>}
-          {product.types && product.types.length > 0 && <ProductTypesTable types={product.types} />}
-          {product.tags && product.tags.length > 0 && <ProductTags tags={product.tags} className="mt-6" />}
+          {pricedProduct.types && pricedProduct.types.length > 0 && <ProductTypesTable types={pricedProduct.types} />}
+          {pricedProduct.tags && pricedProduct.tags.length > 0 && <ProductTags tags={pricedProduct.tags} className="mt-6" />}
           <div className="mt-6 flex flex-wrap gap-2">
-            {product.storeCategory && (
+            {pricedProduct.storeCategory && (
               <Link
-                href={storeCategoryHref(product.storeCategory.slug)}
+                href={storeCategoryHref(pricedProduct.storeCategory.slug)}
                 className="rounded-full bg-surface px-3 py-1 text-sm hover:text-tech"
               >
-                {product.storeCategory.name}
+                {pricedProduct.storeCategory.name}
               </Link>
             )}
-            {product.categories.map((item) => (
+            {pricedProduct.categories.map((item) => (
               <Link
                 key={item.id}
-                href={categoryHref({ source: product.source, id: item.id })}
+                href={categoryHref({ source: pricedProduct.source, id: item.id })}
                 className="rounded-full bg-surface px-3 py-1 text-sm hover:text-tech"
               >
-                {categoryLabel({ source: product.source, slug: item.slug, name: item.name })}
+                {categoryLabel({ source: pricedProduct.source, slug: item.slug, name: item.name })}
               </Link>
             ))}
           </div>
         </div>
       </div>
-      {related.length > 0 && (
+      {pricedRelated.length > 0 && (
         <section className="mt-16">
           <h2 className="font-display text-3xl">{dict.product.sameCategory}</h2>
           <div className="mt-5">
-            <ProductGrid products={related} />
+            <ProductGrid products={pricedRelated} />
           </div>
         </section>
       )}

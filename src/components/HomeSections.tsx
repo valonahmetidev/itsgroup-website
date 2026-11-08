@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
+import { useCustomerSession } from "@/components/CustomerSessionProvider";
 import { useLocale } from "@/components/LocaleProvider";
 import { ProductGrid } from "@/components/ProductCard";
+import { applyCustomerPricingList } from "@/lib/customer-pricing";
 import { countProducts, formatCount } from "@/lib/format";
 import { useCategoryLabel } from "@/lib/i18n/catalog-labels";
 import { menuGroupTitle } from "@/lib/i18n/menu";
@@ -37,7 +40,24 @@ export function HomeSections({
   totals: CatalogTotals;
 }) {
   const { dict } = useLocale();
+  const { pricing } = useCustomerSession();
   const categoryLabel = useCategoryLabel();
+  const techProducts = useMemo(
+    () => applyCustomerPricingList(techFeatured, pricing),
+    [techFeatured, pricing],
+  );
+  const cableProducts = useMemo(
+    () => applyCustomerPricingList(alevadoFeatured, pricing),
+    [alevadoFeatured, pricing],
+  );
+  const homeProducts = useMemo(
+    () => applyCustomerPricingList(homeFeatured, pricing),
+    [homeFeatured, pricing],
+  );
+  const itsProducts = useMemo(
+    () => applyCustomerPricingList(itsFeatured, pricing),
+    [itsFeatured, pricing],
+  );
 
   return (
     <>
@@ -62,7 +82,7 @@ export function HomeSections({
             </Link>
           ))}
         </div>
-        <ProductGrid products={techFeatured} />
+        <ProductGrid products={techProducts} />
         {alevadoFeatured.length > 0 && (
           <div className="mt-14">
             <div className="mb-6 flex items-end justify-between gap-4">
@@ -74,7 +94,7 @@ export function HomeSections({
                 {dict.home.allCategories}
               </Link>
             </div>
-            <ProductGrid products={alevadoFeatured} />
+            <ProductGrid products={cableProducts} />
           </div>
         )}
       </section>
@@ -105,7 +125,7 @@ export function HomeSections({
             </Link>
           ))}
         </div>
-        <ProductGrid products={homeFeatured} />
+        <ProductGrid products={homeProducts} />
       </section>
 
       {itsFeatured.length > 0 && (
@@ -119,7 +139,7 @@ export function HomeSections({
               {dict.home.allCategories}
             </Link>
           </div>
-          <ProductGrid products={itsFeatured} />
+          <ProductGrid products={itsProducts} />
         </section>
       )}
 

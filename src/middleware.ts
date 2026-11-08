@@ -19,6 +19,28 @@ export function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const search = request.nextUrl.search;
+
+  if (pathname === "/katalog") {
+    const source = request.nextUrl.searchParams.get("source");
+    const division = request.nextUrl.searchParams.get("division");
+    if (source && !division) {
+      const url = request.nextUrl.clone();
+      const mapped =
+        source === "treco" || source === "technology"
+          ? "technology"
+          : source === "tremark" || source === "home"
+            ? "home"
+            : source === "alevado" || source === "cables"
+              ? "cables"
+              : source === "its"
+                ? "its"
+                : null;
+      url.searchParams.delete("source");
+      if (mapped) url.searchParams.set("division", mapped);
+      return NextResponse.redirect(url, 308);
+    }
+  }
+
   if (isCatalogFilterRequest(pathname, search)) {
     const ua = request.headers.get("user-agent") ?? "";
     if (AI_CRAWLER_UA.test(ua)) {
@@ -30,5 +52,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: "/:path*",
+  matcher: ["/((?!_next/static|_next/image|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|css|js|txt|woff2)$).*)"],
 };
