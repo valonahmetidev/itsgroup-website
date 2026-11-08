@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { CatalogImage } from "@/components/CatalogImage";
 import { lineTotal, QuoteQuantityControl, useInquiry, type InquiryItem } from "@/components/Inquiry";
-import { lineAccountDiscountPercent, lineSubtotal } from "@/lib/proforma-pricing";
+import { lineAccountDiscountPercent, lineCatalogSubtotal } from "@/lib/proforma-pricing";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { useLocale } from "@/components/LocaleProvider";
 import { UnitSelect } from "@/components/UnitSelect";
@@ -340,7 +340,7 @@ function QuoteItemRow({
   const accountPct = lineAccountDiscountPercent(item);
   const hasAccountDiscount =
     accountPct > 0 && item.listPrice != null && item.price != null && item.listPrice > item.price;
-  const lineGross = lineSubtotal(item);
+  const lineCatalogTotal = lineCatalogSubtotal(item);
 
   return (
     <article className="relative rounded-3xl border border-ink/10 bg-card p-4 sm:p-5">
@@ -387,8 +387,8 @@ function QuoteItemRow({
               </p>
             </div>
             <div className="shrink-0 text-right text-sm font-semibold tabular-nums">
-              {hasAccountDiscount && lineGross != null && (
-                <p className="text-xs font-medium text-ink/40 line-through">{formatPrice(lineGross)}</p>
+              {hasAccountDiscount && lineCatalogTotal != null && (
+                <p className="text-xs font-medium text-ink/40 line-through">{formatPrice(lineCatalogTotal)}</p>
               )}
               <p>{formatPrice(lineTotal(item))}</p>
             </div>

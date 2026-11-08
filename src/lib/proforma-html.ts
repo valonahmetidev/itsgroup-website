@@ -2,6 +2,7 @@ import type { InquiryItem } from "@/components/Inquiry";
 import {
   computeProformaTotals,
   lineAccountDiscountPercent,
+  lineCatalogSubtotal,
   lineListUnitPrice,
   lineSubtotal,
   lineTotal,
@@ -123,9 +124,10 @@ function renderPdfUnitPrice(
 
   if (hasAccount) {
     blocks.push(`<div class="price-list">${escapeHtml(priceLabel(listUnit))}</div>`);
-    blocks.push(`<div class="price-badge">−${accountPct}%</div>`);
-  }
-  if (unit != null) {
+    blocks.push(
+      `<div class="price-compact"><span class="price-badge">−${accountPct}%</span><span class="price-net">${escapeHtml(priceLabel(unit))}</span></div>`,
+    );
+  } else if (unit != null) {
     blocks.push(`<div class="price-net">${escapeHtml(priceLabel(unit))}</div>`);
   } else {
     blocks.push(`<div class="price-net muted">${escapeHtml("—")}</div>`);
@@ -142,18 +144,23 @@ function renderPdfLineAmount(
   labels: (typeof pdfLabels)[Locale],
 ) {
   const net = lineTotal(item);
-  const gross = lineSubtotal(item);
+  const catalog = lineCatalogSubtotal(item);
+  const beforeManual = lineSubtotal(item);
   const accountPct = lineAccountDiscountPercent(item);
   const manualPct = item.discountPercent && item.discountPercent > 0 ? item.discountPercent : 0;
+  const hasAccount =
+    accountPct > 0 && catalog != null && beforeManual != null && catalog > beforeManual;
   const blocks: string[] = [];
 
-  if (accountPct > 0 && gross != null && gross > (net ?? 0)) {
-    blocks.push(`<div class="price-list">${escapeHtml(priceLabel(gross))}</div>`);
+  if (hasAccount) {
+    blocks.push(`<div class="price-list">${escapeHtml(priceLabel(catalog))}</div>`);
+  } else if (manualPct > 0 && beforeManual != null && net != null && beforeManual > net) {
+    blocks.push(`<div class="price-list">${escapeHtml(priceLabel(beforeManual))}</div>`);
   }
   blocks.push(`<div class="price-net">${escapeHtml(priceLabel(net ?? null))}</div>`);
-  if (manualPct > 0 && gross != null && net != null && gross > net) {
+  if (manualPct > 0 && beforeManual != null && net != null && beforeManual > net) {
     blocks.push(
-      `<div class="price-extra">−${manualPct}% · ${escapeHtml(priceLabel(Math.max(0, gross - net)))}</div>`,
+      `<div class="price-extra">−${manualPct}% · ${escapeHtml(priceLabel(Math.max(0, beforeManual - net)))}</div>`,
     );
   }
   return `<div class="price-stack align-right">${blocks.join("")}</div>`;
@@ -440,6 +447,7 @@ export function buildProformaHtml({
           width: 100%;
           border-collapse: collapse;
           table-layout: fixed;
+          margin-top: 4px;
         }
         col.num { width: 4%; }
         col.name { width: 42%; }
@@ -464,10 +472,14 @@ export function buildProformaHtml({
         thead th.unit { width: 22%; text-align: right; }
         thead th.amount { width: 22%; text-align: right; }
         tbody td {
-          padding: 8px 8px;
-          vertical-align: middle;
+          padding: 10px 8px;
+          vertical-align: top;
           font-size: 10px;
           border-bottom: 1px solid #eceef2;
+          overflow: visible;
+        }
+        tbody tr:first-child td {
+          padding-top: 12px;
         }
         tbody tr:last-child td { border-bottom: none; }
         tbody td.num {
@@ -506,17 +518,30 @@ export function buildProformaHtml({
         tbody td.unit,
         tbody td.amount {
           text-align: right;
-          vertical-align: middle;
+          vertical-align: top;
           font-size: 9px;
-          line-height: 1.35;
+          line-height: 1.4;
+          padding-top: 11px;
+          padding-bottom: 11px;
         }
         .price-stack {
           display: flex;
           flex-direction: column;
           align-items: flex-end;
-          gap: 2px;
+          gap: 3px;
+          min-width: 0;
         }
         .price-stack.align-right { align-items: flex-end; }
+        .price-compact {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 4px;
+        }
+        .price-compact .price-net {
+          font-size: 9.5px;
+        }
         .price-list {
           color: #9aa0a9;
           text-decoration: line-through;
