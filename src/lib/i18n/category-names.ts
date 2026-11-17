@@ -248,6 +248,11 @@ export const categoryTranslations: Record<string, CategoryLabel> = {
     "en": "USB Dhe Aksesorë Kompjuteri",
     "sq": "USB dhe aksesorë kompjuteri"
   },
+  "tremark:black-friday": {
+    "mk": "Black Friday",
+    "en": "Black Friday",
+    "sq": "Black Friday"
+  },
   "tremark:готвење": {
     "mk": "Готвење",
     "en": "Cooking",
